@@ -1,15 +1,12 @@
 import React from 'react';
 import './Button.css';
 
-export interface ButtonProps {
+export interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'type'> {
   children: React.ReactNode;
-  variant?: 'primary' | 'secondary';
+  variant?: 'primary' | 'secondary' | 'outline' | 'text' | 'kakao' | 'google';
   size?: 'small' | 'medium' | 'large';
   fullWidth?: boolean;
-  disabled?: boolean;
-  onClick?: () => void;
   type?: 'button' | 'submit' | 'reset';
-  className?: string;
 }
 
 const Button: React.FC<ButtonProps> = ({ 

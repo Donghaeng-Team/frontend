@@ -1,24 +1,8 @@
-// src/App.js
-import Button from './components/Button';
+import ComponentShowcase from './pages/ComponentShowcase';
+import './styles/reset.css'; // 리셋 CSS 있다면
 
 function App() {
-  const handleClick = () => {
-    alert('버튼 클릭!');
-  };
-
-  return (
-    <div className="App">
-      <h1>버튼 테스트</h1>
-      
-      <Button variant="primary" onClick={handleClick}>
-        Primary 버튼
-      </Button>
-      
-      <Button variant="secondary" onClick={() => {}}>
-        Secondary 버튼
-      </Button>
-    </div>
-  );
+  return <ComponentShowcase />;
 }
 
 export default App;
