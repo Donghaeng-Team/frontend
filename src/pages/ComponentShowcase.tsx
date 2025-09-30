@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Layout from '../components/Layout';
 import Button from '../components/Button';
 import Input from '../components/Input';
@@ -7,26 +7,96 @@ import SearchBar from '../components/SearchBar';
 import Card from '../components/Card';
 import ProductCard from '../components/ProductCard';
 import StatCard from '../components/StatCard';
+import Checkbox from '../components/Checkbox';
+import ToggleSwitch from '../components/ToggleSwitch';
+import Badge from '../components/Badge';
+import Avatar from '../components/Avatar';
+import Dropdown from '../components/Dropdown';
+import type { DropdownOption } from '../components/Dropdown';
+import Modal from '../components/Modal';
+import Toast from '../components/Toast';
+import Tab from '../components/Tab';
+import type { TabItem } from '../components/Tab';
+import Slider from '../components/Slider';
+import Pagination from '../components/Pagination';
+import Skeleton, { SkeletonCard, SkeletonListItem } from '../components/Skeleton';
+import Accordion from '../components/Accordion';
+import type { AccordionItem } from '../components/Accordion';
+import Progress from '../components/Progress';
 import './ComponentShowcase.css';
 
-const ComponentShowcase: React.FC = () => {
+const ComponentShowcase = () => {
+  // States
   const [inputValue, setInputValue] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [checked1, setChecked1] = useState(false);
+  const [checked2, setChecked2] = useState(true);
+  const [toggle1, setToggle1] = useState(false);
+  const [toggle2, setToggle2] = useState(true);
+  const [dropdownValue, setDropdownValue] = useState<string | number>('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [activeTab, setActiveTab] = useState('tab1');
+  const [sliderValue, setSliderValue] = useState(30);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [activeAccordion, setActiveAccordion] = useState<string[]>(['1']);
+  const [progress1, setProgress1] = useState(60);
+
+  // Dropdown options
+  const dropdownOptions: DropdownOption[] = [
+    { value: '1', label: '옵션 1' },
+    { value: '2', label: '옵션 2' },
+    { value: '3', label: '옵션 3', disabled: true },
+    { value: '4', label: '옵션 4' }
+  ];
+
+  // Tab items
+  const tabItems: TabItem[] = [
+    { key: 'tab1', label: '탭 1', children: <div>탭 1 내용입니다</div> },
+    { key: 'tab2', label: '탭 2', children: <div>탭 2 내용입니다</div> },
+    { key: 'tab3', label: '탭 3', children: <div>탭 3 내용입니다</div>, disabled: true },
+    { key: 'tab4', label: '탭 4', children: <div>탭 4 내용입니다</div> }
+  ];
+
+  // Accordion items
+  const accordionItems: AccordionItem[] = [
+    { 
+      key: '1', 
+      title: '공동구매란 무엇인가요?',
+      content: '공동구매는 여러 사람이 함께 상품을 구매하여 더 저렴한 가격에 구매할 수 있는 서비스입니다.'
+    },
+    { 
+      key: '2', 
+      title: '배송은 어떻게 되나요?',
+      content: '공동구매 모집이 완료되면 지정된 장소로 배송됩니다. 개별 배송도 가능합니다.'
+    },
+    { 
+      key: '3', 
+      title: '환불 정책',
+      content: '상품 수령 후 7일 이내 환불 가능합니다.',
+      disabled: true
+    }
+  ];
+
+  const showToastMessage = (type: 'success' | 'error' | 'warning' | 'info') => {
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
+  };
 
   return (
     <Layout isLoggedIn={true} notificationCount={3}>
       <div className="showcase-container">
         <h1 className="showcase-title">🛒 함께사요 - 컴포넌트 시스템</h1>
-        
-        {/* Button Section */}
+
+        {/* Buttons */}
         <section className="showcase-section">
           <h2>Buttons</h2>
           <div className="component-grid">
-            <Button variant="primary">Primary Button</Button>
-            <Button variant="secondary">Secondary Button</Button>
-            <Button variant="outline">Outline Button</Button>
-            <Button variant="text">Text Button</Button>
+            <Button variant="primary">Primary</Button>
+            <Button variant="secondary">Secondary</Button>
+            <Button variant="outline">Outline</Button>
+            <Button variant="text">Text</Button>
             <Button variant="kakao" size="large">💬 카카오로 시작하기</Button>
             <Button variant="google" size="large">🔍 구글로 시작하기</Button>
             <Button disabled>Disabled</Button>
@@ -35,7 +105,7 @@ const ComponentShowcase: React.FC = () => {
           </div>
         </section>
 
-        {/* Input Section */}
+        {/* Inputs */}
         <section className="showcase-section">
           <h2>Inputs</h2>
           <div className="component-grid">
@@ -44,14 +114,8 @@ const ComponentShowcase: React.FC = () => {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
             />
-            <Input 
-              placeholder="에러 상태"
-              error="에러 메시지입니다"
-            />
-            <Input 
-              placeholder="비활성화"
-              disabled
-            />
+            <Input placeholder="에러 상태" error="에러 메시지입니다" />
+            <Input placeholder="비활성화" disabled />
             <SearchBar 
               placeholder="상품 검색..."
               onSearch={(value) => alert(`검색: ${value}`)}
@@ -59,7 +123,7 @@ const ComponentShowcase: React.FC = () => {
           </div>
         </section>
 
-        {/* FormField Section */}
+        {/* Form Fields */}
         <section className="showcase-section">
           <h2>Form Fields</h2>
           <div style={{ maxWidth: '400px' }}>
@@ -71,27 +135,216 @@ const ComponentShowcase: React.FC = () => {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              helperText="이메일 주소를 입력하세요"
             />
             <FormField
               label="비밀번호"
               name="password"
               type="password"
-              placeholder="비밀번호를 입력하세요"
+              placeholder="8자 이상 입력하세요"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              error={password && password.length < 8 ? "8자 이상 입력하세요" : ""}
             />
           </div>
         </section>
 
-        {/* Card Section */}
+        {/* Checkbox & Toggle */}
+        <section className="showcase-section">
+          <h2>Checkbox & Toggle Switch</h2>
+          <div className="component-grid">
+            <Checkbox 
+              label="체크박스 1"
+              checked={checked1}
+              onChange={setChecked1}
+            />
+            <Checkbox 
+              label="체크박스 2 (체크됨)"
+              checked={checked2}
+              onChange={setChecked2}
+            />
+            <Checkbox label="비활성화" disabled />
+            <ToggleSwitch 
+              checked={toggle1}
+              onChange={setToggle1}
+              label="알림 설정"
+            />
+            <ToggleSwitch 
+              checked={toggle2}
+              onChange={setToggle2}
+              label="이메일 수신"
+              size="large"
+            />
+          </div>
+        </section>
+
+        {/* Badge & Avatar */}
+        <section className="showcase-section">
+          <h2>Badge & Avatar</h2>
+          <div className="component-grid">
+            <Badge count={5}>
+              <Avatar name="홍길동" />
+            </Badge>
+            <Badge count={99}>
+              <Avatar name="김철수" />
+            </Badge>
+            <Badge count={999} max={99}>
+              <Button size="small">알림</Button>
+            </Badge>
+            <Badge dot>
+              <Avatar name="이영희" />
+            </Badge>
+            <Avatar name="박민수" size="large" />
+            <Avatar name="사용자" shape="square" />
+            <Avatar name="김개발" status="online" />
+            <Avatar name="이디자인" status="busy" />
+          </div>
+        </section>
+
+        {/* Dropdown */}
+        <section className="showcase-section">
+          <h2>Dropdown</h2>
+          <div className="component-grid">
+            <Dropdown 
+              options={dropdownOptions}
+              value={dropdownValue}
+              onChange={setDropdownValue}
+              placeholder="선택하세요"
+            />
+            <Dropdown 
+              options={dropdownOptions}
+              value={dropdownValue}
+              onChange={setDropdownValue}
+              size="large"
+            />
+            <Dropdown 
+              options={dropdownOptions}
+              disabled
+              placeholder="비활성화"
+            />
+          </div>
+        </section>
+
+        {/* Tabs */}
+        <section className="showcase-section">
+          <h2>Tabs</h2>
+          <Tab 
+            items={tabItems}
+            activeKey={activeTab}
+            onChange={setActiveTab}
+          />
+          <br />
+          <Tab 
+            items={tabItems}
+            variant="card"
+          />
+          <br />
+          <Tab 
+            items={tabItems}
+            variant="pills"
+          />
+        </section>
+
+        {/* Slider */}
+        <section className="showcase-section">
+          <h2>Slider</h2>
+          <div style={{ width: '400px' }}>
+            <Slider 
+              value={sliderValue}
+              onChange={setSliderValue}
+              marks={[
+                { value: 0, label: '가까운 동네' },
+                { value: 50, label: '보통' },
+                { value: 100, label: '먼 동네' }
+              ]}
+            />
+            <br />
+            <div>선택된 값: {sliderValue}</div>
+          </div>
+        </section>
+
+        {/* Progress */}
+        <section className="showcase-section">
+          <h2>Progress</h2>
+          <div style={{ width: '400px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <Progress percent={progress1} />
+            <Progress percent={100} status="success" />
+            <Progress percent={50} status="error" />
+            <Progress percent={70} strokeColor="#6633cc" />
+            <div style={{ display: 'flex', gap: '20px' }}>
+              <Progress percent={75} type="circle" size="small" />
+              <Progress percent={85} type="circle" />
+              <Progress percent={95} type="circle" size="large" />
+            </div>
+            <Button onClick={() => setProgress1(Math.min(100, progress1 + 10))}>
+              진행률 증가
+            </Button>
+          </div>
+        </section>
+
+        {/* Pagination */}
+        <section className="showcase-section">
+          <h2>Pagination</h2>
+          <Pagination 
+            current={currentPage}
+            total={123}
+            pageSize={10}
+            onChange={setCurrentPage}
+            showTotal
+          />
+          <br />
+          <Pagination 
+            current={currentPage}
+            total={500}
+            pageSize={20}
+            onChange={setCurrentPage}
+            showSizeChanger
+            showQuickJumper
+          />
+        </section>
+
+        {/* Skeleton */}
+        <section className="showcase-section">
+          <h2>Skeleton Loading</h2>
+          <div className="component-grid">
+            <div style={{ width: '300px' }}>
+              <Skeleton />
+              <Skeleton />
+              <Skeleton width="60%" />
+            </div>
+            <Skeleton variant="circular" width={60} height={60} />
+            <Skeleton variant="rectangular" width={300} height={180} />
+          </div>
+          <div className="skeleton-grid">
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonListItem />
+          </div>
+        </section>
+
+        {/* Accordion */}
+        <section className="showcase-section">
+          <h2>Accordion</h2>
+          <div style={{ maxWidth: '600px' }}>
+            <Accordion 
+              items={accordionItems}
+              activeKeys={activeAccordion}
+              onChange={setActiveAccordion}
+            />
+            <br />
+            <Accordion 
+              items={accordionItems}
+              accordion
+              expandIconPosition="left"
+            />
+          </div>
+        </section>
+
+        {/* Cards */}
         <section className="showcase-section">
           <h2>Cards</h2>
           <div className="card-grid">
             <Card title="기본 카드" subtitle="서브타이틀">
-              카드 내용이 들어갑니다. 다양한 컨텐츠를 담을 수 있습니다.
+              카드 내용이 들어갑니다.
             </Card>
             <Card variant="elevated" title="Elevated 카드">
               그림자가 있는 카드입니다
@@ -107,39 +360,18 @@ const ComponentShowcase: React.FC = () => {
           </div>
         </section>
 
-        {/* StatCard Section */}
+        {/* Stat Cards */}
         <section className="showcase-section">
           <h2>Stat Cards</h2>
           <div className="stat-grid">
-            <StatCard 
-              label="진행중인 공동구매"
-              value="3"
-              unit="건"
-              color="#ff5e2f"
-            />
-            <StatCard 
-              label="참여중인 공동구매"
-              value="12"
-              unit="건"
-              color="#3399ff"
-            />
-            <StatCard 
-              label="완료된 공동구매"
-              value="28"
-              unit="건"
-              color="#6633cc"
-              change={{ value: 15, type: 'increase' }}
-            />
-            <StatCard 
-              label="찜한 상품"
-              value="8"
-              unit="개"
-              color="#ff3333"
-            />
+            <StatCard label="진행중인 공동구매" value="3" unit="건" color="#ff5e2f" />
+            <StatCard label="참여중인 공동구매" value="12" unit="건" color="#3399ff" />
+            <StatCard label="완료된 공동구매" value="28" unit="건" color="#6633cc" change={{ value: 15, type: 'increase' }} />
+            <StatCard label="찜한 상품" value="8" unit="개" color="#ff3333" />
           </div>
         </section>
 
-        {/* ProductCard Section */}
+        {/* Product Cards */}
         <section className="showcase-section">
           <h2>Product Cards</h2>
           <div className="product-grid">
@@ -161,21 +393,58 @@ const ComponentShowcase: React.FC = () => {
               seller={{ name: "생활마트" }}
               participants={{ current: 8, max: 10 }}
               location="방배동"
-              status="active"
             />
             <ProductCard
               category="육아용품"
               title="기저귀 대형 4박스"
               price={124000}
-              originalPrice={156000}
-              discount={20}
               seller={{ name: "아기사랑" }}
               participants={{ current: 19, max: 20 }}
               location="역삼동"
-              status="active"
             />
           </div>
         </section>
+
+        {/* Modal & Toast Demo */}
+        <section className="showcase-section">
+          <h2>Modal & Toast</h2>
+          <div className="component-grid">
+            <Button onClick={() => setIsModalOpen(true)}>Modal 열기</Button>
+            <Button variant="secondary" onClick={() => showToastMessage('success')}>
+              Toast 표시
+            </Button>
+          </div>
+        </section>
+
+        {/* Modal */}
+        <Modal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          title="모달 제목"
+          footer={
+            <>
+              <Button variant="secondary" onClick={() => setIsModalOpen(false)}>
+                취소
+              </Button>
+              <Button onClick={() => setIsModalOpen(false)}>
+                확인
+              </Button>
+            </>
+          }
+        >
+          <p>모달 내용이 들어갑니다.</p>
+          <p>여러 줄의 내용을 넣을 수 있습니다.</p>
+        </Modal>
+
+        {/* Toast */}
+        {showToast && (
+          <Toast 
+            message="작업이 완료되었습니다!"
+            type="success"
+            position="top-right"
+            onClose={() => setShowToast(false)}
+          />
+        )}
       </div>
     </Layout>
   );
