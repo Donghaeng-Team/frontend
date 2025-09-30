@@ -1,8 +1,8 @@
-import ComponentShowcase from './pages/ComponentShowcase';
-import './styles/reset.css'; // 리셋 CSS 있다면
+import Main from './pages/Main';
+import './styles/reset.css';
 
 function App() {
-  return <ComponentShowcase />;
+  return <Main />;
 }
 
 export default App;
