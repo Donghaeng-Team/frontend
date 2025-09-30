@@ -1,0 +1,80 @@
+/* src/components/Rating/Rating.css */
+.rating-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+  
+  .rating-stars {
+    display: flex;
+    gap: 2px;
+  }
+  
+  .rating-star {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+  }
+  
+  .rating-readonly {
+    cursor: default;
+  }
+  
+  .rating-star-half,
+  .rating-star-full {
+    position: absolute;
+    top: 0;
+    overflow: hidden;
+  }
+  
+  .rating-star-half {
+    width: 50%;
+    left: 0;
+  }
+  
+  .rating-star-full {
+    width: 50%;
+    right: 0;
+  }
+  
+  .rating-star-full-width {
+    width: 100%;
+    left: 0;
+  }
+  
+  .rating-star span {
+    display: block;
+    line-height: 1;
+  }
+  
+  .rating-star-empty {
+    color: #e6e6e6;
+  }
+  
+  .rating-star-filled {
+    color: #ffb233;
+  }
+  
+  .rating-interactive:hover .rating-star-empty {
+    color: #ffd699;
+  }
+  
+  /* Sizes */
+  .rating-star-small span {
+    font-size: 16px;
+  }
+  
+  .rating-star-medium span {
+    font-size: 24px;
+  }
+  
+  .rating-star-large span {
+    font-size: 32px;
+  }
+  
+  .rating-count {
+    font-size: 14px;
+    color: #666666;
+    margin-left: 4px;
+  }

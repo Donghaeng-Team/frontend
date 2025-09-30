@@ -1,0 +1,51 @@
+/* src/components/Breadcrumb/Breadcrumb.css */
+.breadcrumb {
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+  
+  .breadcrumb-list {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .breadcrumb-item {
+    display: flex;
+    align-items: center;
+  }
+  
+  .breadcrumb-icon {
+    display: flex;
+    align-items: center;
+    margin-right: 4px;
+    font-size: 14px;
+  }
+  
+  .breadcrumb-link {
+    color: #666666;
+    text-decoration: none;
+    font-size: 14px;
+    padding: 4px 0;
+    transition: color 0.2s;
+  }
+  
+  .breadcrumb-link:hover {
+    color: #ff5e2f;
+  }
+  
+  .breadcrumb-current {
+    color: #222222;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 4px 0;
+  }
+  
+  .breadcrumb-separator {
+    margin: 0 8px;
+    color: #cccccc;
+    font-size: 14px;
+    user-select: none;
+  }
