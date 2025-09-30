@@ -23,6 +23,9 @@ import Skeleton, { SkeletonCard, SkeletonListItem } from '../components/Skeleton
 import Accordion from '../components/Accordion';
 import type { AccordionItem } from '../components/Accordion';
 import Progress from '../components/Progress';
+import CategorySelector from '../components/CategorySelector';
+import type { CategoryItem } from '../components/CategorySelector';
+import CategoryFilter from '../components/CategoryFilter';
 import './ComponentShowcase.css';
 
 const ComponentShowcase = () => {
@@ -83,6 +86,66 @@ const ComponentShowcase = () => {
     setShowToast(true);
     setTimeout(() => setShowToast(false), 3000);
   };
+
+  const categoryData: CategoryItem[] = [
+    {
+      value: 'food',
+      label: '식품',
+      children: [
+        {
+          value: 'fresh',
+          label: '신선식품',
+          children: [
+            {
+              value: 'fruit',
+              label: '과일',
+              children: [
+                { value: 'apple', label: '사과' },
+                { value: 'banana', label: '바나나' },
+                { value: 'orange', label: '오렌지' }
+              ]
+            },
+            {
+              value: 'vegetable',
+              label: '채소',
+              children: [
+                { value: 'lettuce', label: '상추' },
+                { value: 'tomato', label: '토마토' }
+              ]
+            }
+          ]
+        },
+        {
+          value: 'processed',
+          label: '가공식품',
+          children: [
+            {
+              value: 'snack',
+              label: '과자',
+              children: [
+                { value: 'chips', label: '감자칩' },
+                { value: 'cookie', label: '쿠키' }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      value: 'living',
+      label: '생활용품',
+      children: [
+        {
+          value: 'kitchen',
+          label: '주방용품',
+          children: [
+            { value: 'dish', label: '그릇' },
+            { value: 'pot', label: '냄비' }
+          ]
+        }
+      ]
+    }
+  ];
 
   return (
     <Layout isLoggedIn={true} notificationCount={3}>
@@ -246,19 +309,33 @@ const ComponentShowcase = () => {
 
         {/* Slider */}
         <section className="showcase-section">
-          <h2>Slider</h2>
+          <h2>Slider - 동네 범위 선택</h2>
           <div style={{ width: '400px' }}>
             <Slider 
+              min={0}
+              max={3}
               value={sliderValue}
               onChange={setSliderValue}
+              defaultValue={0}
+              step={1}
               marks={[
-                { value: 0, label: '가까운 동네' },
-                { value: 50, label: '보통' },
-                { value: 100, label: '먼 동네' }
+                { value: 0, label: '내동네' },
+                { value: 1 },  // 라벨 없음 (1km)
+                { value: 2 },  // 라벨 없음 (3km)
+                { value: 3, label: '먼 동네' }
               ]}
+              snapToMarks={true}
+              showTooltip={true}
             />
             <br />
-            <div>선택된 값: {sliderValue}</div>
+            <div style={{ marginTop: '20px', textAlign: 'center' }}>
+              선택된 범위: {
+                sliderValue === 0 ? '내동네만' :
+                sliderValue === 1 ? '반경 1km' :
+                sliderValue === 2 ? '반경 3km' :
+                '반경 5km 이상'
+              }
+            </div>
           </div>
         </section>
 
@@ -445,6 +522,47 @@ const ComponentShowcase = () => {
             onClose={() => setShowToast(false)}
           />
         )}
+
+        {/* Category Selector */}
+        <section className="showcase-section">
+          <h2>Category Selector - 4단계</h2>
+          <CategorySelector 
+            data={categoryData}
+            maxLevel={4}
+            onChange={(values, labels) => {
+              console.log('Selected:', values, labels);
+            }}
+          />
+        </section>
+
+        {/* Category Selector - 3단계 */}
+        <section className="showcase-section">
+          <h2>Category Selector - 3단계</h2>
+          <CategorySelector 
+            data={categoryData}
+            maxLevel={3}
+            onChange={(values, labels) => {
+              console.log('Selected:', values, labels);
+            }}
+          />
+        </section>
+
+        {/* Category Filter */}
+        <section className="showcase-section">
+          <h2>Category Filter</h2>
+          <CategoryFilter 
+            title="카테고리"
+            options={[
+              { value: 'food', label: '식품', count: 45 },
+              { value: 'living', label: '생활용품', count: 32 },
+              { value: 'baby', label: '육아용품', count: 28 },
+              { value: 'pet', label: '반려동물', count: 15 }
+            ]}
+            multiple
+            showCount
+            onChange={(value) => console.log('Selected:', value)}
+          />
+        </section>
       </div>
     </Layout>
   );

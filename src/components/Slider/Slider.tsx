@@ -3,134 +3,182 @@ import { useState, useRef, useEffect } from 'react';
 import './Slider.css';
 
 interface SliderProps {
-  min?: number;
-  max?: number;
   value?: number;
   defaultValue?: number;
-  step?: number;
   onChange?: (value: number) => void;
   onAfterChange?: (value: number) => void;
-  marks?: { value: number; label: string }[];
-  showTooltip?: boolean;
-  disabled?: boolean;
   className?: string;
+  disabled?: boolean;
 }
 
 const Slider: FC<SliderProps> = ({
-  min = 0,
-  max = 100,
   value,
   defaultValue = 0,
-  step = 1,
   onChange,
   onAfterChange,
-  marks = [],
-  showTooltip = false,
-  disabled = false,
-  className = ''
+  className = '',
+  disabled = false
 }) => {
   const [localValue, setLocalValue] = useState(defaultValue);
   const [isDragging, setIsDragging] = useState(false);
-  const [showTooltipLocal, setShowTooltipLocal] = useState(false);
+  const [dragValue, setDragValue] = useState(defaultValue);
   const sliderRef = useRef<HTMLDivElement>(null);
+  
+  const currentValue = value !== undefined ? value : localValue;
+  const displayValue = isDragging ? dragValue : currentValue;
+  
+  // 4단계 값 (0, 1, 2, 3)
+  const steps = [0, 1, 2, 3];
+  const labels = ['내동네', '', '', '먼 동네'];
+  
+  const getPercentage = (val: number) => {
+    return (val / 3) * 100;
+  };
 
-  const currentValue = value ?? localValue;
-  const percentage = ((currentValue - min) / (max - min)) * 100;
+  const calculateValue = (clientX: number): number => {
+    if (!sliderRef.current) return currentValue;
+    
+    const rect = sliderRef.current.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const percentage = Math.min(100, Math.max(0, (x / rect.width) * 100));
+    
+    // 퍼센트를 0-3 값으로 변환
+    return (percentage / 100) * 3;
+  };
+
+  const snapToClosest = (val: number): number => {
+    // 가장 가까운 단계 찾기
+    let closest = 0;
+    let minDiff = Math.abs(val - 0);
+    
+    steps.forEach(step => {
+      const diff = Math.abs(val - step);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closest = step;
+      }
+    });
+    
+    return closest;
+  };
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (disabled) return;
+    e.preventDefault();
+    
     setIsDragging(true);
-    setShowTooltipLocal(true);
-    updateValue(e.clientX);
+    const newValue = calculateValue(e.clientX);
+    setDragValue(newValue);
   };
 
-  const updateValue = (clientX: number) => {
-    if (!sliderRef.current || disabled) return;
-
-    const rect = sliderRef.current.getBoundingClientRect();
-    const percent = Math.min(100, Math.max(0, ((clientX - rect.left) / rect.width) * 100));
-    const newValue = Math.round(((percent / 100) * (max - min) + min) / step) * step;
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isDragging || disabled) return;
     
-    setLocalValue(newValue);
-    onChange?.(newValue);
+    const newValue = calculateValue(e.clientX);
+    setDragValue(newValue);
+  };
+
+  const handleMouseUp = () => {
+    if (!isDragging) return;
+    
+    const snappedValue = snapToClosest(dragValue);
+    setLocalValue(snappedValue);
+    setDragValue(snappedValue);
+    setIsDragging(false);
+    
+    onChange?.(snappedValue);
+    onAfterChange?.(snappedValue);
+  };
+
+  const handleStepClick = (stepValue: number) => {
+    if (disabled || isDragging) return;
+    
+    setLocalValue(stepValue);
+    onChange?.(stepValue);
+    onAfterChange?.(stepValue);
   };
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (isDragging) {
-        updateValue(e.clientX);
-      }
-    };
-
-    const handleMouseUp = () => {
-      if (isDragging) {
-        setIsDragging(false);
-        setShowTooltipLocal(false);
-        onAfterChange?.(currentValue);
-      }
-    };
-
     if (isDragging) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
+      
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
     }
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [isDragging, currentValue, onAfterChange]);
+  }, [isDragging, dragValue]);
 
   return (
-    <div className={`slider ${disabled ? 'slider-disabled' : ''} ${className}`}>
+    <div className={`slider-container ${disabled ? 'slider-disabled' : ''} ${className}`}>
       <div 
         ref={sliderRef}
-        className="slider-rail"
+        className="slider-track-wrapper"
         onMouseDown={handleMouseDown}
       >
+        {/* 배경 트랙 */}
+        <div className="slider-track-bg" />
+        
+        {/* 활성 트랙 */}
         <div 
-          className="slider-track"
-          style={{ width: `${percentage}%` }}
+          className="slider-track-active" 
+          style={{ width: `${getPercentage(displayValue)}%` }}
         />
         
-        {marks.map(mark => {
-          const markPercentage = ((mark.value - min) / (max - min)) * 100;
-          const isActive = mark.value <= currentValue;
-          return (
-            <div
-              key={mark.value}
-              className={`slider-mark ${isActive ? 'slider-mark-active' : ''}`}
-              style={{ left: `${markPercentage}%` }}
-            />
-          );
-        })}
+        {/* 단계 마크들 */}
+        {steps.map((step) => (
+          <button
+            key={step}
+            type="button"
+            className={`slider-step ${currentValue >= step ? 'slider-step-active' : ''}`}
+            style={{ left: `${getPercentage(step)}%` }}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleStepClick(step);
+            }}
+            disabled={disabled}
+          />
+        ))}
         
-        <div
-          className="slider-handle"
-          style={{ left: `${percentage}%` }}
-        >
-          {(showTooltip || showTooltipLocal) && (
-            <div className="slider-tooltip">{currentValue}</div>
-          )}
-        </div>
+        {/* 핸들 */}
+        <div 
+          className={`slider-handle ${isDragging ? 'slider-handle-dragging' : ''}`}
+          style={{ left: `${getPercentage(displayValue)}%` }}
+          onMouseDown={handleMouseDown}
+        />
       </div>
       
-      {marks.length > 0 && (
-        <div className="slider-marks">
-          {marks.map(mark => {
-            const markPercentage = ((mark.value - min) / (max - min)) * 100;
-            return (
-              <div
-                key={mark.value}
-                className="slider-mark-label"
-                style={{ left: `${markPercentage}%` }}
-              >
-                {mark.label}
-              </div>
-            );
-          })}
-        </div>
-      )}
+      {/* 라벨 */}
+      <div className="slider-labels">
+        {labels.map((label, index) => 
+          label ? (
+            <button
+              key={index}
+              type="button"
+              className={`slider-label ${currentValue === index ? 'slider-label-active' : ''}`}
+              style={{ left: `${getPercentage(index)}%` }}
+              onClick={() => handleStepClick(index)}
+              disabled={disabled}
+            >
+              {label}
+            </button>
+          ) : null
+        )}
+      </div>
+      
+      {/* 현재 값 표시 */}
+      <div className="slider-value-display">
+        선택된 범위: {
+          Math.round(displayValue) === 0 ? '내동네' :
+          Math.round(displayValue) === 1 ? '반경 1km' :
+          Math.round(displayValue) === 2 ? '반경 3km' :
+          '반경 5km+'
+        }
+        {isDragging && <span style={{ marginLeft: '10px', color: '#ff5e2f' }}>
+          (드래그 중)
+        </span>}
+      </div>
     </div>
   );
 };
