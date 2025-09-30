@@ -1,0 +1,121 @@
+.tab-container {
+    width: 100%;
+  }
+  
+  /* Navigation */
+  .tab-nav {
+    display: flex;
+    border-bottom: 1px solid #e6e6e6;
+    margin-bottom: 24px;
+    gap: 4px;
+  }
+  
+  .tab-nav-full {
+    justify-content: stretch;
+  }
+  
+  .tab-nav-full .tab-nav-item {
+    flex: 1;
+  }
+  
+  /* Navigation Variants */
+  .tab-nav-card {
+    border-bottom: none;
+    background-color: #f2f2f2;
+    border-radius: 8px;
+    padding: 4px;
+  }
+  
+  .tab-nav-pills {
+    border-bottom: none;
+    gap: 8px;
+  }
+  
+  /* Tab Item */
+  .tab-nav-item {
+    background: transparent;
+    border: none;
+    padding: 12px 16px;
+    font-family: 'Inter', -apple-system, sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #666666;
+    font-weight: 500;
+    white-space: nowrap;
+    position: relative;
+  }
+  
+  /* Sizes */
+  .tab-nav-small .tab-nav-item {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+  
+  .tab-nav-medium .tab-nav-item {
+    padding: 12px 16px;
+    font-size: 15px;
+  }
+  
+  .tab-nav-large .tab-nav-item {
+    padding: 14px 20px;
+    font-size: 16px;
+  }
+  
+  /* Active State - Default */
+  .tab-nav-default .tab-nav-item-active {
+    color: #ff5e2f;
+    border-bottom: 2px solid #ff5e2f;
+  }
+  
+  /* Active State - Card */
+  .tab-nav-card .tab-nav-item-active {
+    background-color: #ffffff;
+    color: #ff5e2f;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Active State - Pills */
+  .tab-nav-pills .tab-nav-item {
+    border-radius: 20px;
+    padding: 8px 20px;
+  }
+  
+  .tab-nav-pills .tab-nav-item-active {
+    background-color: #ff5e2f;
+    color: #ffffff;
+  }
+  
+  /* Hover */
+  .tab-nav-item:hover:not(.tab-nav-item-disabled):not(.tab-nav-item-active) {
+    color: #333333;
+    background-color: rgba(0, 0, 0, 0.03);
+  }
+  
+  /* Disabled */
+  .tab-nav-item-disabled {
+    color: #cccccc;
+    cursor: not-allowed;
+  }
+  
+  /* Icon */
+  .tab-nav-icon {
+    font-size: 18px;
+  }
+  
+  /* Content */
+  .tab-content {
+    animation: fadeIn 0.3s ease;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
