@@ -1,0 +1,120 @@
+.dropdown {
+    position: relative;
+    display: inline-block;
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+  
+  .dropdown-full-width {
+    width: 100%;
+  }
+  
+  /* Trigger Button */
+  .dropdown-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #ffffff;
+    border: 1px solid #e6e6e6;
+    border-radius: 6px;
+    padding: 0 14px;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  
+  .dropdown-trigger:hover:not(:disabled) {
+    border-color: #ff5e2f;
+  }
+  
+  .dropdown-open .dropdown-trigger {
+    border-color: #ff5e2f;
+    box-shadow: 0 0 0 3px rgba(255, 94, 47, 0.1);
+  }
+  
+  /* Sizes */
+  .dropdown-small .dropdown-trigger {
+    height: 36px;
+    font-size: 14px;
+  }
+  
+  .dropdown-medium .dropdown-trigger {
+    height: 44px;
+    font-size: 15px;
+  }
+  
+  .dropdown-large .dropdown-trigger {
+    height: 52px;
+    font-size: 16px;
+  }
+  
+  /* Label & Arrow */
+  .dropdown-label {
+    flex: 1;
+    text-align: left;
+    color: #333333;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .dropdown-arrow {
+    margin-left: 8px;
+    font-size: 12px;
+    color: #999999;
+    transition: transform 0.2s;
+  }
+  
+  .dropdown-open .dropdown-arrow {
+    transform: rotate(180deg);
+  }
+  
+  /* Menu */
+  .dropdown-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background-color: #ffffff;
+    border: 1px solid #e6e6e6;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    max-height: 240px;
+    overflow-y: auto;
+    z-index: 1000;
+  }
+  
+  /* Options */
+  .dropdown-option {
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    color: #333333;
+    font-size: 14px;
+  }
+  
+  .dropdown-option:hover:not(.dropdown-option-disabled) {
+    background-color: #fef6ee;
+  }
+  
+  .dropdown-option-selected {
+    background-color: #fff5f0;
+    color: #ff5e2f;
+    font-weight: 500;
+  }
+  
+  .dropdown-option-disabled {
+    color: #cccccc;
+    cursor: not-allowed;
+  }
+  
+  /* Disabled State */
+  .dropdown-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .dropdown-disabled .dropdown-trigger {
+    cursor: not-allowed;
+    background-color: #f2f2f2;
+  }
