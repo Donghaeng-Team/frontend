@@ -1,8 +1,8 @@
-import Main from './pages/Main';
+import SignUp from './pages/SignUp';
 import './styles/reset.css';
 
 function App() {
-  return <Main />;
+  return <SignUp />;
 }
 
 export default App;
