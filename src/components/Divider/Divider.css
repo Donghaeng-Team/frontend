@@ -1,0 +1,93 @@
+/* src/components/Divider/Divider.css */
+.divider {
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+  
+  /* Horizontal Divider */
+  .divider-horizontal {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin: 24px 0;
+    width: 100%;
+    min-width: 100%;
+    clear: both;
+  }
+  
+  .divider-horizontal::before {
+    content: '';
+    display: block;
+    flex: 1;
+    height: 1px;
+    background-color: #e6e6e6;
+  }
+  
+  /* Vertical Divider */
+  .divider-vertical {
+    display: inline-block;
+    width: 1px;
+    height: 1em;
+    margin: 0 8px;
+    vertical-align: middle;
+    background-color: #e6e6e6;
+  }
+  
+  /* Dashed Style */
+  .divider-dashed.divider-horizontal::before {
+    background: none;
+    border-top: 1px dashed #e6e6e6;
+  }
+  
+  .divider-dashed.divider-vertical {
+    background: none;
+    border-left: 1px dashed #e6e6e6;
+  }
+  
+  /* With Text */
+  .divider-with-text::before {
+    content: '';
+    display: block;
+    flex: 1;
+    height: 1px;
+    background-color: #e6e6e6;
+  }
+  
+  .divider-with-text::after {
+    content: '';
+    display: block;
+    flex: 1;
+    height: 1px;
+    background-color: #e6e6e6;
+  }
+  
+  .divider-with-text.divider-dashed::before,
+  .divider-with-text.divider-dashed::after {
+    background: none;
+    border-top: 1px dashed #e6e6e6;
+  }
+  
+  .divider-text {
+    padding: 0 16px;
+    font-size: 14px;
+    color: #666666;
+    white-space: nowrap;
+  }
+  
+  /* Text Orientation */
+  .divider-with-text-left::before {
+    flex: 0 0 5%;
+    max-width: 5%;
+  }
+  
+  .divider-with-text-left::after {
+    flex: 1;
+  }
+  
+  .divider-with-text-right::before {
+    flex: 1;
+  }
+  
+  .divider-with-text-right::after {
+    flex: 0 0 5%;
+    max-width: 5%;
+  }

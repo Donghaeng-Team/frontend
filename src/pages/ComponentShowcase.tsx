@@ -26,6 +26,13 @@ import Progress from '../components/Progress';
 import CategorySelector from '../components/CategorySelector';
 import type { CategoryItem } from '../components/CategorySelector';
 import CategoryFilter from '../components/CategoryFilter';
+import Breadcrumb, { type BreadcrumbItem } from '../components/Breadcrumb';
+import Comment, { type CommentItem } from '../components/Comment';
+import DatePicker from '../components/DatePicker';
+import Divider from '../components/Divider';
+import TimePicker from '../components/TimePicker';
+import Rating from '../components/Rating';
+import Tooltip from '../components/Tooltip';
 import './ComponentShowcase.css';
 
 const ComponentShowcase = () => {
@@ -45,6 +52,9 @@ const ComponentShowcase = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [activeAccordion, setActiveAccordion] = useState<string[]>(['1']);
   const [progress1, setProgress1] = useState(60);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [selectedTime, setSelectedTime] = useState<string>('');
+  const [rating, setRating] = useState(0);
 
   // Dropdown options
   const dropdownOptions: DropdownOption[] = [
@@ -144,6 +154,39 @@ const ComponentShowcase = () => {
           ]
         }
       ]
+    }
+  ];
+
+  // Breadcrumb items
+  const breadcrumbItems: BreadcrumbItem[] = [
+    { label: '홈', href: '/' },
+    { label: '카테고리', href: '/category' },
+    { label: '식품', href: '/category/food' },
+    { label: '과일' }
+  ];
+
+  // Comment items
+  const commentItems: CommentItem[] = [
+    {
+      id: '1',
+      content: '정말 좋은 상품이네요! 저도 참여하고 싶습니다.',
+      author: { name: '김철수', avatar: '' },
+      createdAt: new Date('2024-01-15'),
+      isOwner: true
+    },
+    {
+      id: '2',
+      content: '저도 동감합니다!',
+      author: { name: '이영희', avatar: '' },
+      createdAt: new Date('2024-01-15'),
+      isOwner: false
+    },
+    {
+      id: '3',
+      content: '배송은 언제쯤 될까요?',
+      author: { name: '박민수', avatar: '' },
+      createdAt: new Date('2024-01-14'),
+      isOwner: false
     }
   ];
 
@@ -553,6 +596,132 @@ const ComponentShowcase = () => {
             showCount
             onChange={(value) => console.log('Selected:', value)}
           />
+        </section>
+
+        {/* Breadcrumb */}
+        <section className="showcase-section">
+          <h2>Breadcrumb</h2>
+          <Breadcrumb 
+            items={breadcrumbItems}
+            onClick={(item, index) => console.log('Clicked:', item, index)}
+          />
+          <br />
+          <Breadcrumb 
+            items={breadcrumbItems}
+            separator=">"
+          />
+        </section>
+
+        {/* Divider */}
+        <section className="showcase-section">
+          <h2>Divider</h2>
+          <div style={{ width: '400px' }}>
+            <p>위쪽 텍스트</p>
+            <Divider />
+            <p>아래쪽 텍스트</p>
+            <Divider>또는</Divider>
+            <p>더 아래쪽 텍스트</p>
+            <Divider type="vertical" />
+          </div>
+        </section>
+
+        {/* Rating */}
+        <section className="showcase-section">
+          <h2>Rating</h2>
+          <div className="component-grid">
+            <div>
+              <p>인터랙티브 Rating:</p>
+              <Rating 
+                value={rating}
+                onChange={setRating}
+                size="large"
+              />
+            </div>
+            <div>
+              <p>읽기 전용 Rating:</p>
+              <Rating 
+                value={4}
+                readonly
+                size="medium"
+              />
+            </div>
+            <div>
+              <p>반별 Rating:</p>
+              <Rating 
+                value={2.5}
+                allowHalf
+                readonly
+                size="small"
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* DatePicker */}
+        <section className="showcase-section">
+          <h2>DatePicker</h2>
+          <div className="component-grid">
+            <DatePicker 
+              value={selectedDate}
+              onChange={setSelectedDate}
+              placeholder="날짜를 선택하세요"
+            />
+            <DatePicker 
+              value={selectedDate}
+              onChange={setSelectedDate}
+              disabled
+              placeholder="비활성화"
+            />
+          </div>
+        </section>
+
+        {/* TimePicker */}
+        <section className="showcase-section">
+          <h2>TimePicker</h2>
+          <div className="component-grid">
+            <TimePicker 
+              value={selectedTime}
+              onChange={setSelectedTime}
+              placeholder="시간을 선택하세요"
+            />
+            <TimePicker 
+              value={selectedTime}
+              onChange={setSelectedTime}
+              format="12h"
+              placeholder="12시간 형식"
+            />
+          </div>
+        </section>
+
+        {/* Tooltip */}
+        <section className="showcase-section">
+          <h2>Tooltip</h2>
+          <div className="component-grid">
+            <Tooltip title="이것은 툴팁입니다" placement="top">
+              <Button>Top Tooltip</Button>
+            </Tooltip>
+            <Tooltip title="오른쪽 툴팁" placement="right">
+              <Button>Right Tooltip</Button>
+            </Tooltip>
+            <Tooltip title="클릭 툴팁" trigger="click">
+              <Button>Click Tooltip</Button>
+            </Tooltip>
+          </div>
+        </section>
+
+        {/* Comment */}
+        <section className="showcase-section">
+          <h2>Comment</h2>
+          <div style={{ maxWidth: '600px' }}>
+            <Comment 
+              comments={commentItems}
+              currentUser={{ name: '김철수', avatar: '' }}
+              onAddComment={(content) => console.log('Add:', content)}
+              onEditComment={(id, content) => console.log('Edit:', id, content)}
+              onDeleteComment={(id) => console.log('Delete:', id)}
+              placeholder="댓글을 작성해주세요..."
+            />
+          </div>
         </section>
       </div>
     </Layout>
