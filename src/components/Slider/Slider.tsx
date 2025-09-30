@@ -2,7 +2,7 @@ import type { FC } from 'react';
 import { useState, useRef, useEffect } from 'react';
 import './Slider.css';
 
-interface SliderProps {
+export interface SliderProps {
   value?: number;
   defaultValue?: number;
   min?: number;
@@ -31,20 +31,25 @@ const Slider: FC<SliderProps> = ({
   className = '',
   disabled = false
 }) => {
-  const [localValue, setLocalValue] = useState(defaultValue);
+  // 초기값을 범위 내로 보정
+  const clampedDefaultValue = Math.min(max, Math.max(min, defaultValue));
+  const [localValue, setLocalValue] = useState(clampedDefaultValue);
   const [isDragging, setIsDragging] = useState(false);
-  const [dragValue, setDragValue] = useState(defaultValue);
+  const [dragValue, setDragValue] = useState(clampedDefaultValue);
   const sliderRef = useRef<HTMLDivElement>(null);
   
-  const currentValue = value !== undefined ? value : localValue;
+  const currentValue = value !== undefined ? Math.min(max, Math.max(min, value)) : localValue;
   const displayValue = isDragging ? dragValue : currentValue;
   
-  // 4단계 값 (0, 1, 2, 3)
-  const steps = [0, 1, 2, 3];
-  const labels = ['내동네', '', '', '먼 동네'];
+  // 동적 단계 생성
+  const steps: number[] = [];
+  for (let i = min; i <= max; i += step) {
+    steps.push(i);
+  }
   
   const getPercentage = (val: number) => {
-    return (val / 3) * 100;
+    if (max === min) return 0;
+    return Math.min(100, Math.max(0, ((val - min) / (max - min)) * 100));
   };
 
   const calculateValue = (clientX: number): number => {
@@ -54,14 +59,16 @@ const Slider: FC<SliderProps> = ({
     const x = clientX - rect.left;
     const percentage = Math.min(100, Math.max(0, (x / rect.width) * 100));
     
-    // 퍼센트를 0-3 값으로 변환
-    return (percentage / 100) * 3;
+    // 퍼센트를 min-max 범위 값으로 변환
+    return min + (percentage / 100) * (max - min);
   };
 
   const snapToClosest = (val: number): number => {
+    if (!snapToMarks) return val;
+    
     // 가장 가까운 단계 찾기
-    let closest = 0;
-    let minDiff = Math.abs(val - 0);
+    let closest = min;
+    let minDiff = Math.abs(val - min);
     
     steps.forEach(step => {
       const diff = Math.abs(val - step);
@@ -163,33 +170,20 @@ const Slider: FC<SliderProps> = ({
       
       {/* 라벨 */}
       <div className="slider-labels">
-        {labels.map((label, index) => 
-          label ? (
+        {marks.map((mark) => 
+          mark.label ? (
             <button
-              key={index}
+              key={mark.value}
               type="button"
-              className={`slider-label ${currentValue === index ? 'slider-label-active' : ''}`}
-              style={{ left: `${getPercentage(index)}%` }}
-              onClick={() => handleStepClick(index)}
+              className={`slider-label ${currentValue === mark.value ? 'slider-label-active' : ''}`}
+              style={{ left: `${getPercentage(mark.value)}%` }}
+              onClick={() => handleStepClick(mark.value)}
               disabled={disabled}
             >
-              {label}
+              {mark.label}
             </button>
           ) : null
         )}
-      </div>
-      
-      {/* 현재 값 표시 */}
-      <div className="slider-value-display">
-        선택된 범위: {
-          Math.round(displayValue) === 0 ? '내동네' :
-          Math.round(displayValue) === 1 ? '반경 1km' :
-          Math.round(displayValue) === 2 ? '반경 3km' :
-          '반경 5km+'
-        }
-        {isDragging && <span style={{ marginLeft: '10px', color: '#ff5e2f' }}>
-          (드래그 중)
-        </span>}
       </div>
     </div>
   );
