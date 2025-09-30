@@ -41,7 +41,7 @@ const ComponentShowcase = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [activeTab, setActiveTab] = useState('tab1');
-  const [sliderValue, setSliderValue] = useState(30);
+  const [sliderValue, setSliderValue] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [activeAccordion, setActiveAccordion] = useState<string[]>(['1']);
   const [progress1, setProgress1] = useState(60);
@@ -327,15 +327,6 @@ const ComponentShowcase = () => {
               snapToMarks={true}
               showTooltip={true}
             />
-            <br />
-            <div style={{ marginTop: '20px', textAlign: 'center' }}>
-              선택된 범위: {
-                sliderValue === 0 ? '내동네만' :
-                sliderValue === 1 ? '반경 1km' :
-                sliderValue === 2 ? '반경 3km' :
-                '반경 5km 이상'
-              }
-            </div>
           </div>
         </section>
 
