@@ -5,6 +5,12 @@ import './Slider.css';
 interface SliderProps {
   value?: number;
   defaultValue?: number;
+  min?: number;
+  max?: number;
+  step?: number;
+  marks?: Array<{ value: number; label?: string }>;
+  snapToMarks?: boolean;
+  showTooltip?: boolean;
   onChange?: (value: number) => void;
   onAfterChange?: (value: number) => void;
   className?: string;
@@ -14,6 +20,12 @@ interface SliderProps {
 const Slider: FC<SliderProps> = ({
   value,
   defaultValue = 0,
+  min = 0,
+  max = 100,
+  step = 1,
+  marks = [],
+  snapToMarks = false,
+  showTooltip = false,
   onChange,
   onAfterChange,
   className = '',
