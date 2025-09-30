@@ -1,0 +1,11 @@
+.search-bar {
+    display: inline-block;
+  }
+  
+  .search-bar-full {
+    width: 100%;
+  }
+  
+  .search-bar .input {
+    padding-right: 40px;
+  }

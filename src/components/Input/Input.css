@@ -1,0 +1,134 @@
+/* Input Wrapper */
+.input-wrapper {
+    margin-bottom: 20px;
+  }
+  
+  .input-wrapper-full {
+    width: 100%;
+  }
+  
+  /* Label */
+  .input-label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333333;
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+  
+  .input-required {
+    color: #ff5e2f;
+  }
+  
+  /* Container */
+  .input-container {
+    position: relative;
+    display: inline-flex;
+    width: 100%;
+  }
+  
+  /* Input Base */
+  .input {
+    width: 100%;
+    font-family: 'Inter', -apple-system, sans-serif;
+    border: 1px solid #dfdfdf;
+    border-radius: 6px;
+    background-color: #fafafa;
+    font-size: 15px;
+    transition: all 0.2s ease;
+    outline: none;
+  }
+  
+  .input:focus {
+    border-color: #ff5e2f;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(255, 94, 47, 0.1);
+  }
+  
+  .input::placeholder {
+    color: #b3b3b3;
+  }
+  
+  .input:disabled {
+    background-color: #f2f2f2;
+    color: #999999;
+    cursor: not-allowed;
+  }
+  
+  /* Variants */
+  .input-default {
+    background-color: #fafafa;
+  }
+  
+  .input-filled {
+    background-color: #ffffff;
+    border-color: #e6e6e6;
+  }
+  
+  /* Sizes */
+  .input-small {
+    height: 36px;
+    padding: 0 12px;
+    font-size: 14px;
+  }
+  
+  .input-medium {
+    height: 44px;
+    padding: 0 14px;
+    font-size: 15px;
+  }
+  
+  .input-large {
+    height: 52px;
+    padding: 0 16px;
+    font-size: 16px;
+  }
+  
+  /* With Icon */
+  .input-with-icon {
+    padding-left: 40px;
+  }
+  
+  .input-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    color: #999999;
+    pointer-events: none;
+  }
+  
+  /* Error State */
+  .input-error {
+    border-color: #ff3333;
+    background-color: #fff5f5;
+  }
+  
+  .input-error:focus {
+    box-shadow: 0 0 0 3px rgba(255, 51, 51, 0.1);
+  }
+  
+  .input-error-message {
+    display: block;
+    margin-top: 6px;
+    font-size: 13px;
+    color: #ff3333;
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+  
+  /* Helper Text */
+  .input-helper-text {
+    display: block;
+    margin-top: 6px;
+    font-size: 13px;
+    color: #808080;
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+  
+  /* Full Width */
+  .input-full-width {
+    width: 100%;
+  }
