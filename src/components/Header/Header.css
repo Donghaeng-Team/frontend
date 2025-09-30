@@ -1,0 +1,147 @@
+.header {
+    background-color: #ffffff;
+    border-bottom: 1px solid #f2f2f2;
+    height: 80px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  
+  .header-container {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0 20px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  
+  /* Logo */
+  .header-logo a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+  }
+  
+  .logo-icon {
+    font-size: 24px;
+  }
+  
+  .logo-text {
+    font-size: 24px;
+    font-weight: 700;
+    color: #ff5e2f;
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+  
+  /* Navigation */
+  .header-nav {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-left: 24px;
+  }
+  
+  .location-selector {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 20px;
+    background-color: #e6e6e6;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 16px;
+    color: #212121;
+    transition: all 0.2s;
+  }
+  
+  .location-selector:hover {
+    background-color: #d9d9d9;
+  }
+  
+  .location-icon {
+    font-size: 18px;
+  }
+  
+  .location-arrow {
+    font-size: 12px;
+    margin-left: 4px;
+  }
+  
+  .nav-link {
+    font-size: 16px;
+    color: #212121;
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.2s;
+  }
+  
+  .nav-link:hover {
+    background-color: #fef6ee;
+    color: #ff5e2f;
+  }
+  
+  .nav-link.active {
+    color: #ff5e2f;
+    font-weight: 500;
+  }
+  
+  /* Actions */
+  .header-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .header-icon-btn {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s;
+  }
+  
+  .header-icon-btn:hover {
+    background-color: #f2f2f2;
+  }
+  
+  .header-icon-btn .icon {
+    font-size: 24px;
+  }
+  
+  .notification-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background-color: #ff3333;
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 5px;
+    border-radius: 10px;
+    min-width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .header-login-btn {
+    padding: 10px 20px;
+    color: #222222;
+    text-decoration: none;
+    font-size: 16px;
+    transition: color 0.2s;
+  }
+  
+  .header-login-btn:hover {
+    color: #ff5e2f;
+  }

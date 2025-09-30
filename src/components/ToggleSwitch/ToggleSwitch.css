@@ -1,0 +1,97 @@
+.toggle-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .toggle-switch {
+    position: relative;
+    background-color: #cccccc;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    padding: 0;
+  }
+  
+  /* Sizes */
+  .toggle-small {
+    width: 36px;
+    height: 20px;
+    border-radius: 20px;
+  }
+  
+  .toggle-medium {
+    width: 52px;
+    height: 28px;
+    border-radius: 28px;
+  }
+  
+  .toggle-large {
+    width: 64px;
+    height: 32px;
+    border-radius: 32px;
+  }
+  
+  /* Slider */
+  .toggle-slider {
+    position: absolute;
+    background-color: #ffffff;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+  
+  .toggle-small .toggle-slider {
+    width: 16px;
+    height: 16px;
+    top: 2px;
+    left: 2px;
+  }
+  
+  .toggle-medium .toggle-slider {
+    width: 20px;
+    height: 20px;
+    top: 4px;
+    left: 4px;
+  }
+  
+  .toggle-large .toggle-slider {
+    width: 24px;
+    height: 24px;
+    top: 4px;
+    left: 4px;
+  }
+  
+  /* Checked State */
+  .toggle-checked {
+    background-color: #ff5e2f;
+  }
+  
+  .toggle-checked.toggle-small .toggle-slider {
+    transform: translateX(16px);
+  }
+  
+  .toggle-checked.toggle-medium .toggle-slider {
+    transform: translateX(24px);
+  }
+  
+  .toggle-checked.toggle-large .toggle-slider {
+    transform: translateX(32px);
+  }
+  
+  /* Hover */
+  .toggle-switch:hover:not(.toggle-disabled) {
+    opacity: 0.8;
+  }
+  
+  /* Disabled */
+  .toggle-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .toggle-label {
+    font-size: 14px;
+    color: #333333;
+    font-family: 'Inter', -apple-system, sans-serif;
+  }

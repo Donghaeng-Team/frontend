@@ -1,0 +1,148 @@
+.slider-container {
+  padding: 20px 0 50px;
+  position: relative;
+  width: 100%;
+  user-select: none;
+}
+
+.slider-track-wrapper {
+  position: relative;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  /* 클릭 영역 확대 */
+  margin: -10px 0;
+  padding: 10px 0;
+}
+
+/* 배경 트랙 */
+.slider-track-bg {
+  position: absolute;
+  width: 100%;
+  height: 6px;
+  background-color: #e6e6e6;
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+/* 활성 트랙 */
+.slider-track-active {
+  position: absolute;
+  height: 6px;
+  background-color: #ff5e2f;
+  border-radius: 3px;
+  transition: width 0.1s ease-out;
+  pointer-events: none;
+}
+
+/* 단계 점들 */
+.slider-step {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background-color: #cccccc;
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  cursor: pointer;
+  transform: translateX(-50%);
+  transition: all 0.2s;
+  z-index: 1;
+  padding: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.slider-step:hover {
+  transform: translateX(-50%) scale(1.2);
+}
+
+.slider-step-active {
+  background-color: #ff5e2f;
+}
+
+/* 핸들 */
+.slider-handle {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  background-color: #ff5e2f;
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transform: translateX(-50%);
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 3;
+  cursor: grab;
+}
+
+.slider-handle:hover {
+  transform: translateX(-50%) scale(1.1);
+  box-shadow: 0 3px 12px rgba(255, 94, 47, 0.3);
+}
+
+/* 드래그 중 상태 */
+.slider-handle-dragging {
+  cursor: grabbing;
+  transform: translateX(-50%) scale(1.2);
+  transition: none;
+  box-shadow: 0 4px 16px rgba(255, 94, 47, 0.4);
+}
+
+.slider-handle-dragging:hover {
+  transform: translateX(-50%) scale(1.2);
+}
+
+/* 라벨 */
+.slider-labels {
+  position: relative;
+  margin-top: 20px;
+  height: 20px;
+}
+
+.slider-label {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 14px;
+  color: #808080;
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-weight: 500;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color 0.2s;
+}
+
+.slider-label:hover {
+  color: #ff5e2f;
+}
+
+.slider-label-active {
+  color: #ff5e2f;
+  font-weight: 600;
+}
+
+/* 값 표시 */
+.slider-value-display {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 14px;
+  color: #666666;
+  padding: 8px;
+  background-color: #f8f8f8;
+  border-radius: 6px;
+}
+
+/* 비활성화 상태 */
+.slider-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* 드래그 중 전체 선택 방지 */
+body.dragging {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}

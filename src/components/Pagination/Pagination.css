@@ -1,0 +1,128 @@
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+  
+  /* Pages */
+  .pagination-pages {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  .pagination-item {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    border: 1px solid #e6e6e6;
+    background-color: #ffffff;
+    color: #666666;
+    font-size: 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+  }
+  
+  /* Sizes */
+  .pagination-small .pagination-item {
+    min-width: 28px;
+    height: 28px;
+    font-size: 13px;
+  }
+  
+  .pagination-large .pagination-item {
+    min-width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+  
+  /* Hover & Active */
+  .pagination-item:hover:not(:disabled):not(.pagination-item-active) {
+    border-color: #ff5e2f;
+    color: #ff5e2f;
+  }
+  
+  .pagination-item-active {
+    background-color: #ff5e2f;
+    border-color: #ff5e2f;
+    color: #ffffff;
+  }
+  
+  .pagination-item:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  /* Prev/Next */
+  .pagination-prev,
+  .pagination-next {
+    font-size: 18px;
+    font-weight: bold;
+  }
+  
+  /* Ellipsis */
+  .pagination-ellipsis {
+    padding: 0 8px;
+    color: #999999;
+    user-select: none;
+  }
+  
+  /* Total */
+  .pagination-total {
+    color: #666666;
+    font-size: 14px;
+  }
+  
+  /* Size Changer */
+  .pagination-size-changer {
+    padding: 6px 12px;
+    border: 1px solid #e6e6e6;
+    border-radius: 4px;
+    background-color: #ffffff;
+    color: #333333;
+    font-size: 14px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  
+  .pagination-size-changer:hover {
+    border-color: #ff5e2f;
+  }
+  
+  .pagination-size-changer:focus {
+    outline: none;
+    border-color: #ff5e2f;
+    box-shadow: 0 0 0 2px rgba(255, 94, 47, 0.1);
+  }
+  
+  /* Quick Jumper */
+  .pagination-jumper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #666666;
+  }
+  
+  .pagination-jumper-input {
+    width: 50px;
+    height: 32px;
+    padding: 0 8px;
+    border: 1px solid #e6e6e6;
+    border-radius: 4px;
+    font-size: 14px;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  
+  .pagination-jumper-input:focus {
+    outline: none;
+    border-color: #ff5e2f;
+    box-shadow: 0 0 0 2px rgba(255, 94, 47, 0.1);
+  }

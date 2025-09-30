@@ -1,0 +1,50 @@
+.category-filter {
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+  
+  .category-filter-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333333;
+    margin: 0 0 12px 0;
+  }
+  
+  .category-filter-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .category-filter-option {
+    padding: 8px 16px;
+    background-color: #ffffff;
+    border: 1px solid #e6e6e6;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
+    color: #666666;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .category-filter-option:hover {
+    border-color: #ff5e2f;
+    color: #ff5e2f;
+  }
+  
+  .category-filter-option-selected {
+    background-color: #ff5e2f;
+    border-color: #ff5e2f;
+    color: #ffffff;
+  }
+  
+  .category-filter-label {
+    font-weight: 500;
+  }
+  
+  .category-filter-count {
+    font-size: 12px;
+    opacity: 0.8;
+  }

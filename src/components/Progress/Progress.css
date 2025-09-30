@@ -1,0 +1,112 @@
+/* Line Progress */
+.progress {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+  
+  .progress-outer {
+    flex: 1;
+    display: inline-block;
+  }
+  
+  .progress-inner {
+    width: 100%;
+    background-color: #f2f2f2;
+    border-radius: 100px;
+    overflow: hidden;
+  }
+  
+  .progress-bg {
+    transition: width 0.3s ease;
+    border-radius: 100px;
+    position: relative;
+    background-color: #ff5e2f;
+  }
+  
+  .progress-bg-active::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.1),
+      rgba(255, 255, 255, 0.3),
+      rgba(255, 255, 255, 0.1)
+    );
+    animation: progress-active 2s linear infinite;
+  }
+  
+  @keyframes progress-active {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+  
+  .progress-text {
+    font-size: 14px;
+    color: #666666;
+    min-width: 40px;
+    text-align: right;
+  }
+  
+  /* Circle Progress */
+  .progress-circle {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .progress-circle-small {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .progress-circle-medium {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .progress-circle-large {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .progress-circle svg {
+    transform: rotate(-90deg);
+  }
+  
+  .progress-circle-bg {
+    fill: none;
+    stroke: #f2f2f2;
+  }
+  
+  .progress-circle-path {
+    fill: none;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.3s ease;
+  }
+  
+  .progress-circle-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 14px;
+    font-weight: 600;
+    color: #333333;
+  }
+  
+  .progress-circle-large .progress-circle-text {
+    font-size: 18px;
+  }
+  
+  .progress-circle-small .progress-circle-text {
+    font-size: 12px;
+  }
