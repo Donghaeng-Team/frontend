@@ -1,0 +1,122 @@
+.login-page {
+    min-height: 100vh;
+    background-color: #fafafa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+  
+  .login-container {
+    width: 100%;
+    max-width: 480px;
+  }
+  
+  .login-box {
+    background-color: #ffffff;
+    border: 1px solid #f2f2f2;
+    border-radius: 12px;
+    padding: 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  /* Logo */
+  .login-logo {
+    font-size: 32px;
+    font-weight: 700;
+    color: #ff5e2f;
+    font-family: 'Inter', -apple-system, sans-serif;
+    margin-bottom: 39px;
+  }
+  
+  /* Title */
+  .login-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #222222;
+    margin: 0 0 32px 0;
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+  
+  /* Description */
+  .login-description {
+    font-size: 14px;
+    color: #808080;
+    margin: 0 0 49px 0;
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+  
+  /* Buttons */
+  .login-buttons {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  /* Divider */
+  .login-divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 16px 0;
+  }
+  
+  .login-divider-line {
+    flex: 1;
+    height: 1px;
+    background-color: #e6e6e6;
+  }
+  
+  .login-divider-text {
+    font-size: 14px;
+    color: #999999;
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+  
+  /* Footer */
+  .login-footer {
+    margin-top: 54px;
+    text-align: center;
+  }
+  
+  .login-signup-text {
+    font-size: 14px;
+    color: #999999;
+    margin: 0 0 16px 0;
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+  
+  .login-signup-link {
+    background: none;
+    border: none;
+    font-size: 14px;
+    font-weight: 500;
+    color: #ff5e2f;
+    cursor: pointer;
+    font-family: 'Inter', -apple-system, sans-serif;
+    padding: 0;
+    transition: opacity 0.2s;
+  }
+  
+  .login-signup-link:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+  }
+  
+  /* Responsive */
+  @media (max-width: 600px) {
+    .login-box {
+      padding: 32px 24px;
+    }
+  
+    .login-logo {
+      font-size: 28px;
+    }
+  
+    .login-title {
+      font-size: 20px;
+    }
+  }
