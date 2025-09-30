@@ -1,0 +1,119 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s ease;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  .modal {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+    animation: slideUp 0.3s ease;
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+  
+  @keyframes slideUp {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  /* Sizes */
+  .modal-small {
+    width: 400px;
+    max-width: 90%;
+  }
+  
+  .modal-medium {
+    width: 600px;
+    max-width: 90%;
+  }
+  
+  .modal-large {
+    width: 900px;
+    max-width: 90%;
+  }
+  
+  .modal-full {
+    width: calc(100% - 40px);
+    height: calc(100% - 40px);
+    max-width: 1200px;
+  }
+  
+  /* Header */
+  .modal-header {
+    padding: 24px 24px 16px;
+    border-bottom: 1px solid #f2f2f2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .modal-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #222222;
+    margin: 0;
+  }
+  
+  .modal-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 20px;
+    color: #666666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+  
+  .modal-close:hover {
+    background-color: #f2f2f2;
+    color: #333333;
+  }
+  
+  /* Body */
+  .modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+    color: #333333;
+  }
+  
+  /* Footer */
+  .modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid #f2f2f2;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+  }
