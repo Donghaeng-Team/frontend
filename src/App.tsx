@@ -1,8 +1,9 @@
 import CommunityPostCreate from './pages/CommunityPostCreate';
+import CommunityPostDetail from './pages/CommunityPostDetail';
 import './styles/reset.css';
 
 function App() {
-  return <CommunityPostCreate />;
+  return <CommunityPostDetail />;
 }
 
 export default App;
