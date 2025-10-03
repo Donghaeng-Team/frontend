@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Layout from '../../components/Layout';
 import StatCard from '../../components/StatCard';
 import ToggleSwitch from '../../components/ToggleSwitch';
 import Button from '../../components/Button';
+import Input from '../../components/Input';
 import './MyPage.css';
 
 interface UserProfile {
@@ -23,6 +24,13 @@ const MyPage: React.FC<MyPageProps> = ({
     joinDate: '2025년 9월',
   }
 }) => {
+  // 프로필 상태
+  const [profile, setProfile] = useState<UserProfile>(user);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editName, setEditName] = useState(profile.name);
+  const [tempAvatar, setTempAvatar] = useState(profile.avatar);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // 알림 설정 상태
   const [notificationSettings, setNotificationSettings] = useState({
     purchaseComplete: true,
@@ -38,7 +46,43 @@ const MyPage: React.FC<MyPageProps> = ({
   };
 
   const handleProfileEdit = () => {
-    console.log('프로필 편집');
+    if (isEditMode) {
+      // 저장 모드
+      setProfile({
+        ...profile,
+        name: editName,
+        avatar: tempAvatar
+      });
+      setIsEditMode(false);
+    } else {
+      // 편집 모드
+      setEditName(profile.name);
+      setTempAvatar(profile.avatar);
+      setIsEditMode(true);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditName(profile.name);
+    setTempAvatar(profile.avatar);
+    setIsEditMode(false);
+  };
+
+  const handleImageClick = () => {
+    if (isEditMode && fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setTempAvatar(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handlePasswordChange = () => {
@@ -77,40 +121,92 @@ const MyPage: React.FC<MyPageProps> = ({
         <section className="profile-section">
           <div className="profile-content">
             <div className="profile-image-wrapper">
-              {user.avatar ? (
-                <img src={user.avatar} alt={user.name} className="profile-image" />
-              ) : (
-                <div className="profile-image-placeholder">
-                  <span className="profile-icon">👤</span>
-                </div>
-              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                style={{ display: 'none' }}
+              />
+              <div 
+                className={`profile-image-container ${isEditMode ? 'editable' : ''}`}
+                onClick={handleImageClick}
+              >
+                {(isEditMode ? tempAvatar : profile.avatar) ? (
+                  <img 
+                    src={isEditMode ? tempAvatar : profile.avatar} 
+                    alt={profile.name} 
+                    className="profile-image" 
+                  />
+                ) : (
+                  <div className="profile-image-placeholder">
+                    <span className="profile-icon">👤</span>
+                  </div>
+                )}
+                {isEditMode && (
+                  <div className="profile-image-overlay">
+                    <span className="camera-icon">📷</span>
+                    <span className="overlay-text">변경</span>
+                  </div>
+                )}
+              </div>
             </div>
             
             <div className="profile-info">
-              <h2 className="profile-name">{user.name}님</h2>
-              <p className="profile-email">{user.email}</p>
-              <p className="profile-join-date">{user.joinDate} 가입</p>
+              {isEditMode ? (
+                <div className="profile-edit-name">
+                  <Input
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    placeholder="닉네임을 입력하세요"
+                    size="medium"
+                  />
+                </div>
+              ) : (
+                <h2 className="profile-name">{profile.name}님</h2>
+              )}
+              <p className="profile-email">{profile.email}</p>
+              <p className="profile-join-date">{profile.joinDate} 가입</p>
             </div>
             
             <div className="profile-actions">
-              <button 
-                className="profile-action-btn"
-                onClick={handleProfileEdit}
-              >
-                프로필 편집
-              </button>
-              <button 
-                className="profile-action-btn"
-                onClick={handlePasswordChange}
-              >
-                비밀번호 변경
-              </button>
-              <button 
-                className="profile-action-btn"
-                onClick={handleLogout}
-              >
-                로그아웃
-              </button>
+              {isEditMode ? (
+                <>
+                  <button 
+                    className="profile-action-btn profile-save-btn"
+                    onClick={handleProfileEdit}
+                  >
+                    저장
+                  </button>
+                  <button 
+                    className="profile-action-btn"
+                    onClick={handleCancelEdit}
+                  >
+                    취소
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button 
+                    className="profile-action-btn"
+                    onClick={handleProfileEdit}
+                  >
+                    프로필 편집
+                  </button>
+                  <button 
+                    className="profile-action-btn"
+                    onClick={handlePasswordChange}
+                  >
+                    비밀번호 변경
+                  </button>
+                  <button 
+                    className="profile-action-btn"
+                    onClick={handleLogout}
+                  >
+                    로그아웃
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </section>

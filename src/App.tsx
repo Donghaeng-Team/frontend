@@ -1,8 +1,8 @@
-import ChangePassword from './pages/ChangePassword';
+import ProductList from './pages/ProductList';
 import './styles/reset.css';
 
 function App() {
-  return <ChangePassword />;
+  return <ProductList />;
 }
 
 export default App;
