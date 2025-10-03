@@ -1,8 +1,8 @@
-import SignUp from './pages/SignUp';
+import ChangePassword from './pages/ChangePassword';
 import './styles/reset.css';
 
 function App() {
-  return <SignUp />;
+  return <ChangePassword />;
 }
 
 export default App;

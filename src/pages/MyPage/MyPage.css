@@ -1,0 +1,303 @@
+.mypage-container {
+    width: 100%;
+    min-height: 100vh;
+    background-color: #fafafa;
+  }
+  
+  /* 프로필 섹션 */
+  .profile-section {
+    background-color: #ffffff;
+    padding: 40px 0;
+    border-bottom: 1px solid #f2f2f2;
+  }
+  
+  .profile-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 40px;
+  }
+  
+  .profile-image-wrapper {
+    flex-shrink: 0;
+  }
+  
+  .profile-image,
+  .profile-image-placeholder {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+  }
+  
+  .profile-image {
+    object-fit: cover;
+  }
+  
+  .profile-image-placeholder {
+    background-color: #f2f2f2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .profile-icon {
+    font-size: 40px;
+    color: #b3b3b3;
+  }
+  
+  .profile-info {
+    flex: 1;
+  }
+  
+  .profile-name {
+    font-size: 24px;
+    font-weight: 600;
+    color: #222222;
+    margin: 0 0 8px 0;
+  }
+  
+  .profile-email {
+    font-size: 14px;
+    color: #999999;
+    margin: 0 0 4px 0;
+  }
+  
+  .profile-join-date {
+    font-size: 12px;
+    color: #b3b3b3;
+    margin: 0;
+  }
+  
+  .profile-actions {
+    display: flex;
+    gap: 12px;
+  }
+  
+  .profile-action-btn {
+    padding: 8px 20px;
+    background-color: #ffffff;
+    border: 1px solid #dfdfdf;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #666666;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .profile-action-btn:hover {
+    border-color: #ff5e2f;
+    color: #ff5e2f;
+  }
+  
+  /* 통계 카드 섹션 */
+  .stats-section {
+    background-color: #fafafa;
+    padding: 20px 0;
+  }
+  
+  .stats-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+  }
+  
+  /* 메뉴 섹션 */
+  .menu-section {
+    background-color: #ffffff;
+    padding: 20px 0;
+  }
+  
+  .menu-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+  
+  .menu-group {
+    margin-bottom: 20px;
+  }
+  
+  .menu-items-horizontal {
+    display: flex;
+    gap: 16px;
+    padding: 20px;
+    border: 1px solid #f2f2f2;
+    border-radius: 8px;
+  }
+  
+  .menu-item-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 24px;
+    background-color: #ffffff;
+    border: 1px solid #dfdfdf;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .menu-item-btn:hover {
+    border-color: #ff5e2f;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .menu-item-icon {
+    font-size: 24px;
+    color: #ff5e2f;
+  }
+  
+  .menu-item-label {
+    font-size: 16px;
+    color: #222222;
+    font-weight: 500;
+  }
+  
+  .menu-item-danger .menu-item-label {
+    color: #666666;
+  }
+  
+  .menu-item-danger:hover {
+    border-color: #ff3333;
+  }
+  
+  .menu-item-danger:hover .menu-item-label {
+    color: #ff3333;
+  }
+  
+  /* 확장 가능한 메뉴 */
+  .menu-item-expandable {
+    border: 1px solid #f2f2f2;
+    border-radius: 8px;
+    margin-bottom: 1px;
+    overflow: hidden;
+  }
+  
+  .menu-item-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    background-color: #ffffff;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .menu-item-header:hover {
+    background-color: #fafafa;
+  }
+  
+  .menu-item-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  .menu-icon {
+    font-size: 24px;
+  }
+  
+  .menu-icon-warning {
+    color: #ffb233;
+  }
+  
+  .menu-icon-success {
+    color: #339933;
+  }
+  
+  .menu-item-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: #222222;
+  }
+  
+  .menu-arrow {
+    font-size: 16px;
+    color: #cccccc;
+    transition: transform 0.2s;
+  }
+  
+  .menu-arrow-up {
+    transform: rotate(180deg);
+  }
+  
+  .menu-item-content {
+    padding: 20px;
+    background-color: #fafafa;
+    border-top: 1px solid #f2f2f2;
+  }
+  
+  /* 알림 설정 */
+  .notification-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 20px;
+    background-color: #ffffff;
+    margin-bottom: 5px;
+    border-radius: 4px;
+  }
+  
+  .notification-label {
+    font-size: 14px;
+    color: #333333;
+  }
+  
+  /* 고객센터 */
+  .support-item {
+    padding: 15px 20px;
+    background-color: #ffffff;
+    margin-bottom: 5px;
+    border-radius: 4px;
+  }
+  
+  .support-text {
+    font-size: 14px;
+    color: #333333;
+    line-height: 1.5;
+  }
+  
+  /* 반응형 디자인 */
+  @media (max-width: 768px) {
+    .profile-content {
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: center;
+    }
+  
+    .profile-actions {
+      flex-direction: column;
+      width: 100%;
+    }
+  
+    .profile-action-btn {
+      width: 100%;
+    }
+  
+    .stats-content {
+      grid-template-columns: 1fr 1fr;
+    }
+  
+    .menu-items-horizontal {
+      flex-direction: column;
+    }
+  
+    .menu-item-btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .stats-content {
+      grid-template-columns: 1fr;
+    }
+  }
