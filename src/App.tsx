@@ -1,8 +1,8 @@
-import CommunityBoard from './pages/CommunityBoard';
+import CommunityPostCreate from './pages/CommunityPostCreate';
 import './styles/reset.css';
 
 function App() {
-  return <CommunityBoard />;
+  return <CommunityPostCreate />;
 }
 
 export default App;
