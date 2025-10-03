@@ -1,8 +1,9 @@
-import SignUp from './pages/SignUp';
+import CommunityPostCreate from './pages/CommunityPostCreate';
+import CommunityPostDetail from './pages/CommunityPostDetail';
 import './styles/reset.css';
 
 function App() {
-  return <SignUp />;
+  return <CommunityPostDetail />;
 }
 
 export default App;
