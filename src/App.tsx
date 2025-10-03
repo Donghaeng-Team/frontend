@@ -1,8 +1,8 @@
-import ProductList from './pages/ProductList';
+import ProductRegister from './pages/ProductRegister';
 import './styles/reset.css';
 
 function App() {
-  return <ProductList />;
+  return <ProductRegister />;
 }
 
 export default App;
