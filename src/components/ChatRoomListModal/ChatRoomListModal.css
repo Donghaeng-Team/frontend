@@ -1,0 +1,213 @@
+.chat-room-list-modal .modal {
+    max-height: 90vh;
+  }
+  
+  .chat-room-list-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-height: 860px;
+  }
+  
+  /* Header */
+  .chat-room-list-header {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid #e6e6e6;
+    background-color: #ffffff;
+  }
+  
+  .chat-room-list-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0;
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+  
+  /* Content */
+  .chat-room-list-content {
+    flex: 1;
+    overflow-y: auto;
+    background-color: #f7f7f7;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  /* Chat Room Item */
+  .chat-room-item {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .chat-room-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+  }
+  
+  /* Image */
+  .chat-room-image-wrapper {
+    flex-shrink: 0;
+  }
+  
+  .chat-room-image,
+  .chat-room-image-placeholder {
+    width: 92px;
+    height: 92px;
+    border-radius: 8px;
+    object-fit: cover;
+  }
+  
+  .chat-room-image-placeholder {
+    background-color: #e6e6e6;
+  }
+  
+  /* Info */
+  .chat-room-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+  }
+  
+  /* Top Row */
+  .chat-room-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  
+  .chat-room-product-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+  
+  .chat-room-time {
+    font-size: 14px;
+    color: #808080;
+    white-space: nowrap;
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+  
+  /* Message Row */
+  .chat-room-message-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  
+  .chat-room-last-message {
+    font-size: 16px;
+    color: #666666;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+  
+  /* Unread Badge */
+  .chat-room-unread-badge {
+    flex-shrink: 0;
+    background-color: #ff3333;
+    color: #ffffff;
+    border-radius: 12px;
+    min-width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6px;
+  }
+  
+  .chat-room-unread-count {
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+  
+  /* Bottom Row */
+  .chat-room-bottom-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  /* Participants Badge */
+  .chat-room-participants-badge {
+    background-color: #f2f2ff;
+    border-radius: 12px;
+    padding: 4px 12px;
+    display: inline-flex;
+    align-items: center;
+  }
+  
+  .chat-room-participants-text {
+    font-size: 12px;
+    font-weight: 500;
+    color: #333399;
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+  
+  /* Status Badge */
+  .chat-room-status-badge {
+    border-radius: 12px;
+    padding: 4px 12px;
+    display: inline-flex;
+    align-items: center;
+  }
+  
+  .chat-room-status-text {
+    font-size: 12px;
+    font-weight: 500;
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+  
+  /* Empty State */
+  .chat-room-list-empty {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+  
+  .chat-room-list-empty p {
+    font-size: 16px;
+    color: #999999;
+    margin: 0;
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+  
+  /* Scrollbar */
+  .chat-room-list-content::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .chat-room-list-content::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .chat-room-list-content::-webkit-scrollbar-thumb {
+    background: #cccccc;
+    border-radius: 3px;
+  }
+  
+  .chat-room-list-content::-webkit-scrollbar-thumb:hover {
+    background: #999999;
+  }
