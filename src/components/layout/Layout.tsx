@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import Header from '../Header';
 import Footer from '../Footer';
 import './Layout.css';
@@ -13,6 +13,8 @@ interface LayoutProps {
   onFavoriteClick?: () => void;
   onChatClick?: () => void;
   onProfileClick?: () => void;
+  className?: string;
+  showFooter?: boolean;
 }
 
 const Layout: React.FC<LayoutProps> = ({
@@ -24,10 +26,14 @@ const Layout: React.FC<LayoutProps> = ({
   onNotificationClick,
   onFavoriteClick,
   onChatClick,
-  onProfileClick
+  onProfileClick,
+  className = '',
+  showFooter = true
 }) => {
+  const notificationButtonRef = useRef<HTMLButtonElement>(null);
+
   return (
-    <div className="layout">
+    <div className={`layout ${className}`}>
       <Header
         isLoggedIn={isLoggedIn}
         notificationCount={notificationCount}
@@ -37,11 +43,14 @@ const Layout: React.FC<LayoutProps> = ({
         onFavoriteClick={onFavoriteClick}
         onChatClick={onChatClick}
         onProfileClick={onProfileClick}
+        notificationButtonRef={notificationButtonRef}
       />
-      <main className="layout-main">
-        {children}
+      <main className="layout-main" role="main">
+        <div className="layout-content">
+          {children}
+        </div>
       </main>
-      <Footer />
+      {showFooter && <Footer />}
     </div>
   );
 };
