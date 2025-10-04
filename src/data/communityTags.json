@@ -1,0 +1,20 @@
+[
+  {"code": "0", "name_kr": "일반", "name_en": "General"},
+  {"code": "1", "name_kr": "동네행사", "name_en": "Local Events"},
+  {"code": "2", "name_kr": "맛집", "name_en": "Food & Restaurants"},
+  {"code": "3", "name_kr": "반려동물", "name_en": "Pets"},
+  {"code": "4", "name_kr": "운동", "name_en": "Fitness & Sports"},
+  {"code": "5", "name_kr": "생활/편의", "name_en": "Daily Life & Convenience"},
+  {"code": "6", "name_kr": "분실/실종", "name_en": "Lost & Found"},
+  {"code": "7", "name_kr": "병원/약국", "name_en": "Healthcare & Pharmacy"},
+  {"code": "8", "name_kr": "고민/사연", "name_en": "Advice & Stories"},
+  {"code": "9", "name_kr": "동네친구", "name_en": "Local Friends"},
+  {"code": "10", "name_kr": "이사/시공", "name_en": "Moving & Home Services"},
+  {"code": "11", "name_kr": "주거/부동산", "name_en": "Housing & Real Estate"},
+  {"code": "12", "name_kr": "교육", "name_en": "Education"},
+  {"code": "13", "name_kr": "취미", "name_en": "Hobbies"},
+  {"code": "14", "name_kr": "동네사건사고", "name_en": "Neighborhood Incidents"},
+  {"code": "15", "name_kr": "동네풍경", "name_en": "Neighborhood Scenery"},
+  {"code": "16", "name_kr": "미용", "name_en": "Beauty & Personal Care"},
+  {"code": "17", "name_kr": "임신/육아", "name_en": "Pregnancy & Parenting"}
+]

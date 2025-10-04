@@ -8,6 +8,42 @@ import Dropdown from '../../components/Dropdown';
 import ProductCard from '../../components/ProductCard';
 import Button from '../../components/Button';
 import Skeleton from '../../components/Skeleton';
+// 임시로 작은 샘플 데이터를 사용하여 테스트
+const sampleFoodCategoriesData = [
+  {
+    "code": "01",
+    "name": "가공식품",
+    "sub": [
+      {
+        "code": "01",
+        "name": "조미료",
+        "sub": [
+          {
+            "code": "01",
+            "name": "종합조미료",
+            "sub": [
+              { "code": "01", "name": "천연/발효조미료" },
+              { "code": "02", "name": "식초" }
+            ]
+          }
+        ]
+      },
+      {
+        "code": "02",
+        "name": "유제품",
+        "sub": [
+          { "code": "01", "name": "우유" },
+          { "code": "02", "name": "요구르트" }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "02",
+    "name": "신선식품",
+    "sub": []
+  }
+];
 import './ProductList.css';
 
 // 상품 데이터 타입
@@ -31,74 +67,42 @@ interface Product {
   image?: string;
 }
 
-// 카테고리 데이터
-const categoryData: CategoryItem[] = [
-  {
-    value: 'processed',
-    label: '가공식품',
-    children: [
-      {
-        value: 'seasoning',
-        label: '조미료',
-        children: []
-      },
-      {
-        value: 'dairy',
-        label: '유제품',
-        children: [
-          { value: 'milk', label: '우유' },
-          { value: 'yogurt', label: '요구르트', 
-            children: [
-              { value: 'liquid-yogurt', label: '액상요구르트' },
-              { value: 'other-yogurt', label: '기타요구르트' }
-            ]
-          },
-          { value: 'dairy-products', label: '유가공품' }
-        ]
-      },
-      {
-        value: 'meat-processed',
-        label: '축산가공식품',
-        children: []
-      }
-    ]
-  },
-  {
-    value: 'fresh',
-    label: '신선식품',
-    children: []
-  },
-  {
-    value: 'living',
-    label: '생활용품',
-    children: []
-  },
-  {
-    value: 'baby',
-    label: '육아용품',
-    children: []
-  },
-  {
-    value: 'electronics',
-    label: '전자제품',
-    children: []
-  },
-  {
-    value: 'fashion',
-    label: '패션/뷰티',
-    children: []
-  },
-  {
-    value: 'furniture',
-    label: '가구/인테리어',
-    children: []
-  },
-  {
-    value: 'etc',
-    label: '기타',
-    children: []
+// foodCategories.json 데이터 타입
+interface FoodCategoryData {
+  code: string;
+  name: string;
+  sub?: FoodCategoryData[];
+}
+
+// foodCategories.json 데이터를 CategoryItem 형태로 변환
+const transformFoodCategories = (categories: FoodCategoryData[]): CategoryItem[] => {
+  return categories.map(category => ({
+    value: category.code,
+    label: category.name,
+    children: category.sub ? transformFoodCategories(category.sub) : []
+  }));
+};
+
+// 카테고리 데이터 로드 함수
+const loadCategoryData = async (): Promise<CategoryItem[]> => {
+  try {
+    // 실제 JSON 파일에서 로드
+    const response = await fetch('/foodCategories.json');
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const foodCategories = await response.json() as FoodCategoryData[];
+    const transformed = transformFoodCategories(foodCategories);
+    return transformed;
+  } catch (error) {
+    console.error('Failed to load food categories from file, using sample data:', error);
+    // 실패 시 샘플 데이터 사용
+    const foodCategories = sampleFoodCategoriesData as FoodCategoryData[];
+    const transformed = transformFoodCategories(foodCategories);
+    return transformed;
   }
-];
+};
 
 // 정렬 옵션
 const sortOptions = [
@@ -119,25 +123,33 @@ const generateMockProducts = (start: number, count: number): Product[] => {
   ];
   const sellers = ['사과조아', '생활마트', '아기사랑', '렌탈킹', '패션매니아', '헬스마트', '오피스매니아', '펫러버'];
   const locations = ['서초동', '방배동', '역삼동', '잠원동', '반포동', '양재동', '삼성동', '대치동'];
-  
-  return Array.from({ length: count }, (_, i) => ({
-    id: `product-${start + i}`,
-    category: categories[Math.floor(Math.random() * categories.length)],
-    title: `${titles[Math.floor(Math.random() * titles.length)]} #${start + i}`,
-    price: Math.floor(Math.random() * 200000) + 10000,
-    originalPrice: Math.random() > 0.5 ? Math.floor(Math.random() * 250000) + 50000 : undefined,
-    discount: Math.random() > 0.7 ? Math.floor(Math.random() * 50) + 10 : undefined,
-    seller: { name: sellers[Math.floor(Math.random() * sellers.length)] },
-    participants: { 
-      current: Math.floor(Math.random() * 20) + 1, 
-      max: 20 
-    },
-    location: locations[Math.floor(Math.random() * locations.length)],
-    status: Math.random() > 0.8 ? 'completed' : 'active' as 'active' | 'completed'
-  }));
+
+  return Array.from({ length: count }, (_, i) => {
+    return {
+      id: generateUniqueId(),
+      category: categories[Math.floor(Math.random() * categories.length)],
+      title: `${titles[Math.floor(Math.random() * titles.length)]} #${start + i}`,
+      price: Math.floor(Math.random() * 200000) + 10000,
+      originalPrice: Math.random() > 0.5 ? Math.floor(Math.random() * 250000) + 50000 : undefined,
+      discount: Math.random() > 0.7 ? Math.floor(Math.random() * 50) + 10 : undefined,
+      seller: { name: sellers[Math.floor(Math.random() * sellers.length)] },
+      participants: {
+        current: Math.floor(Math.random() * 20) + 1,
+        max: 20
+      },
+      location: locations[Math.floor(Math.random() * locations.length)],
+      status: Math.random() > 0.8 ? 'completed' : 'active' as 'active' | 'completed'
+    };
+  });
 };
 
 const ITEMS_PER_PAGE = 12;
+
+// 고유 ID 생성기
+let productIdCounter = 1;
+const generateUniqueId = (): string => {
+  return `product-${Date.now()}-${productIdCounter++}-${Math.random().toString(36).substr(2, 9)}`;
+};
 
 const ProductList: React.FC = () => {
   // 상태 관리
@@ -155,18 +167,32 @@ const ProductList: React.FC = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
+  const [categoryData, setCategoryData] = useState<CategoryItem[]>([]);
   
   // 초기 데이터 로드
   useEffect(() => {
-    setTimeout(() => {
-      // 총 100개의 더미 상품 생성
-      const mockProducts = generateMockProducts(1, 100);
-      setAllProducts(mockProducts);
-      setDisplayedProducts(mockProducts.slice(0, ITEMS_PER_PAGE));
-      setTotalCount(mockProducts.length);
-      setHasMore(mockProducts.length > ITEMS_PER_PAGE);
-      setLoading(false);
-    }, 1000);
+    const initializeData = async () => {
+      try {
+        // 카테고리 데이터 로드
+        const categories = await loadCategoryData();
+        setCategoryData(categories);
+
+        // 상품 데이터 로드 시뮬레이션
+        setTimeout(() => {
+          const mockProducts = generateMockProducts(1, 100);
+          setAllProducts(mockProducts);
+          setDisplayedProducts(mockProducts.slice(0, ITEMS_PER_PAGE));
+          setTotalCount(mockProducts.length);
+          setHasMore(mockProducts.length > ITEMS_PER_PAGE);
+          setLoading(false);
+        }, 1000);
+      } catch (error) {
+        console.error('Failed to initialize data:', error);
+        setLoading(false);
+      }
+    };
+
+    initializeData();
   }, []);
 
   // 필터 변경 감지
@@ -191,7 +217,11 @@ const ProductList: React.FC = () => {
       const nextProducts = allProducts.slice(startIndex, endIndex);
       
       if (nextProducts.length > 0) {
-        setDisplayedProducts(prev => [...prev, ...nextProducts]);
+        setDisplayedProducts(prev => {
+          const existingIds = new Set(prev.map(p => p.id));
+          const newProducts = nextProducts.filter(p => !existingIds.has(p.id));
+          return [...prev, ...newProducts];
+        });
         setPage(nextPage);
         setHasMore(endIndex < allProducts.length);
       } else {
@@ -216,17 +246,14 @@ const ProductList: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [handleLoadMore]);
 
-  // 카테고리 선택 핸들러 (임시)
+  // 카테고리 선택 핸들러
   const handleCategoryChange = (values: string[], labels: string[]) => {
     setTempCategories(values);
-    console.log('Temp categories:', labels);
   };
 
-  // 거리 범위 변경 핸들러 (임시)
+  // 거리 범위 변경 핸들러
   const handleDistanceChange = (value: number) => {
     setTempDistanceRange(value);
-    const labels = ['가까운 동네', '1km 이내', '3km 이내', '먼 동네'];
-    console.log(`Temp distance: ${labels[value]}`);
   };
 
   // 조건 적용 핸들러
@@ -236,10 +263,6 @@ const ProductList: React.FC = () => {
     setIsFilterChanged(false);
     
     // 실제로는 API 호출하여 필터링된 상품 목록 가져오기
-    console.log('Filters applied:', {
-      distance: tempDistanceRange,
-      categories: tempCategories
-    });
     
     // 필터 적용 시 목록 초기화
     setPage(1);
@@ -313,11 +336,26 @@ const ProductList: React.FC = () => {
   // 카테고리 경로 생성
   const getCategoryPath = () => {
     if (selectedCategories.length === 0) return '전체';
-    
+
     // 실제로는 선택된 카테고리의 라벨을 가져와서 표시
     return '가공식품 > 유제품 > 요구르트 > 기타요구르트';
   };
 
+  // 내부 스크롤 시 외부 스크롤 방지
+  const handleWheel = (e: React.WheelEvent) => {
+    const target = e.currentTarget as HTMLElement;
+    const scrollTop = target.scrollTop;
+    const scrollHeight = target.scrollHeight;
+    const clientHeight = target.clientHeight;
+
+    // 스크롤이 맨 위 또는 맨 아래에 도달했을 때만 외부 스크롤 허용
+    if ((scrollTop === 0 && e.deltaY < 0) ||
+        (scrollTop + clientHeight >= scrollHeight && e.deltaY > 0)) {
+      return; // 기본 동작 허용
+    }
+
+    e.stopPropagation(); // 외부 스크롤 이벤트 전파 차단
+  };
 
   return (
     <Layout isLoggedIn={true} notificationCount={3}>
@@ -328,7 +366,7 @@ const ProductList: React.FC = () => {
               {/* 카테고리 필터 */}
               <div className="category-filter-container">
                 <h3 className="filter-title">카테고리</h3>
-                <CategorySelector 
+                <CategorySelector
                   data={categoryData}
                   maxLevel={4}
                   onChange={handleCategoryChange}
@@ -406,7 +444,7 @@ const ProductList: React.FC = () => {
           </div>
 
           {/* 상품 그리드 */}
-          <div className="products-grid">
+          <div className="products-grid" onWheel={handleWheel}>
             {loading ? (
               // 초기 로딩 스켈레톤
               Array.from({ length: ITEMS_PER_PAGE }).map((_, index) => (
@@ -423,7 +461,7 @@ const ProductList: React.FC = () => {
                 <ProductCard 
                   key={product.id}
                   {...product}
-                  onClick={() => console.log('Product clicked:', product.id)}
+                  onClick={() => {}}
                 />
               ))
             ) : (

@@ -112,6 +112,12 @@ const MyPage: React.FC<MyPageProps> = ({
 
   const menuItems = [
     {
+      id: 'create-group-purchase',
+      icon: '➕',
+      label: '공동구매 만들기',
+      onClick: () => navigate('/products/register')
+    },
+    {
       id: 'purchase-history',
       icon: '📦',
       label: '공동구매 내역',
