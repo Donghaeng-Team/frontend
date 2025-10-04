@@ -32,27 +32,20 @@ const ChatRoomListModal: FC<ChatRoomListModalProps> = ({
   className = '',
   triggerRef
 }) => {
-  console.log('ChatRoomListModal rendered:', { isOpen, chatRoomsLength: chatRooms.length });
-
   if (!isOpen) return null;
 
   const getModalPosition = () => {
     if (!triggerRef?.current) {
-      console.log('ChatRoomListModal: triggerRef not found, using fallback position');
       return { top: '100px', right: '20px' };
     }
 
     const rect = triggerRef.current.getBoundingClientRect();
-    console.log('ChatRoomListModal: Button rect:', rect);
 
-    const position = {
+    return {
       top: `${rect.bottom + 10}px`,
       right: `${window.innerWidth - rect.right}px`,
       minWidth: '420px'
     };
-
-    console.log('ChatRoomListModal: Calculated position:', position);
-    return position;
   };
 
   const modalPosition = getModalPosition();
@@ -75,8 +68,6 @@ const ChatRoomListModal: FC<ChatRoomListModalProps> = ({
         return { label: '진행중', color: '#339933', bgColor: '#e5ffe5' };
     }
   };
-
-  console.log('ChatRoomListModal returning positioned modal with isOpen:', isOpen);
 
   return (
     <div className="chat-room-modal-overlay" onClick={handleOverlayClick}>

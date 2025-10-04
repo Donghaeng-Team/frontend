@@ -27,27 +27,20 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
   onMarkAllRead,
   triggerRef
 }) => {
-  console.log('NotificationModal rendered:', { isOpen, notificationsLength: notifications.length });
-
   if (!isOpen) return null;
 
   const getModalPosition = () => {
     if (!triggerRef?.current) {
-      console.log('NotificationModal: triggerRef not found, using fallback position');
       return { top: '100px', right: '20px' };
     }
 
     const rect = triggerRef.current.getBoundingClientRect();
-    console.log('NotificationModal: Button rect:', rect);
 
-    const position = {
+    return {
       top: `${rect.bottom + 10}px`,
       right: `${window.innerWidth - rect.right}px`,
       minWidth: '380px'
     };
-
-    console.log('NotificationModal: Calculated position:', position);
-    return position;
   };
 
   const modalPosition = getModalPosition();
@@ -70,8 +63,6 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
         return '#333333';
     }
   };
-
-  console.log('NotificationModal returning positioned modal with isOpen:', isOpen);
 
   return (
     <div className="notification-modal-overlay" onClick={handleOverlayClick}>
