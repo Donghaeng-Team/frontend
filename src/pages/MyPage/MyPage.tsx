@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import StatCard from '../../components/StatCard';
 import ToggleSwitch from '../../components/ToggleSwitch';
@@ -24,6 +25,7 @@ const MyPage: React.FC<MyPageProps> = ({
     joinDate: '2025년 9월',
   }
 }) => {
+  const navigate = useNavigate();
   // 프로필 상태
   const [profile, setProfile] = useState<UserProfile>(user);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -87,10 +89,19 @@ const MyPage: React.FC<MyPageProps> = ({
 
   const handlePasswordChange = () => {
     console.log('비밀번호 변경');
+    navigate('/change-password');
   };
 
   const handleLogout = () => {
-    console.log('로그아웃');
+    // 실제 프로젝트에서는 여기서 서버에 로그아웃 요청을 보내고
+    // 로컬 스토리지나 쿠키에서 토큰을 제거해야 합니다
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userInfo');
+    
+    console.log('로그아웃 완료');
+    
+    // 로그인 페이지로 이동
+    navigate('/login');
   };
 
   const handleWithdrawal = () => {
@@ -104,7 +115,7 @@ const MyPage: React.FC<MyPageProps> = ({
       id: 'purchase-history',
       icon: '📦',
       label: '공동구매 내역',
-      onClick: () => console.log('공동구매 내역')
+      onClick: () => navigate('/purchase-history')
     },
     {
       id: 'my-posts',

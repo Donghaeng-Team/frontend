@@ -16,6 +16,7 @@ export interface NotificationModalProps {
   notifications?: NotificationItem[];
   onNotificationClick?: (notification: NotificationItem) => void;
   onMarkAllRead?: () => void;
+  triggerRef?: React.RefObject<HTMLElement | null>;
 }
 
 const NotificationModal: React.FC<NotificationModalProps> = ({
@@ -23,9 +24,32 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
   onClose,
   notifications = [],
   onNotificationClick,
-  onMarkAllRead
+  onMarkAllRead,
+  triggerRef
 }) => {
   if (!isOpen) return null;
+
+  const getModalPosition = () => {
+    if (!triggerRef?.current) {
+      return { top: '100px', right: '20px' };
+    }
+
+    const rect = triggerRef.current.getBoundingClientRect();
+
+    return {
+      top: `${rect.bottom + 10}px`,
+      right: `${window.innerWidth - rect.right}px`,
+      minWidth: '380px'
+    };
+  };
+
+  const modalPosition = getModalPosition();
+
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
 
   const getTypeColor = (type: string) => {
     switch (type) {
@@ -40,28 +64,30 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
     }
   };
 
-  const handleOverlayClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
-
   return (
     <div className="notification-modal-overlay" onClick={handleOverlayClick}>
-      <div className="notification-modal">
+      <div
+        className="notification-modal"
+        style={{
+          position: 'fixed',
+          top: modalPosition.top,
+          right: modalPosition.right,
+          minWidth: 'minWidth' in modalPosition ? modalPosition.minWidth : undefined
+        }}
+      >
         {/* 헤더 */}
         <div className="notification-modal-header">
           <h2 className="notification-modal-title">🔔 알림</h2>
           <div className="notification-modal-actions">
             {notifications.length > 0 && onMarkAllRead && (
-              <button 
+              <button
                 className="notification-mark-all-read"
                 onClick={onMarkAllRead}
               >
                 모두 읽음
               </button>
             )}
-            <button 
+            <button
               className="notification-modal-close"
               onClick={onClose}
               aria-label="닫기"
@@ -87,7 +113,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
                   onClick={() => onNotificationClick?.(notification)}
                 >
                   <div className="notification-item-header">
-                    <span 
+                    <span
                       className="notification-type"
                       style={{ color: getTypeColor(notification.type) }}
                     >

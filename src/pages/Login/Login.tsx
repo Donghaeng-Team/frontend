@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Button from '../../components/Button';
 import './Login.css';
 
@@ -15,6 +16,7 @@ const Login: React.FC<LoginProps> = ({
   onEmailLogin,
   onSignup
 }) => {
+  const navigate = useNavigate();
   return (
     <div className="login-page">
       <div className="login-container">
@@ -68,7 +70,10 @@ const Login: React.FC<LoginProps> = ({
             </p>
             <button 
               className="login-signup-link" 
-              onClick={onSignup}
+              onClick={() => {
+                navigate('/signup');
+                onSignup?.();
+              }}
             >
               회원가입 하기
             </button>
