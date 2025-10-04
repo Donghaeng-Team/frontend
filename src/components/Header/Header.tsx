@@ -36,78 +36,63 @@ const Header: React.FC<HeaderProps> = ({
   const internalNotificationButtonRef = useRef<HTMLButtonElement>(null);
   const chatButtonRef = useRef<HTMLButtonElement>(null);
 
-  // 임시 API 함수들 (실제로는 API 서비스에서 가져와야 함)
+  // addresses.json 데이터를 사용하는 함수들
   const fetchSidoList = async (): Promise<LocationItem[]> => {
-    return [
-      { code: '11', name: '서울특별시' },
-      { code: '26', name: '부산광역시' },
-      { code: '27', name: '대구광역시' },
-      { code: '28', name: '인천광역시' },
-      { code: '29', name: '광주광역시' },
-      { code: '30', name: '대전광역시' },
-      { code: '31', name: '울산광역시' },
-      { code: '41', name: '경기도' },
-      { code: '42', name: '강원도' },
-      { code: '43', name: '충청북도' },
-    ];
+    try {
+      const response = await import('../../data/addresses.json');
+      const addressData = response.default;
+
+      return addressData.map(sido => ({
+        code: sido.code,
+        name: sido.name
+      }));
+    } catch (error) {
+      console.error('Failed to load sido data:', error);
+      return [];
+    }
   };
 
   const fetchGugunList = async (sidoCode: string): Promise<LocationItem[]> => {
-    if (sidoCode === '11') { // 서울
-      return [
-        { code: '11110', name: '종로구' },
-        { code: '11140', name: '중구' },
-        { code: '11170', name: '용산구' },
-        { code: '11200', name: '성동구' },
-        { code: '11215', name: '광진구' },
-        { code: '11230', name: '동대문구' },
-        { code: '11260', name: '중랑구' },
-        { code: '11290', name: '성북구' },
-        { code: '11305', name: '강북구' },
-        { code: '11320', name: '도봉구' },
-        { code: '11350', name: '노원구' },
-        { code: '11380', name: '은평구' },
-        { code: '11410', name: '서대문구' },
-        { code: '11440', name: '마포구' },
-        { code: '11470', name: '양천구' },
-        { code: '11500', name: '강서구' },
-        { code: '11530', name: '구로구' },
-        { code: '11545', name: '금천구' },
-        { code: '11560', name: '영등포구' },
-        { code: '11590', name: '동작구' },
-        { code: '11620', name: '관악구' },
-        { code: '11650', name: '서초구' },
-        { code: '11680', name: '강남구' },
-        { code: '11710', name: '송파구' },
-        { code: '11740', name: '강동구' },
-      ];
+    try {
+      const response = await import('../../data/addresses.json');
+      const addressData = response.default;
+
+      const sido = addressData.find(s => s.code === sidoCode);
+      if (!sido || !sido.sgg) return [];
+
+      return sido.sgg.map(gugun => ({
+        code: sidoCode + gugun.code,
+        name: gugun.name
+      }));
+    } catch (error) {
+      console.error('Failed to load gugun data:', error);
+      return [];
     }
-    return [];
   };
 
   const fetchDongList = async (gugunCode: string): Promise<LocationItem[]> => {
-    if (gugunCode === '11440') { // 마포구
-      return [
-        { code: '1144010100', name: '공덕동' },
-        { code: '1144010200', name: '아현동' },
-        { code: '1144010300', name: '용강동' },
-        { code: '1144010400', name: '대흥동' },
-        { code: '1144010500', name: '염리동' },
-        { code: '1144010600', name: '신수동' },
-        { code: '1144010700', name: '서강동' },
-        { code: '1144010800', name: '문래동' },
-        { code: '1144010900', name: '당인동' },
-        { code: '1144011000', name: '도화동' },
-        { code: '1144011100', name: '마포동' },
-        { code: '1144011200', name: '동교동' },
-        { code: '1144011300', name: '합정동' },
-        { code: '1144011400', name: '망원동' },
-        { code: '1144011500', name: '연남동' },
-        { code: '1144011600', name: '성산동' },
-        { code: '1144011700', name: '상암동' },
-      ];
+    try {
+      const response = await import('../../data/addresses.json');
+      const addressData = response.default;
+
+      // gugunCode는 sidoCode + gugunCode 형태로 되어 있음
+      const sidoCode = gugunCode.substring(0, 2);
+      const gugunCodeOnly = gugunCode.substring(2);
+
+      const sido = addressData.find(s => s.code === sidoCode);
+      if (!sido || !sido.sgg) return [];
+
+      const gugun = sido.sgg.find(g => g.code === gugunCodeOnly);
+      if (!gugun || !gugun.emd) return [];
+
+      return gugun.emd.map(dong => ({
+        code: gugunCode + dong.code,
+        name: dong.name
+      }));
+    } catch (error) {
+      console.error('Failed to load dong data:', error);
+      return [];
     }
-    return [];
   };
 
   const handleLocationConfirm = (location: SelectedLocation) => {

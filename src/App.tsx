@@ -22,29 +22,29 @@ function App() {
       <Routes>
         {/* 메인 페이지 */}
         <Route path="/" element={<Main />} />
-        
+
         {/* 인증 관련 */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/change-password" element={<ChangePassword />} />
-        
+
         {/* 마이페이지 */}
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/purchase-history" element={<PurchaseHistory />} />
-        
+
         {/* 상품 관련 */}
         <Route path="/products" element={<ProductList />} />
         <Route path="/products/:id" element={<ProductDetail />} />
         <Route path="/products/register" element={<ProductRegister />} />
-        
+
         {/* 커뮤니티 */}
         <Route path="/community" element={<CommunityBoard />} />
         <Route path="/community/create" element={<CommunityPostCreate />} />
         <Route path="/community/:id" element={<CommunityPostDetail />} />
-        
+
         {/* 개발용 컴포넌트 쇼케이스 */}
         <Route path="/showcase" element={<ComponentShowcase />} />
-        
+
         {/* 404 페이지 */}
         <Route path="*" element={<div>페이지를 찾을 수 없습니다.</div>} />
       </Routes>

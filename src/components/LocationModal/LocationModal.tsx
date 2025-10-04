@@ -43,11 +43,21 @@ const LocationModal: React.FC<LocationModalProps> = ({
     dong: false
   });
 
-  // 시/도 목록 로드
+  // 시/도 목록 로드 및 외부 스크롤 제어
   useEffect(() => {
     if (isOpen) {
+      // 모달 열릴 때 외부 스크롤 막기
+      document.body.style.overflow = 'hidden';
       loadSidoList();
+    } else {
+      // 모달 닫힐 때 외부 스크롤 복원
+      document.body.style.overflow = '';
     }
+
+    // 컴포넌트 언마운트 시 정리
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, [isOpen]);
 
   // 시/도 선택 시 구/군 목록 로드

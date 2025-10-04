@@ -20,8 +20,7 @@
   
   .category-level {
     border-right: 1px solid #e6e6e6;
-    min-height: 200px;
-    max-height: 300px;
+    height: 220px;
     display: flex;
     flex-direction: column;
   }
@@ -31,9 +30,10 @@
   }
   
   .category-level-header {
-    padding: 12px 16px;
+    padding: 10px 16px;
     background-color: #f8f8f8;
     border-bottom: 1px solid #e6e6e6;
+    flex-shrink: 0;
   }
   
   .category-level-title {
@@ -46,15 +46,18 @@
     flex: 1;
     overflow-y: auto;
     background-color: #fafafa;
+    scroll-behavior: smooth;
+    overscroll-behavior: contain;
   }
   
   .category-item {
-    padding: 12px 16px;
+    padding: 10px 16px;
     cursor: pointer;
     transition: all 0.2s;
-    font-size: 15px;
+    font-size: 14px;
     color: #4d4d4d;
     border-bottom: 1px solid transparent;
+    line-height: 1.4;
   }
   
   .category-item:hover {
@@ -70,8 +73,15 @@
   }
   
   .category-placeholder {
-    padding: 20px 16px;
+    padding: 15px 16px;
     color: #b3b3b3;
+    font-size: 14px;
+    text-align: center;
+  }
+
+  .category-loading {
+    padding: 15px 16px;
+    color: #999999;
     font-size: 14px;
     text-align: center;
   }

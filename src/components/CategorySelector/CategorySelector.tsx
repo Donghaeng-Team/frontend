@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './CategorySelector.css';
 
 export interface CategoryItem {
@@ -25,31 +25,22 @@ const CategorySelector: FC<CategorySelectorProps> = ({
   maxLevel = 4,
   className = ''
 }) => {
-  const [selectedValues, setSelectedValues] = useState<string[]>(value);
+  const [selectedValues, setSelectedValues] = useState<string[]>(value || []);
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
-  const [categoryLevels, setCategoryLevels] = useState<CategoryItem[][]>([data]);
+  const [categoryLevels, setCategoryLevels] = useState<CategoryItem[][]>([]);
 
+  // data가 변경될 때만 초기화
   useEffect(() => {
-    // value prop이 변경되면 업데이트
-    if (value.length > 0) {
-      updateCategoryLevels(value);
+    if (!data || data.length === 0) {
+      setCategoryLevels([]);
+      setSelectedValues([]);
+      setSelectedLabels([]);
+      return;
     }
-  }, [value, data]);
 
-  const updateCategoryLevels = (values: string[]) => {
-    const levels: CategoryItem[][] = [data];
-    let currentLevel = data;
+    setCategoryLevels([data]);
+  }, [data]);
 
-    values.forEach((val, index) => {
-      const item = currentLevel.find(cat => cat.value === val);
-      if (item?.children) {
-        levels[index + 1] = item.children;
-        currentLevel = item.children;
-      }
-    });
-
-    setCategoryLevels(levels);
-  };
 
   const handleSelect = (level: number, item: CategoryItem) => {
     const newValues = [...selectedValues.slice(0, level), item.value];
@@ -71,6 +62,22 @@ const CategorySelector: FC<CategorySelectorProps> = ({
 
   const levelTitles = ['대분류', '중분류', '소분류', '세부분류'];
 
+  // 내부 스크롤 시 외부 스크롤 방지
+  const handleWheel = (e: React.WheelEvent) => {
+    const target = e.currentTarget as HTMLElement;
+    const scrollTop = target.scrollTop;
+    const scrollHeight = target.scrollHeight;
+    const clientHeight = target.clientHeight;
+
+    // 스크롤이 맨 위 또는 맨 아래에 도달했을 때만 외부 스크롤 허용
+    if ((scrollTop === 0 && e.deltaY < 0) ||
+        (scrollTop + clientHeight >= scrollHeight && e.deltaY > 0)) {
+      return; // 기본 동작 허용
+    }
+
+    e.stopPropagation(); // 외부 스크롤 이벤트 전파 차단
+  };
+
   return (
     <div className={`category-selector ${className}`}>
       <div className="category-levels">
@@ -79,7 +86,10 @@ const CategorySelector: FC<CategorySelectorProps> = ({
             <div className="category-level-header">
               <span className="category-level-title">{levelTitles[index]}</span>
             </div>
-            <div className="category-level-content">
+            <div
+              className="category-level-content"
+              onWheel={handleWheel}
+            >
               {categoryLevels[index] ? (
                 categoryLevels[index].map(item => (
                   <div
@@ -90,6 +100,10 @@ const CategorySelector: FC<CategorySelectorProps> = ({
                     {item.label}
                   </div>
                 ))
+              ) : index === 0 && data.length === 0 ? (
+                <div className="category-loading">
+                  카테고리 로딩 중...
+                </div>
               ) : (
                 <div className="category-placeholder">
                   {placeholder[index]}

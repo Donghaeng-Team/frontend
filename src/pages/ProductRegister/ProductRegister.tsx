@@ -1,17 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import CategorySelector from '../../components/CategorySelector';
+import type { CategoryItem } from '../../components/CategorySelector';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
 import './ProductRegister.css';
 
-interface CategoryData {
-  대분류: string;
-  중분류: string;
-  소분류: string;
-  세부분류: string;
+// foodCategories.json 데이터 타입
+interface FoodCategoryData {
+  code: string;
+  name: string;
+  sub?: FoodCategoryData[];
 }
+
+// foodCategories.json 데이터를 CategoryItem 형태로 변환
+const transformFoodCategories = (categories: FoodCategoryData[]): CategoryItem[] => {
+  return categories.map(category => ({
+    value: category.code,
+    label: category.name,
+    children: category.sub ? transformFoodCategories(category.sub) : []
+  }));
+};
+
+// 카테고리 데이터 로드 함수
+const loadCategoryData = async (): Promise<CategoryItem[]> => {
+  try {
+    // 실제 JSON 파일에서 로드
+    const response = await fetch('/foodCategories.json');
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const foodCategories = await response.json() as FoodCategoryData[];
+    return transformFoodCategories(foodCategories);
+  } catch (error) {
+    console.error('Failed to load food categories:', error);
+    return [];
+  }
+};
 
 const ProductRegister: React.FC = () => {
   const [title, setTitle] = useState('');
@@ -24,44 +51,21 @@ const ProductRegister: React.FC = () => {
   const [additionalImages, setAdditionalImages] = useState<File[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedLocation, setSelectedLocation] = useState('');
+  const [categoryData, setCategoryData] = useState<CategoryItem[]>([]);
 
-  const categoryData = [
-    {
-      value: 'processed',
-      label: '가공식품',
-      children: [
-        {
-          value: 'seasoning',
-          label: '조미료',
-          children: []
-        },
-        {
-          value: 'dairy',
-          label: '유제품',
-          children: [
-            { value: 'milk', label: '우유' },
-            { value: 'yogurt', label: '요구르트',
-              children: [
-                { value: 'liquid', label: '액상요구르트' },
-                { value: 'other', label: '기타요구르트' }
-              ]
-            },
-            { value: 'dairy_products', label: '유가공품' }
-          ]
-        },
-        {
-          value: 'meat',
-          label: '축산가공식품',
-          children: []
-        }
-      ]
-    },
-    {
-      value: 'fresh',
-      label: '신선식품',
-      children: []
-    }
-  ];
+  // 카테고리 데이터 로드
+  useEffect(() => {
+    const initializeCategoryData = async () => {
+      try {
+        const categories = await loadCategoryData();
+        setCategoryData(categories);
+      } catch (error) {
+        console.error('Failed to load category data:', error);
+      }
+    };
+
+    initializeCategoryData();
+  }, []);
 
   const handleMainImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -183,10 +187,11 @@ const ProductRegister: React.FC = () => {
 
           <div className="form-group">
             <label className="form-label">카테고리</label>
-            <CategorySelector 
+            <CategorySelector
               data={categoryData}
               onChange={(values, labels) => setSelectedCategories(values)}
               maxLevel={4}
+              className="product-category-selector"
             />
           </div>
 

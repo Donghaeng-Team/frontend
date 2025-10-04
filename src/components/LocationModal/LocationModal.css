@@ -10,6 +10,7 @@
     align-items: center;
     justify-content: center;
     z-index: 1000;
+    overflow: hidden;
   }
   
   /* 모달 컨테이너 */
@@ -128,6 +129,9 @@
   .location-column-content {
     flex: 1;
     overflow-y: auto;
+    max-height: 300px;
+    scrollbar-width: thin;
+    scrollbar-color: #cccccc transparent;
   }
   
   /* 아이템 */
@@ -198,20 +202,26 @@
   
   /* 스크롤바 스타일 */
   .location-column-content::-webkit-scrollbar {
-    width: 4px;
+    width: 6px;
   }
-  
+
   .location-column-content::-webkit-scrollbar-track {
-    background: transparent;
+    background: #f5f5f5;
+    border-radius: 3px;
   }
-  
+
   .location-column-content::-webkit-scrollbar-thumb {
     background: #cccccc;
-    border-radius: 2px;
+    border-radius: 3px;
+    transition: background-color 0.2s;
   }
-  
+
   .location-column-content::-webkit-scrollbar-thumb:hover {
     background: #999999;
+  }
+
+  .location-column-content::-webkit-scrollbar-thumb:active {
+    background: #666666;
   }
   
   /* 반응형 */

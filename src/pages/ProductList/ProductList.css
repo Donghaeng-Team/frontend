@@ -111,8 +111,10 @@
   }
   
   .product-category-selector .category-levels {
-    grid-template-columns: repeat(4, 1fr);
-    height: 185px;
+    grid-template-columns: repeat(4, minmax(200px, 1fr));
+    height: 280px;
+    min-width: 900px;
+    gap: 1px;
   }
   
   /* 동네 범위 필터 */
@@ -142,6 +144,8 @@
     max-width: 1200px;
     margin: 0 auto;
     padding: 30px 20px 60px;
+    scroll-behavior: smooth;
+    overscroll-behavior: contain;
   }
   
   /* 목록 헤더 */
@@ -229,7 +233,8 @@
   @media (max-width: 1024px) {
     .product-category-selector .category-levels {
       grid-template-columns: repeat(2, 1fr);
-      height: auto;
+      height: 320px;
+      min-width: auto;
     }
     
     .products-grid,
@@ -281,8 +286,8 @@
     
     .product-category-selector .category-levels {
       grid-template-columns: 1fr;
-      max-height: 300px;
-      overflow-y: auto;
+      height: 350px;
+      min-width: auto;
     }
     
     .distance-slider-wrapper {
@@ -367,6 +372,7 @@
   .product-category-selector .category-level {
     background-color: #fafafa;
     border-right: 1px solid #e6e6e6;
+    height: 280px;
   }
   
   .product-category-selector .category-level:last-child {
@@ -377,6 +383,7 @@
     background-color: #ffffff;
     border-bottom: 1px solid #e6e6e6;
     padding: 16px;
+    flex-shrink: 0;
   }
   
   .product-category-selector .category-level-title {

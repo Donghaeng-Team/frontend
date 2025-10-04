@@ -290,3 +290,70 @@
       width: 100%;
     }
   }
+
+  /* 카테고리 선택 영역 커스텀 스타일 */
+  .product-category-selector {
+    width: 100%;
+  }
+
+  .product-category-selector .category-levels {
+    grid-template-columns: repeat(4, minmax(200px, 1fr));
+    height: 280px;
+    min-width: 900px;
+    gap: 1px;
+  }
+
+  .product-category-selector .category-level {
+    background-color: #fafafa;
+    border-right: 1px solid #e6e6e6;
+    height: 280px;
+  }
+
+  .product-category-selector .category-level:last-child {
+    border-right: none;
+  }
+
+  .product-category-selector .category-level-header {
+    background-color: #ffffff;
+    border-bottom: 1px solid #e6e6e6;
+    padding: 16px;
+    flex-shrink: 0;
+  }
+
+  .product-category-selector .category-level-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #666666;
+  }
+
+  .product-category-selector .category-item {
+    padding: 12px 20px;
+    font-size: 15px;
+    border-bottom: none;
+  }
+
+  .product-category-selector .category-item:hover {
+    background-color: #fff5f0;
+  }
+
+  .product-category-selector .category-item-selected {
+    background-color: rgba(255, 94, 47, 0.1);
+    border-left: 3px solid #ff5e2f;
+  }
+
+  /* 반응형 */
+  @media (max-width: 1024px) {
+    .product-category-selector .category-levels {
+      grid-template-columns: repeat(2, 1fr);
+      height: 320px;
+      min-width: auto;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .product-category-selector .category-levels {
+      grid-template-columns: 1fr;
+      height: 350px;
+      min-width: auto;
+    }
+  }
