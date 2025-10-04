@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import Tab from '../../components/Tab';
 import type { TabItem } from '../../components/Tab';
@@ -28,6 +29,21 @@ interface PurchaseItem {
 
 const PurchaseHistory: React.FC = () => {
   const [activeTab, setActiveTab] = useState('hosting');
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // URL 파라미터에서 탭 설정
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab && ['hosting', 'participating', 'completed', 'liked'].includes(tab)) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
+
+  // 탭 변경 시 URL 업데이트
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    setSearchParams({ tab });
+  };
 
   // 더미 데이터
   const hostingItems: PurchaseItem[] = [
@@ -135,6 +151,45 @@ const PurchaseHistory: React.FC = () => {
     }
   ];
 
+  const likedItems: PurchaseItem[] = [
+    {
+      id: '9',
+      title: '프리미엄 에어프라이어',
+      category: '전자제품',
+      price: 180000,
+      status: 'recruiting',
+      participants: { current: 5, max: 15 },
+      seller: { name: '전자마트' },
+      location: '강남역',
+      date: '2025-01-22',
+      role: 'participant'
+    },
+    {
+      id: '10',
+      title: '유기농 아보카도 2kg',
+      category: '식품',
+      price: 28000,
+      status: 'recruiting',
+      participants: { current: 8, max: 12 },
+      seller: { name: '건강농장' },
+      location: '서초동',
+      date: '2025-01-21',
+      role: 'participant'
+    },
+    {
+      id: '11',
+      title: '무지 후드티 3장 세트',
+      category: '의류',
+      price: 45000,
+      status: 'recruiting',
+      participants: { current: 12, max: 20 },
+      seller: { name: '패션스토어' },
+      location: '홍대입구',
+      date: '2025-01-19',
+      role: 'participant'
+    }
+  ];
+
   const getStatusBadge = (status: PurchaseItem['status']) => {
     const statusConfig = {
       recruiting: { label: '모집중', color: 'success' as const },
@@ -204,6 +259,9 @@ const PurchaseHistory: React.FC = () => {
             <Button size="small" variant="primary">다시 구매</Button>
           </>
         )}
+        {item.role === 'participant' && (
+          <Button size="small" variant="outline">♥ 좋아요 취소</Button>
+        )}
       </div>
     </div>
   );
@@ -258,6 +316,22 @@ const PurchaseHistory: React.FC = () => {
           )}
         </div>
       )
+    },
+    {
+      key: 'liked',
+      label: `좋아요 (${likedItems.length})`,
+      children: (
+        <div className="purchase-list">
+          {likedItems.length > 0 ? (
+            likedItems.map(renderPurchaseCard)
+          ) : (
+            <div className="empty-state">
+              <span className="empty-icon">♥</span>
+              <p className="empty-text">좋아요한 공동구매가 없습니다</p>
+            </div>
+          )}
+        </div>
+      )
     }
   ];
 
@@ -299,7 +373,7 @@ const PurchaseHistory: React.FC = () => {
           <Tab
             items={tabItems}
             activeKey={activeTab}
-            onChange={setActiveTab}
+            onChange={handleTabChange}
             variant="default"
           />
         </div>

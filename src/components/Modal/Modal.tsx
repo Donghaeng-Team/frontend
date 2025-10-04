@@ -50,6 +50,24 @@ const Modal: FC<ModalProps> = ({
 
   if (!isOpen) return null;
 
+  console.log('Modal rendering:', { isOpen, title, size });
+  
+  // DOM에 실제로 렌더링되는지 확인
+  if (isOpen) {
+    console.log('Modal should be visible in DOM');
+    setTimeout(() => {
+      const modalOverlay = document.querySelector('.modal-overlay');
+      const modal = document.querySelector('.modal');
+      console.log('DOM elements found:', { modalOverlay, modal });
+      if (modalOverlay) {
+        console.log('Modal overlay styles:', window.getComputedStyle(modalOverlay));
+      }
+      if (modal) {
+        console.log('Modal styles:', window.getComputedStyle(modal));
+      }
+    }, 100);
+  }
+
   const handleOverlayClick = () => {
     if (closeOnOverlay) {
       onClose();
