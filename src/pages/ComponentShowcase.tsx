@@ -33,6 +33,8 @@ import Divider from '../components/Divider';
 import TimePicker from '../components/TimePicker';
 import Rating from '../components/Rating';
 import Tooltip from '../components/Tooltip';
+import ChatRoomListModal from '../components/ChatRoomListModal';
+import ChatRoom from '../components/ChatRoom';
 import './ComponentShowcase.css';
 
 const ComponentShowcase = () => {
@@ -55,6 +57,9 @@ const ComponentShowcase = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [rating, setRating] = useState(0);
+  const [showChatList, setShowChatList] = useState(false);
+  const [showChatRoom, setShowChatRoom] = useState(false);
+  const [chatRole, setChatRole] = useState<'seller' | 'buyer'>('buyer');
 
   // Dropdown options
   const dropdownOptions: DropdownOption[] = [
@@ -187,6 +192,77 @@ const ComponentShowcase = () => {
       author: { name: '박민수', avatar: '' },
       createdAt: new Date('2024-01-14'),
       isOwner: false
+    }
+  ];
+
+  const sampleChatRooms = [
+    {
+      id: '1',
+      productName: '제주 감귤 10kg 공동구매',
+      productImage: '',
+      lastMessage: '판매자: 현재 7명 참여중입니다! ...',
+      lastMessageTime: '2시간 전',
+      unreadCount: 3,
+      participants: { current: 7, max: 10 },
+      status: 'active' as const
+    },
+    {
+      id: '2',
+      productName: '애플 에어팟 프로 공동구매',
+      lastMessage: '구매자: 배송은 언제쯤 받을 수...',
+      lastMessageTime: '30분 전',
+      unreadCount: 1,
+      participants: { current: 5, max: 8 },
+      status: 'active' as const
+    },
+    {
+      id: '3',
+      productName: '스타벅스 텀블러 공동구매',
+      lastMessage: '판매자: 마감 임박! 2명만 더 모집...',
+      lastMessageTime: '1시간 전',
+      participants: { current: 18, max: 20 },
+      status: 'closing' as const
+    }
+  ];
+
+  const sampleMessages = [
+    {
+      id: '1',
+      type: 'seller' as const,
+      content: '안녕하세요! 사과 공동구매 방장입니다.\n최소 5명 이상 모이면 진행합니다!',
+      sender: { name: '사과조아', isSeller: true }
+    },
+    {
+      id: '2',
+      type: 'my' as const,
+      content: '참여하고 싶습니다!'
+    },
+    {
+      id: '3',
+      type: 'system' as const,
+      content: '📢 김민수님이 입장했습니다.'
+    },
+    {
+      id: '4',
+      type: 'buyer' as const,
+      content: '배송은 언제 받을 수 있나요?',
+      sender: { name: '김민수' }
+    },
+    {
+      id: '5',
+      type: 'seller' as const,
+      content: '모집 확정 후 3일 내 발송 예정입니다!',
+      sender: { name: '사과조아', isSeller: true }
+    },
+    {
+      id: '6',
+      type: 'my' as const,
+      content: '구매 신청합니다!'
+    },
+    {
+      id: '7',
+      type: 'system' as const,
+      content: '✅ 새싹이님이 구매 신청했습니다.'
     }
   ];
 
@@ -723,6 +799,100 @@ const ComponentShowcase = () => {
             />
           </div>
         </section>
+
+        {/* 채팅 컴포넌트 섹션 추가 */}
+        <section className="showcase-section">
+          <h2>Chat Components - 채팅</h2>
+          
+          <div className="component-grid">
+            <Button onClick={() => setShowChatList(true)}>
+              채팅방 목록 열기
+            </Button>
+            
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <Button 
+                variant={chatRole === 'buyer' ? 'primary' : 'secondary'}
+                onClick={() => setChatRole('buyer')}
+              >
+                구매자 뷰
+              </Button>
+              <Button 
+                variant={chatRole === 'seller' ? 'primary' : 'secondary'}
+                onClick={() => setChatRole('seller')}
+              >
+                판매자 뷰
+              </Button>
+              <Button onClick={() => setShowChatRoom(true)}>
+                채팅방 열기
+              </Button>
+            </div>
+          </div>
+
+          {/* 채팅방 목록 모달 */}
+          <ChatRoomListModal
+            isOpen={showChatList}
+            onClose={() => setShowChatList(false)}
+            chatRooms={sampleChatRooms}
+            onRoomClick={(roomId) => {
+              console.log('Room clicked:', roomId);
+              setShowChatList(false);
+              setShowChatRoom(true);
+            }}
+          />
+
+          {/* 채팅방 */}
+          {showChatRoom && (
+            <div style={{ 
+              position: 'fixed', 
+              top: '50%', 
+              left: '50%', 
+              transform: 'translate(-50%, -50%)',
+              zIndex: 1000,
+              boxShadow: '0 10px 40px rgba(0,0,0,0.3)'
+            }}>
+              <ChatRoom
+                role={chatRole}
+                productInfo={{
+                  name: '[공동구매] 유기농 사과 10kg',
+                  price: 12000,
+                  image: ''
+                }}
+                recruitmentStatus={{
+                  current: 5,
+                  max: 10,
+                  timeRemaining: '2시간 30분 남음',
+                  status: 'active'
+                }}
+                messages={sampleMessages}
+                onBack={() => {
+                  setShowChatRoom(false);
+                  setShowChatList(true);
+                }}
+                onLeave={() => setShowChatRoom(false)}
+                onExtendTime={() => alert('시간 연장!')}
+                onConfirm={() => alert('모집 확정!')}
+                onApply={() => alert('구매 신청!')}
+                onSendMessage={(msg) => console.log('Send:', msg)}
+              />
+            </div>
+          )}
+          
+          {showChatRoom && (
+            <div 
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0,0,0,0.5)',
+                zIndex: 999
+              }}
+              onClick={() => setShowChatRoom(false)}
+            />
+          )}
+        </section>
+
       </div>
     </Layout>
   );
