@@ -175,7 +175,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const updateProfile = (user: User) => {
     dispatch({
-      type: 'UPDATE_USER',
+      type: 'AUTH_SUCCESS',
       payload: { user }
     });
   };

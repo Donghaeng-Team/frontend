@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts';
 import Button from '../../components/Button';
 import './Login.css';
 
@@ -17,6 +18,32 @@ const Login: React.FC<LoginProps> = ({
   onSignup
 }) => {
   const navigate = useNavigate();
+  const { updateProfile } = useAuth();
+
+  const handleTestLogin = () => {
+    // 테스트용 가짜 사용자 데이터
+    const testUser = {
+      id: 'test-user-123',
+      email: 'test@example.com',
+      name: '테스트 사용자',
+      phoneNumber: '010-1234-5678',
+      profileImage: undefined,
+      role: 'user',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    // 가짜 토큰 저장
+    localStorage.setItem('accessToken', 'fake-access-token-for-testing');
+    localStorage.setItem('refreshToken', 'fake-refresh-token-for-testing');
+
+    // 사용자 정보 업데이트
+    updateProfile(testUser);
+
+    // 홈으로 이동
+    navigate('/');
+  };
+
   return (
     <div className="login-page">
       <div className="login-container">
@@ -69,6 +96,21 @@ const Login: React.FC<LoginProps> = ({
               onClick={() => navigate('/login-form')}
             >
               이메일로 로그인
+            </Button>
+
+            <div className="login-divider">
+              <span className="login-divider-line"></span>
+              <span className="login-divider-text">개발용</span>
+              <span className="login-divider-line"></span>
+            </div>
+
+            <Button
+              variant="secondary"
+              size="large"
+              fullWidth
+              onClick={handleTestLogin}
+            >
+              🧪 테스트 로그인
             </Button>
           </div>
 
