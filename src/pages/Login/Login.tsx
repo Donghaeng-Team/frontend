@@ -21,6 +21,14 @@ const Login: React.FC<LoginProps> = ({
     <div className="login-page">
       <div className="login-container">
         <div className="login-box">
+          <button
+            className="login-back-button"
+            onClick={() => navigate('/')}
+            type="button"
+          >
+            ← 홈으로
+          </button>
+
           <div className="login-logo">🛒 함께 사요</div>
           
           <h1 className="login-title">로그인</h1>
@@ -54,11 +62,11 @@ const Login: React.FC<LoginProps> = ({
               <span className="login-divider-line"></span>
             </div>
 
-            <Button 
-              variant="primary" 
-              size="large" 
+            <Button
+              variant="primary"
+              size="large"
               fullWidth
-              onClick={onEmailLogin}
+              onClick={() => navigate('/login-form')}
             >
               이메일로 로그인
             </Button>

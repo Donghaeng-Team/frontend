@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts';
 import './Header.css';
 import NotificationModal from '../NotificationModal/NotificationModal';
 import ChatRoomListModal from '../ChatRoomListModal/ChatRoomListModal';
@@ -13,7 +14,6 @@ interface HeaderProps {
   onChatClick?: () => void;
   onProfileClick?: () => void;
   notificationCount?: number;
-  isLoggedIn?: boolean;
   notificationButtonRef?: React.RefObject<HTMLButtonElement | null>;
 }
 
@@ -25,7 +25,6 @@ const Header: React.FC<HeaderProps> = ({
   onChatClick,
   onProfileClick,
   notificationCount = 0,
-  isLoggedIn = false,
   notificationButtonRef
 }) => {
   const [activeMenu, setActiveMenu] = useState<string>('');
@@ -33,6 +32,7 @@ const Header: React.FC<HeaderProps> = ({
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const navigate = useNavigate();
+  const { isAuthenticated, user, logout } = useAuth();
   const internalNotificationButtonRef = useRef<HTMLButtonElement>(null);
   const chatButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -138,7 +138,7 @@ const Header: React.FC<HeaderProps> = ({
 
         {/* Right Icons */}
         <div className="header-actions">
-          {isLoggedIn ? (
+          {isAuthenticated ? (
             <>
               <button
                 ref={internalNotificationButtonRef}
@@ -153,7 +153,7 @@ const Header: React.FC<HeaderProps> = ({
                   <span className="notification-badge">{notificationCount}</span>
                 )}
               </button>
-              
+
               <button
                 className="header-icon-btn"
                 onClick={() => {
@@ -174,15 +174,23 @@ const Header: React.FC<HeaderProps> = ({
               >
                 <span className="icon">💬</span>
               </button>
-              
-              <button 
-                className="header-icon-btn" 
+
+              <button
+                className="header-icon-btn"
                 onClick={() => {
                   navigate('/mypage');
                   onProfileClick?.();
                 }}
               >
                 <span className="icon">👤</span>
+              </button>
+
+              <button
+                className="header-logout-btn"
+                onClick={logout}
+                title="로그아웃"
+              >
+                로그아웃
               </button>
             </>
           ) : (

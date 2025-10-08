@@ -4,6 +4,7 @@ import './styles/reset.css';
 // Pages
 import Main from './pages/Main';
 import { Login } from './pages/Login';
+import LoginForm from './pages/LoginForm';
 import SignUp from './pages/SignUp';
 import MyPage from './pages/MyPage';
 import ProductList from './pages/ProductList';
@@ -25,6 +26,7 @@ function App() {
 
         {/* 인증 관련 */}
         <Route path="/login" element={<Login />} />
+        <Route path="/login-form" element={<LoginForm />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/change-password" element={<ChangePassword />} />
 

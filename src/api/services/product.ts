@@ -1,4 +1,5 @@
-import apiClient, { ApiResponse, PaginatedResponse } from '../config';
+import apiClient from '../client';
+import type { ApiResponse, PaginationResponse } from '../../types';
 
 // 상품 관련 타입 정의
 export interface Product {
@@ -61,7 +62,7 @@ export interface ProductSearchParams {
 // 상품 API 서비스
 export const productService = {
   // 상품 목록 조회
-  getProducts: async (params: ProductSearchParams = {}): Promise<ApiResponse<PaginatedResponse<Product>>> => {
+  getProducts: async (params: ProductSearchParams = {}): Promise<ApiResponse<PaginationResponse<Product>>> => {
     const response = await apiClient.get('/products', { params });
     return response.data;
   },
@@ -144,13 +145,13 @@ export const productService = {
   },
 
   // 내가 참여한 상품 목록
-  getMyJoinedProducts: async (params: { page?: number; size?: number } = {}): Promise<ApiResponse<PaginatedResponse<Product>>> => {
+  getMyJoinedProducts: async (params: { page?: number; size?: number } = {}): Promise<ApiResponse<PaginationResponse<Product>>> => {
     const response = await apiClient.get('/products/my/joined', { params });
     return response.data;
   },
 
   // 내가 등록한 상품 목록
-  getMyProducts: async (params: { page?: number; size?: number } = {}): Promise<ApiResponse<PaginatedResponse<Product>>> => {
+  getMyProducts: async (params: { page?: number; size?: number } = {}): Promise<ApiResponse<PaginationResponse<Product>>> => {
     const response = await apiClient.get('/products/my', { params });
     return response.data;
   },
@@ -162,7 +163,7 @@ export const productService = {
   },
 
   // 찜한 상품 목록
-  getWishlistedProducts: async (params: { page?: number; size?: number } = {}): Promise<ApiResponse<PaginatedResponse<Product>>> => {
+  getWishlistedProducts: async (params: { page?: number; size?: number } = {}): Promise<ApiResponse<PaginationResponse<Product>>> => {
     const response = await apiClient.get('/products/wishlist', { params });
     return response.data;
   },
