@@ -443,7 +443,7 @@ const CommunityPostCreate: React.FC = () => {
                   className="btn btn-save"
                   onClick={handleManualSave}
                 >
-                  💾 임시저장
+                  임시저장
                 </button>
                 <button
                 type="submit"
