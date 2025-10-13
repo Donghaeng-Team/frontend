@@ -9,11 +9,27 @@
     padding: 40px 20px;
   }
   
+  .register-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+  }
+
   .register-title {
     font-size: 32px;
     font-weight: 700;
     color: #222222;
-    margin-bottom: 40px;
+    margin: 0;
+  }
+
+  .auto-save-status {
+    font-size: 14px;
+    color: #4caf50;
+    font-weight: 500;
+    padding: 8px 16px;
+    background-color: #f1f8f4;
+    border-radius: 20px;
   }
   
   /* 섹션 공통 */
@@ -75,7 +91,13 @@
     width: 200px;
     border-color: #ff5e2f;
   }
-  
+
+  .image-upload-box.dragging {
+    border-color: #ff5e2f;
+    background-color: #fff5f0;
+    border-width: 3px;
+  }
+
   .image-upload-box:hover {
     border-color: #ff5e2f;
     background-color: #fff5f0;
@@ -98,6 +120,12 @@
     font-size: 14px;
     font-weight: 600;
     color: #ff5e2f;
+  }
+
+  .upload-hint {
+    font-size: 12px;
+    color: #999999;
+    margin-top: 8px;
   }
   
   .upload-plus {
@@ -181,6 +209,13 @@
   .form-textarea::placeholder {
     color: #b3b3b3;
     line-height: 1.5;
+  }
+
+  .input-count {
+    text-align: right;
+    font-size: 12px;
+    color: #999999;
+    margin-top: 8px;
   }
   
   /* 카테고리 섹션 */

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import CategorySelector from '../../components/CategorySelector';
@@ -12,6 +12,19 @@ interface FoodCategoryData {
   code: string;
   name: string;
   sub?: FoodCategoryData[];
+}
+
+// 임시 저장 데이터 타입
+interface DraftData {
+  title: string;
+  price: string;
+  minParticipants: string;
+  maxParticipants: string;
+  deadline: string;
+  description: string;
+  selectedCategories: string[];
+  selectedLocation: string;
+  savedAt: number;
 }
 
 // foodCategories.json 데이터를 CategoryItem 형태로 변환
@@ -52,6 +65,55 @@ const ProductRegister: React.FC = () => {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedLocation, setSelectedLocation] = useState('');
   const [categoryData, setCategoryData] = useState<CategoryItem[]>([]);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hasPromptedRef = useRef(false);
+  const mainImageInputRef = useRef<HTMLInputElement>(null);
+
+  const DRAFT_KEY = 'productRegisterDraft';
+  const AUTO_SAVE_DELAY = 2000;
+  const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+  const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
+  // localStorage에 저장
+  const saveDraft = () => {
+    const draft: DraftData = {
+      title,
+      price,
+      minParticipants,
+      maxParticipants,
+      deadline,
+      description,
+      selectedCategories,
+      selectedLocation,
+      savedAt: Date.now()
+    };
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    setLastSaved(new Date());
+    setIsSaving(false);
+  };
+
+  // localStorage에서 불러오기
+  const loadDraft = (): DraftData | null => {
+    const saved = localStorage.getItem(DRAFT_KEY);
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  };
+
+  // localStorage 초기화
+  const clearDraft = () => {
+    localStorage.removeItem(DRAFT_KEY);
+    setLastSaved(null);
+  };
 
   // 카테고리 데이터 로드
   useEffect(() => {
@@ -67,17 +129,133 @@ const ProductRegister: React.FC = () => {
     initializeCategoryData();
   }, []);
 
+  // 임시 저장 데이터 복원
+  useEffect(() => {
+    if (hasPromptedRef.current) return;
+
+    const draft = loadDraft();
+    if (draft && (draft.title || draft.description)) {
+      hasPromptedRef.current = true;
+
+      const confirm = window.confirm(
+        '이전에 작성하던 내용이 있습니다. 불러오시겠습니까?'
+      );
+      if (confirm) {
+        setTitle(draft.title);
+        setPrice(draft.price);
+        setMinParticipants(draft.minParticipants);
+        setMaxParticipants(draft.maxParticipants);
+        setDeadline(draft.deadline);
+        setDescription(draft.description);
+        setSelectedCategories(draft.selectedCategories);
+        setSelectedLocation(draft.selectedLocation);
+        setLastSaved(new Date(draft.savedAt));
+      } else {
+        clearDraft();
+      }
+    }
+  }, []);
+
+  // 자동 저장 (디바운싱)
+  useEffect(() => {
+    if (title || description) {
+      setIsSaving(true);
+
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+
+      saveTimeoutRef.current = setTimeout(() => {
+        saveDraft();
+      }, AUTO_SAVE_DELAY);
+    }
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [title, price, minParticipants, maxParticipants, deadline, description, selectedCategories, selectedLocation]);
+
+  // 이미지 파일 검증
+  const validateImageFile = (file: File): string | null => {
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      return `${file.name}은(는) 지원하지 않는 파일 형식입니다. (JPG, PNG, GIF, WebP만 가능)`;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      return `${file.name}의 크기가 너무 큽니다. (최대 10MB)`;
+    }
+    return null;
+  };
+
   const handleMainImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setMainImage(e.target.files[0]);
+      const file = e.target.files[0];
+      const error = validateImageFile(file);
+      if (error) {
+        alert(error);
+        return;
+      }
+      setMainImage(file);
     }
   };
 
   const handleAdditionalImageUpload = (index: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const error = validateImageFile(file);
+      if (error) {
+        alert(error);
+        return;
+      }
       const newImages = [...additionalImages];
-      newImages[index] = e.target.files[0];
+      newImages[index] = file;
       setAdditionalImages(newImages);
+    }
+  };
+
+  // 드래그 앤 드롭 핸들러
+  const handleDragEnter = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.currentTarget === e.target) {
+      setIsDragging(false);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      const file = files[0];
+      const error = validateImageFile(file);
+      if (error) {
+        alert(error);
+        return;
+      }
+      setMainImage(file);
+    }
+  };
+
+  // 본문 길이 제한 핸들러
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    if (value.length <= 2000) {
+      setDescription(value);
     }
   };
 
@@ -87,12 +265,12 @@ const ProductRegister: React.FC = () => {
       alert('필수 항목을 모두 입력해주세요.');
       return;
     }
-    
+
     if (description.length < 50) {
       alert('상품 설명은 최소 50자 이상 입력해주세요.');
       return;
     }
-    
+
     // 등록 로직
     console.log('상품 등록:', {
       title,
@@ -104,16 +282,42 @@ const ProductRegister: React.FC = () => {
       categories: selectedCategories,
       location: selectedLocation
     });
+
+    // 성공 시 임시 저장 데이터 삭제
+    clearDraft();
   };
 
-  const handleSaveDraft = () => {
-    console.log('임시 저장');
+  const handleManualSave = () => {
+    if (!title && !description) {
+      alert('저장할 내용이 없습니다.');
+      return;
+    }
+
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    saveDraft();
+    alert('임시 저장되었습니다.');
   };
 
   const handleCancel = () => {
     if (window.confirm('작성 중인 내용이 사라집니다. 취소하시겠습니까?')) {
+      clearDraft();
       window.history.back();
     }
+  };
+
+  // 마지막 저장 시간 표시
+  const getLastSavedText = () => {
+    if (!lastSaved) return '';
+
+    const now = new Date();
+    const diff = Math.floor((now.getTime() - lastSaved.getTime()) / 1000);
+
+    if (diff < 60) return '방금 전 저장됨';
+    if (diff < 3600) return `${Math.floor(diff / 60)}분 전 저장됨`;
+    return `${Math.floor(diff / 3600)}시간 전 저장됨`;
   };
 
   return (
@@ -121,27 +325,43 @@ const ProductRegister: React.FC = () => {
       <Header isLoggedIn={true} notificationCount={3} />
       
       <div className="register-container">
-        <h1 className="register-title">📝 공동구매 상품 등록</h1>
-        
+        <div className="register-header">
+          <h1 className="register-title">📝 공동구매 상품 등록</h1>
+          {lastSaved && (
+            <div className="auto-save-status">
+              {isSaving ? '저장 중...' : `✓ ${getLastSavedText()}`}
+            </div>
+          )}
+        </div>
+
         {/* 이미지 업로드 섹션 */}
         <section className="register-section image-section">
           <h2 className="section-title">📷 상품 이미지 *</h2>
           <div className="image-upload-container">
             <div className="image-upload-main">
               <input
+                ref={mainImageInputRef}
                 type="file"
                 id="main-image"
-                accept="image/*"
+                accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
                 onChange={handleMainImageUpload}
                 hidden
               />
-              <label htmlFor="main-image" className="image-upload-box main">
+              <label
+                htmlFor="main-image"
+                className={`image-upload-box main ${isDragging ? 'dragging' : ''}`}
+                onDragEnter={handleDragEnter}
+                onDragLeave={handleDragLeave}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+              >
                 {mainImage ? (
                   <img src={URL.createObjectURL(mainImage)} alt="메인 이미지" />
                 ) : (
                   <>
                     <span className="upload-icon">📷</span>
                     <span className="upload-text">대표 이미지</span>
+                    <span className="upload-hint">또는 드래그하여 업로드</span>
                   </>
                 )}
               </label>
@@ -153,7 +373,7 @@ const ProductRegister: React.FC = () => {
                   <input
                     type="file"
                     id={`additional-image-${index}`}
-                    accept="image/*"
+                    accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
                     onChange={handleAdditionalImageUpload(index)}
                     hidden
                   />
@@ -262,9 +482,11 @@ const ProductRegister: React.FC = () => {
 
 최소 50자 이상 입력해주세요.`}
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={handleDescriptionChange}
+            maxLength={2000}
             rows={10}
           />
+          <div className="input-count">{description.length}/2000 (최소 50자)</div>
         </section>
 
         {/* 지역 정보 섹션 */}
@@ -282,11 +504,11 @@ const ProductRegister: React.FC = () => {
 
         {/* 버튼 섹션 */}
         <div className="button-section">
-          <Button variant="outline" size="large" onClick={handleSaveDraft}>
-            임시 저장
-          </Button>
           <Button variant="secondary" size="large" onClick={handleCancel}>
             취소
+          </Button>
+          <Button variant="outline" size="large" onClick={handleManualSave}>
+            임시저장
           </Button>
           <Button variant="primary" size="large" onClick={handleSubmit}>
             상품 등록하기
