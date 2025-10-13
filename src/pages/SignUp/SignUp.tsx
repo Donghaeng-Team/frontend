@@ -63,71 +63,100 @@ const SignUp = () => {
     setAgreements(newAgreements);
   };
 
+  // 필드별 검증 함수
+  const validateField = (field: string, value: string): string => {
+    switch (field) {
+      case 'email':
+        if (!value || value.trim() === '') {
+          return '이메일을 입력해주세요';
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          return '올바른 이메일 형식이 아닙니다';
+        }
+        break;
+      case 'nickname':
+        if (!value || value.trim() === '') {
+          return '닉네임을 입력해주세요';
+        }
+        if (value.length < 2) {
+          return '닉네임은 최소 2자 이상이어야 합니다';
+        }
+        if (value.length > 10) {
+          return '닉네임은 최대 10자까지 입력 가능합니다';
+        }
+        if (!/^[a-zA-Z0-9가-힣]+$/.test(value)) {
+          return '닉네임은 한글, 영문, 숫자만 사용 가능합니다';
+        }
+        break;
+      case 'password':
+        if (!value || value.trim() === '') {
+          return '비밀번호를 입력해주세요';
+        }
+        if (value.length < 8) {
+          return '비밀번호는 최소 8자 이상이어야 합니다';
+        }
+        if (!/(?=.*[a-zA-Z])(?=.*[0-9])/.test(value)) {
+          return '비밀번호는 영문과 숫자를 포함해야 합니다';
+        }
+        break;
+      case 'passwordConfirm':
+        if (!value || value.trim() === '') {
+          return '비밀번호를 다시 입력해주세요';
+        }
+        if (formData.password !== value) {
+          return '비밀번호가 일치하지 않습니다';
+        }
+        break;
+    }
+    return '';
+  };
+
+  // 전체 폼 검증
   const validateForm = () => {
     const newErrors = {
-      email: '',
-      nickname: '',
-      password: '',
-      passwordConfirm: ''
+      email: validateField('email', formData.email),
+      nickname: validateField('nickname', formData.nickname),
+      password: validateField('password', formData.password),
+      passwordConfirm: validateField('passwordConfirm', formData.passwordConfirm)
     };
-    let isValid = true;
-
-    // 이메일 검증
-    if (!formData.email) {
-      newErrors.email = '이메일을 입력해주세요';
-      isValid = false;
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = '올바른 이메일 형식이 아닙니다';
-      isValid = false;
-    }
-
-    // 닉네임 검증
-    if (!formData.nickname) {
-      newErrors.nickname = '닉네임을 입력해주세요';
-      isValid = false;
-    } else if (formData.nickname.length < 2) {
-      newErrors.nickname = '닉네임은 2자 이상이어야 합니다';
-      isValid = false;
-    }
-
-    // 비밀번호 검증
-    if (!formData.password) {
-      newErrors.password = '비밀번호를 입력해주세요';
-      isValid = false;
-    } else if (formData.password.length < 8) {
-      newErrors.password = '비밀번호는 8자 이상이어야 합니다';
-      isValid = false;
-    }
-
-    // 비밀번호 확인 검증
-    if (!formData.passwordConfirm) {
-      newErrors.passwordConfirm = '비밀번호를 다시 입력해주세요';
-      isValid = false;
-    } else if (formData.password !== formData.passwordConfirm) {
-      newErrors.passwordConfirm = '비밀번호가 일치하지 않습니다';
-      isValid = false;
-    }
 
     setErrors(newErrors);
-    return isValid;
+
+    // 에러가 하나라도 있으면 false 반환
+    return !Object.values(newErrors).some(error => error !== '');
+  };
+
+  // 필드별 블러 이벤트 핸들러
+  const handleBlur = (field: string) => () => {
+    const value = formData[field as keyof typeof formData];
+    const error = validateField(field, value);
+    setErrors(prev => ({
+      ...prev,
+      [field]: error
+    }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    // 폼 검증
     if (!validateForm()) {
+      alert('입력하신 내용을 다시 확인해주세요.');
       return;
     }
 
     // 필수 약관 동의 확인
     if (!agreements.terms || !agreements.privacy) {
-      alert('필수 약관에 동의해주세요');
+      alert('필수 약관에 동의해주세요.');
       return;
     }
 
     // 회원가입 처리
     console.log('회원가입 데이터:', { ...formData, agreements });
     alert('회원가입이 완료되었습니다!');
+
+    // TODO: 실제로는 로그인 페이지로 이동
+    // navigate('/login');
     window.location.href = '/login';
   };
 
@@ -159,6 +188,7 @@ const SignUp = () => {
               placeholder="example@email.com"
               value={formData.email}
               onChange={handleInputChange('email')}
+              onBlur={handleBlur('email')}
               error={errors.email}
               required
               fullWidth
@@ -172,6 +202,7 @@ const SignUp = () => {
               placeholder="홍길동"
               value={formData.nickname}
               onChange={handleInputChange('nickname')}
+              onBlur={handleBlur('nickname')}
               error={errors.nickname}
               required
               fullWidth
@@ -182,9 +213,10 @@ const SignUp = () => {
               label="비밀번호"
               type="password"
               name="password"
-              placeholder="8자 이상 입력하세요"
+              placeholder="8자 이상, 영문+숫자 조합"
               value={formData.password}
               onChange={handleInputChange('password')}
+              onBlur={handleBlur('password')}
               error={errors.password}
               required
               fullWidth
@@ -198,6 +230,7 @@ const SignUp = () => {
               placeholder="비밀번호를 다시 입력하세요"
               value={formData.passwordConfirm}
               onChange={handleInputChange('passwordConfirm')}
+              onBlur={handleBlur('passwordConfirm')}
               error={errors.passwordConfirm}
               required
               fullWidth

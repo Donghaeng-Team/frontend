@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import './CommunityBoard.css';
 
@@ -40,13 +41,14 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
   isLoggedIn = true,
   notificationCount = 3
 }) => {
+  const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState('전체');
   const [searchQuery, setSearchQuery] = useState('');
   const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(initialHasMore);
-  
+
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
@@ -127,6 +129,14 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
     onSearch?.(searchQuery);
   };
 
+  const handleWriteClick = () => {
+    if (onWriteClick) {
+      onWriteClick();
+    } else {
+      navigate('/community/create');
+    }
+  };
+
   const getCategoryStyle = (category: string) => {
     switch (category) {
       case '동네 소식':
@@ -178,7 +188,7 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </form>
-              <button className="write-button" onClick={onWriteClick}>
+              <button className="write-button" onClick={handleWriteClick}>
                 ✏️ 글쓰기
               </button>
             </div>
