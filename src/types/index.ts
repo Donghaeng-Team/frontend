@@ -12,6 +12,9 @@ export * from './market';
 // 지역/위치 관련
 export * from './location';
 
+// 행정구역 관련
+export * from './division';
+
 // 컴포넌트 관련
 export * from './components';
 
