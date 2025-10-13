@@ -7,6 +7,7 @@ import './Layout.css';
 
 interface LayoutProps {
   children: React.ReactNode;
+  isLoggedIn?: boolean;
   notificationCount?: number;
   currentLocation?: string;
   onLocationChange?: () => void;
@@ -18,6 +19,7 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({
   children,
+  isLoggedIn,
   notificationCount = 0,
   currentLocation,
   onLocationChange,
