@@ -402,7 +402,6 @@ const CommunityPostCreate: React.FC = () => {
                 onChange={handleTitleChange}
                 onBlur={() => handleBlur('title', formData.title)}
                 maxLength={100}
-                required
                 />
                 <div className="input-count">{formData.title.length}/100</div>
                 {errors.title && <div className="error-message">{errors.title}</div>}
@@ -420,7 +419,6 @@ const CommunityPostCreate: React.FC = () => {
                 onChange={handleContentChange}
                 onBlur={() => handleBlur('content', formData.content)}
                 maxLength={2000}
-                required
                 />
                 <div className="input-count">{formData.content.length}/2000</div>
                 {errors.content && <div className="error-message">{errors.content}</div>}
