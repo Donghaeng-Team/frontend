@@ -550,6 +550,17 @@ const ProductRegister: React.FC = () => {
           </div>
         </section>
 
+        {/* 주의사항 */}
+        <div className="notice-section">
+          <h3 className="notice-title">ℹ️ 등록 전 확인사항</h3>
+          <ul className="notice-list">
+            <li>상품 등록 후 채팅방이 자동으로 생성됩니다</li>
+            <li>최소 인원 미달 시 자동으로 취소될 수 있습니다</li>
+            <li>허위 상품 등록 시 이용이 제한될 수 있습니다</li>
+            <li>상품 정보는 정확하게 입력해주세요</li>
+          </ul>
+        </div>
+
         {/* 버튼 섹션 */}
         <div className="form-actions">
           <button
@@ -573,17 +584,6 @@ const ProductRegister: React.FC = () => {
           >
             등록
           </button>
-        </div>
-
-        {/* 주의사항 */}
-        <div className="notice-section">
-          <h3 className="notice-title">ℹ️ 등록 전 확인사항</h3>
-          <ul className="notice-list">
-            <li>상품 등록 후 채팅방이 자동으로 생성됩니다</li>
-            <li>최소 인원 미달 시 자동으로 취소될 수 있습니다</li>
-            <li>허위 상품 등록 시 이용이 제한될 수 있습니다</li>
-            <li>상품 정보는 정확하게 입력해주세요</li>
-          </ul>
         </div>
       </div>
       
