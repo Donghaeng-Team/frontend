@@ -10,11 +10,28 @@
     padding: 0 20px;
   }
   
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+  }
+
   .page-title {
     font-size: 32px;
     font-weight: 700;
     color: #222222;
-    margin: 0 0 40px 0;
+    margin: 0;
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+
+  .auto-save-status {
+    font-size: 14px;
+    color: #4caf50;
+    font-weight: 500;
+    padding: 8px 16px;
+    background-color: #f1f8f4;
+    border-radius: 20px;
     font-family: 'Inter', -apple-system, sans-serif;
   }
   
@@ -145,6 +162,7 @@
   
   /* 이미지 업로드 */
   .image-upload-area {
+    position: relative;
     display: flex;
     gap: 15px;
     flex-wrap: wrap;
@@ -154,6 +172,50 @@
     border-radius: 8px;
     min-height: 100px;
     align-items: flex-start;
+    transition: all 0.3s ease;
+  }
+
+  .image-upload-area.dragging {
+    border-color: #ff5e2f;
+    background-color: #fff5f0;
+    border-width: 2px;
+  }
+
+  .drag-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 94, 47, 0.1);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .drag-message {
+    font-size: 18px;
+    font-weight: 600;
+    color: #ff5e2f;
+    background-color: #ffffff;
+    padding: 20px 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .drop-hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    min-width: 200px;
+    padding: 20px;
+    font-size: 14px;
+    color: #999999;
+    text-align: center;
   }
   
   .image-add-button {
@@ -281,14 +343,25 @@
     .page-container {
       padding: 0 16px;
     }
-  
+
     .post-form {
       padding: 30px 20px;
     }
-  
+
+    .page-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
     .page-title {
       font-size: 24px;
-      margin-bottom: 30px;
+    }
+
+    .auto-save-status {
+      font-size: 12px;
+      padding: 6px 12px;
     }
   
     .form-section {
