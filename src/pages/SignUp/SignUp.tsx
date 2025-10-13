@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Input from '../../components/Input';
 import Checkbox from '../../components/Checkbox';
 import Button from '../../components/Button';
 import './SignUp.css';
 
 const SignUp = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     nickname: '',
@@ -162,6 +164,14 @@ const SignUp = () => {
     <div className="signup-page">
       <div className="signup-container">
         <div className="signup-box">
+          <button
+            className="signup-back-button"
+            onClick={() => navigate('/login')}
+            type="button"
+          >
+            ← 로그인으로
+          </button>
+
           {/* 로고 */}
           <div className="signup-logo">🛒 함께 사요</div>
 

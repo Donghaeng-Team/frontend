@@ -1,0 +1,146 @@
+import axios from 'axios';
+import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+
+// 토큰 재발급 중인지 추적
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (value?: any) => void;
+  reject: (reason?: any) => void;
+}> = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach(({ resolve, reject }) => {
+    if (error) {
+      reject(error);
+    } else {
+      resolve(token);
+    }
+  });
+
+  failedQueue = [];
+};
+
+// API 클라이언트 인스턴스 생성
+const apiClient: AxiosInstance = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
+  timeout: Number(import.meta.env.VITE_API_TIMEOUT) || 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// 디버그 모드에서 요청/응답 로깅
+if (import.meta.env.VITE_DEBUG === 'true') {
+  apiClient.interceptors.request.use((config) => {
+    console.log('🚀 API Request:', config.method?.toUpperCase(), config.url, config.data);
+    return config;
+  });
+
+  apiClient.interceptors.response.use(
+    (response) => {
+      console.log('✅ API Response:', response.status, response.config.url, response.data);
+      return response;
+    },
+    (error) => {
+      console.error('❌ API Error:', error.response?.status, error.config?.url, error.response?.data);
+      return Promise.reject(error);
+    }
+  );
+}
+
+// 요청 인터셉터: 토큰 자동 추가
+apiClient.interceptors.request.use(
+  (config: AxiosRequestConfig) => {
+    const token = localStorage.getItem('authToken');
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// 응답 인터셉터: 에러 처리 및 토큰 재발급
+apiClient.interceptors.response.use(
+  (response: AxiosResponse) => {
+    return response;
+  },
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        // 이미 토큰 재발급 중이면 대기열에 추가
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then(token => {
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return apiClient(originalRequest);
+        }).catch(err => {
+          return Promise.reject(err);
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      const refreshToken = localStorage.getItem('refreshToken');
+
+      if (refreshToken) {
+        try {
+          // 토큰 재발급 요청
+          const response = await axios.post(
+            `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/v1/user/public/refresh`,
+            {},
+            {
+              headers: {
+                'Authorization': `Bearer ${refreshToken}`
+              }
+            }
+          );
+
+          if (response.data.success && response.data.data) {
+            const { accessToken, refreshToken: newRefreshToken } = response.data.data;
+
+            // 새 토큰 저장
+            localStorage.setItem('authToken', accessToken);
+            localStorage.setItem('refreshToken', newRefreshToken);
+
+            // 헤더 업데이트
+            originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+
+            // 대기 중인 요청들 처리
+            processQueue(null, accessToken);
+
+            return apiClient(originalRequest);
+          }
+        } catch (refreshError) {
+          // 토큰 재발급 실패
+          processQueue(refreshError, null);
+
+          // 모든 토큰 삭제 및 로그인 페이지로 리다이렉트
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('userInfo');
+          window.location.href = '/login';
+
+          return Promise.reject(refreshError);
+        } finally {
+          isRefreshing = false;
+        }
+      } else {
+        // 리프레시 토큰이 없으면 바로 로그인 페이지로
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('userInfo');
+        window.location.href = '/login';
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+export default apiClient;
