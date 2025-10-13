@@ -25,6 +25,39 @@
     font-family: 'Inter', -apple-system, sans-serif;
   }
 
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .manual-save-button {
+    height: 40px;
+    padding: 0 20px;
+    border: 1px solid #dfdfdf;
+    border-radius: 20px;
+    background-color: #ffffff;
+    color: #666666;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Inter', -apple-system, sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .manual-save-button:hover {
+    border-color: #ff5e2f;
+    color: #ff5e2f;
+    background-color: #fff5f0;
+  }
+
+  .manual-save-button:active {
+    transform: scale(0.98);
+  }
+
   .auto-save-status {
     font-size: 14px;
     color: #4caf50;
@@ -357,6 +390,18 @@
 
     .page-title {
       font-size: 24px;
+    }
+
+    .header-actions {
+      width: 100%;
+      flex-direction: row;
+      justify-content: flex-start;
+    }
+
+    .manual-save-button {
+      font-size: 13px;
+      height: 36px;
+      padding: 0 16px;
     }
 
     .auto-save-status {

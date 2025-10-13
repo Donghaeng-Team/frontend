@@ -287,17 +287,44 @@ const CommunityPostCreate: React.FC = () => {
     return `${Math.floor(diff / 3600)}시간 전 저장됨`;
   };
 
+  // 수동 저장
+  const handleManualSave = () => {
+    if (!formData.title && !formData.content) {
+      alert('저장할 내용이 없습니다.');
+      return;
+    }
+
+    // 자동 저장 타이머 취소
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    // 즉시 저장
+    saveDraft();
+    alert('임시 저장되었습니다.');
+  };
+
   return (
     <Layout isLoggedIn={true} notificationCount={3}>
         <div className="community-post-create">
         <div className="page-container">
             <div className="page-header">
               <h1 className="page-title">✏️ 게시글 작성</h1>
-              {lastSaved && (
-                <div className="auto-save-status">
-                  {isSaving ? '저장 중...' : `✓ ${getLastSavedText()}`}
-                </div>
-              )}
+              <div className="header-actions">
+                <button
+                  type="button"
+                  className="manual-save-button"
+                  onClick={handleManualSave}
+                  title="임시 저장"
+                >
+                  💾 임시저장
+                </button>
+                {lastSaved && (
+                  <div className="auto-save-status">
+                    {isSaving ? '저장 중...' : `✓ ${getLastSavedText()}`}
+                  </div>
+                )}
+              </div>
             </div>
 
             <form className="post-form" onSubmit={handleSubmit}>
