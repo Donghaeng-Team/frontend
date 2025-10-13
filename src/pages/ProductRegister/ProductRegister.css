@@ -327,14 +327,64 @@
   }
 
   /* 버튼 섹션 */
-  .button-section {
+  .form-actions {
     display: flex;
-    justify-content: center;
+    justify-content: flex-end;
     gap: 20px;
-    padding: 30px 0;
-    background-color: #ffffff;
+    margin-top: 50px;
     margin-bottom: 40px;
-    border-radius: 12px;
+    padding-top: 50px;
+    border-top: 1px solid #f2f2f2;
+  }
+
+  .btn {
+    height: 54px;
+    padding: 0 40px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Inter', -apple-system, sans-serif;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-cancel {
+    background-color: #ffffff;
+    border: 1px solid #dfdfdf;
+    color: #999999;
+  }
+
+  .btn-cancel:hover {
+    background-color: #fafafa;
+    border-color: #b3b3b3;
+    color: #666666;
+  }
+
+  .btn-save {
+    background-color: #ffffff;
+    border: 1px solid #999999;
+    color: #333333;
+    font-weight: 600;
+  }
+
+  .btn-save:hover {
+    background-color: #f5f5f5;
+    border-color: #666666;
+    color: #000000;
+  }
+
+  .btn-submit {
+    background-color: #ff5e2f;
+    color: #ffffff;
+  }
+
+  .btn-submit:hover {
+    background-color: #e54420;
+    box-shadow: 0 2px 8px rgba(255, 94, 47, 0.3);
   }
 
   /* 주의사항 */
@@ -397,19 +447,17 @@
       gap: 0;
     }
 
-    .image-add-button {
-      width: 150px;
-      height: 150px;
-      padding: 15px;
-    }
-
     .image-preview {
       width: 150px;
       height: 150px;
     }
 
-    .button-section {
+    .form-actions {
       flex-direction: column;
-      padding: 20px;
+      gap: 10px;
+    }
+
+    .btn {
+      width: 100%;
     }
   }

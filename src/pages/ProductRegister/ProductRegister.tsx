@@ -551,16 +551,28 @@ const ProductRegister: React.FC = () => {
         </section>
 
         {/* 버튼 섹션 */}
-        <div className="button-section">
-          <Button variant="secondary" size="large" onClick={handleCancel}>
+        <div className="form-actions">
+          <button
+            type="button"
+            className="btn btn-cancel"
+            onClick={handleCancel}
+          >
             취소
-          </Button>
-          <Button variant="outline" size="large" onClick={handleManualSave}>
+          </button>
+          <button
+            type="button"
+            className="btn btn-save"
+            onClick={handleManualSave}
+          >
             임시저장
-          </Button>
-          <Button variant="primary" size="large" onClick={handleSubmit}>
-            상품 등록하기
-          </Button>
+          </button>
+          <button
+            type="button"
+            className="btn btn-submit"
+            onClick={handleSubmit}
+          >
+            등록
+          </button>
         </div>
 
         {/* 주의사항 */}
