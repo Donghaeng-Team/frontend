@@ -33,6 +33,12 @@ const CommunityPostCreate: React.FC = () => {
   const dropZoneRef = useRef<HTMLDivElement>(null);
   const hasPromptedRef = useRef(false); // 중복 알림 방지
 
+  // 에러 상태 관리
+  const [errors, setErrors] = useState<{
+    title?: string;
+    content?: string;
+  }>({});
+
   const DRAFT_KEY = 'communityPostDraft';
   const AUTO_SAVE_DELAY = 2000; // 2초
   const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
@@ -43,6 +49,51 @@ const CommunityPostCreate: React.FC = () => {
     { id: 'group-review', label: '공구 후기' },
     { id: 'qna', label: '질문 답변' }
   ];
+
+  // 필드별 검증 함수
+  const validateField = (field: string, value: any): string | undefined => {
+    switch (field) {
+      case 'title':
+        if (!value || value.trim() === '') {
+          return '제목을 입력해주세요.';
+        }
+        if (value.length < 2) {
+          return '제목은 최소 2자 이상 입력해주세요.';
+        }
+        break;
+      case 'content':
+        if (!value || value.trim() === '') {
+          return '내용을 입력해주세요.';
+        }
+        if (value.length < 10) {
+          return '내용은 최소 10자 이상 입력해주세요.';
+        }
+        break;
+    }
+    return undefined;
+  };
+
+  // 전체 폼 검증
+  const validateForm = (): boolean => {
+    const newErrors: typeof errors = {};
+
+    newErrors.title = validateField('title', formData.title);
+    newErrors.content = validateField('content', formData.content);
+
+    setErrors(newErrors);
+
+    // 에러가 하나라도 있으면 false 반환
+    return !Object.values(newErrors).some(error => error !== undefined);
+  };
+
+  // 필드별 블러 이벤트 핸들러
+  const handleBlur = (field: string, value: any) => {
+    const error = validateField(field, value);
+    setErrors(prev => ({
+      ...prev,
+      [field]: error
+    }));
+  };
 
   // localStorage에 저장
   const saveDraft = () => {
@@ -252,9 +303,9 @@ const CommunityPostCreate: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 필수 필드 검증
-    if (!formData.category || !formData.title || !formData.content) {
-      alert('필수 항목을 모두 입력해주세요.');
+    // 전체 폼 검증
+    if (!validateForm()) {
+      alert('입력하신 내용을 다시 확인해주세요.');
       return;
     }
 
@@ -263,8 +314,10 @@ const CommunityPostCreate: React.FC = () => {
 
     // 성공 시 임시 저장 데이터 삭제
     clearDraft();
+    alert('게시글이 성공적으로 등록되었습니다!');
 
-    // 성공 시 페이지 이동 등 처리
+    // TODO: 실제로는 게시판 목록 페이지로 이동
+    // navigate('/community');
   };
 
   const handleCancel = () => {
@@ -343,14 +396,16 @@ const CommunityPostCreate: React.FC = () => {
                 <input
                 id="title"
                 type="text"
-                className="form-input"
+                className={`form-input ${errors.title ? 'error' : ''}`}
                 placeholder="제목을 입력하세요 (최대 100자)"
                 value={formData.title}
                 onChange={handleTitleChange}
+                onBlur={() => handleBlur('title', formData.title)}
                 maxLength={100}
                 required
                 />
                 <div className="input-count">{formData.title.length}/100</div>
+                {errors.title && <div className="error-message">{errors.title}</div>}
             </div>
 
             <div className="form-section">
@@ -359,14 +414,16 @@ const CommunityPostCreate: React.FC = () => {
                 </label>
                 <textarea
                 id="content"
-                className="form-textarea"
+                className={`form-textarea ${errors.content ? 'error' : ''}`}
                 placeholder="내용을 입력하세요 (최대 2000자)"
                 value={formData.content}
                 onChange={handleContentChange}
+                onBlur={() => handleBlur('content', formData.content)}
                 maxLength={2000}
                 required
                 />
                 <div className="input-count">{formData.content.length}/2000</div>
+                {errors.content && <div className="error-message">{errors.content}</div>}
             </div>
 
             <div className="form-section">
