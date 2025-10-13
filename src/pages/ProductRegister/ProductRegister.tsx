@@ -69,6 +69,18 @@ const ProductRegister: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
+  // 에러 상태 관리
+  const [errors, setErrors] = useState<{
+    images?: string;
+    title?: string;
+    price?: string;
+    minParticipants?: string;
+    maxParticipants?: string;
+    deadline?: string;
+    description?: string;
+    selectedLocation?: string;
+  }>({});
+
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasPromptedRef = useRef(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -78,6 +90,92 @@ const ProductRegister: React.FC = () => {
   const AUTO_SAVE_DELAY = 2000;
   const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
   const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
+  // 필드별 검증 함수
+  const validateField = (field: string, value: any): string | undefined => {
+    switch (field) {
+      case 'images':
+        if (images.length === 0) {
+          return '최소 1장 이상의 상품 이미지를 등록해주세요.';
+        }
+        break;
+      case 'title':
+        if (!value || value.trim() === '') {
+          return '제목을 입력해주세요.';
+        }
+        break;
+      case 'price':
+        if (!value || value.trim() === '') {
+          return '가격을 입력해주세요.';
+        }
+        if (isNaN(Number(value)) || Number(value) <= 0) {
+          return '올바른 가격을 입력해주세요.';
+        }
+        break;
+      case 'minParticipants':
+        if (!value || value.trim() === '') {
+          return '최소 모집 인원을 입력해주세요.';
+        }
+        if (isNaN(Number(value)) || Number(value) < 2) {
+          return '최소 모집 인원은 2명 이상이어야 합니다.';
+        }
+        break;
+      case 'maxParticipants':
+        if (!value || value.trim() === '') {
+          return '최대 모집 인원을 입력해주세요.';
+        }
+        if (isNaN(Number(value)) || Number(value) < 2) {
+          return '최대 모집 인원은 2명 이상이어야 합니다.';
+        }
+        if (minParticipants && Number(value) < Number(minParticipants)) {
+          return '최대 인원은 최소 인원보다 크거나 같아야 합니다.';
+        }
+        break;
+      case 'deadline':
+        if (!value || value.trim() === '') {
+          return '모집 마감일자를 선택해주세요.';
+        }
+        const deadlineDate = new Date(value);
+        const now = new Date();
+        if (deadlineDate <= now) {
+          return '마감일은 현재 시간 이후여야 합니다.';
+        }
+        break;
+      case 'description':
+        if (!value || value.trim() === '') {
+          return '상품 설명을 입력해주세요.';
+        }
+        if (value.length < 50) {
+          return '상품 설명은 최소 50자 이상 입력해주세요.';
+        }
+        break;
+      case 'selectedLocation':
+        if (!value || value.trim() === '') {
+          return '거래 희망 장소를 입력해주세요.';
+        }
+        break;
+    }
+    return undefined;
+  };
+
+  // 전체 폼 검증
+  const validateForm = (): boolean => {
+    const newErrors: typeof errors = {};
+
+    newErrors.images = validateField('images', images);
+    newErrors.title = validateField('title', title);
+    newErrors.price = validateField('price', price);
+    newErrors.minParticipants = validateField('minParticipants', minParticipants);
+    newErrors.maxParticipants = validateField('maxParticipants', maxParticipants);
+    newErrors.deadline = validateField('deadline', deadline);
+    newErrors.description = validateField('description', description);
+    newErrors.selectedLocation = validateField('selectedLocation', selectedLocation);
+
+    setErrors(newErrors);
+
+    // 에러가 하나라도 있으면 false 반환
+    return !Object.values(newErrors).some(error => error !== undefined);
+  };
 
   // localStorage에 저장
   const saveDraft = () => {
@@ -285,14 +383,9 @@ const ProductRegister: React.FC = () => {
   };
 
   const handleSubmit = () => {
-    // 유효성 검사
-    if (!title || !price || !minParticipants || !maxParticipants || !deadline) {
-      alert('필수 항목을 모두 입력해주세요.');
-      return;
-    }
-
-    if (description.length < 50) {
-      alert('상품 설명은 최소 50자 이상 입력해주세요.');
+    // 전체 폼 검증
+    if (!validateForm()) {
+      alert('입력하신 내용을 다시 확인해주세요.');
       return;
     }
 
@@ -305,11 +398,25 @@ const ProductRegister: React.FC = () => {
       deadline,
       description,
       categories: selectedCategories,
-      location: selectedLocation
+      location: selectedLocation,
+      images
     });
 
     // 성공 시 임시 저장 데이터 삭제
     clearDraft();
+    alert('상품이 성공적으로 등록되었습니다!');
+
+    // TODO: 실제로는 상품 목록 페이지로 이동
+    // navigate('/products');
+  };
+
+  // 필드별 블러 이벤트 핸들러
+  const handleBlur = (field: string, value: any) => {
+    const error = validateField(field, value);
+    setErrors(prev => ({
+      ...prev,
+      [field]: error
+    }));
   };
 
   const handleManualSave = () => {
@@ -427,21 +534,24 @@ const ProductRegister: React.FC = () => {
               </>
             )}
           </div>
+          {errors.images && <div className="error-message">{errors.images}</div>}
         </section>
 
         {/* 기본 정보 섹션 */}
         <section className="register-section info-section">
           <h2 className="section-title">📋 기본 정보</h2>
-          
+
           <div className="form-group">
             <label className="form-label">제목 *</label>
             <input
               type="text"
-              className="form-input"
+              className={`form-input ${errors.title ? 'error' : ''}`}
               placeholder="예: 유기농 사과 1kg 씩 나눠요"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              onBlur={() => handleBlur('title', title)}
             />
+            {errors.title && <div className="error-message">{errors.title}</div>}
           </div>
 
           <div className="form-group">
@@ -458,50 +568,58 @@ const ProductRegister: React.FC = () => {
             <label className="form-label">가격 *</label>
             <input
               type="text"
-              className="form-input price-input"
+              className={`form-input price-input ${errors.price ? 'error' : ''}`}
               placeholder="₩ 가격을 입력해주세요"
               value={price}
               onChange={(e) => setPrice(e.target.value)}
+              onBlur={() => handleBlur('price', price)}
             />
+            {errors.price && <div className="error-message">{errors.price}</div>}
           </div>
         </section>
 
         {/* 모집 정보 섹션 */}
         <section className="register-section recruit-section">
           <h2 className="section-title">👥 모집 정보</h2>
-          
+
           <div className="form-row">
             <div className="form-group">
               <label className="form-label">최소 모집 인원 *</label>
               <input
                 type="number"
-                className="form-input"
+                className={`form-input ${errors.minParticipants ? 'error' : ''}`}
                 placeholder="예: 10명"
                 value={minParticipants}
                 onChange={(e) => setMinParticipants(e.target.value)}
+                onBlur={() => handleBlur('minParticipants', minParticipants)}
               />
+              {errors.minParticipants && <div className="error-message">{errors.minParticipants}</div>}
             </div>
-            
+
             <div className="form-group">
               <label className="form-label">최대 모집 인원 *</label>
               <input
                 type="number"
-                className="form-input"
+                className={`form-input ${errors.maxParticipants ? 'error' : ''}`}
                 placeholder="예: 20명"
                 value={maxParticipants}
                 onChange={(e) => setMaxParticipants(e.target.value)}
+                onBlur={() => handleBlur('maxParticipants', maxParticipants)}
               />
+              {errors.maxParticipants && <div className="error-message">{errors.maxParticipants}</div>}
             </div>
           </div>
-          
+
           <div className="form-group">
             <label className="form-label">모집 마감일자 *</label>
             <input
               type="datetime-local"
-              className="form-input deadline-input"
+              className={`form-input deadline-input ${errors.deadline ? 'error' : ''}`}
               value={deadline}
               onChange={(e) => setDeadline(e.target.value)}
+              onBlur={() => handleBlur('deadline', deadline)}
             />
+            {errors.deadline && <div className="error-message">{errors.deadline}</div>}
           </div>
         </section>
 
@@ -509,7 +627,7 @@ const ProductRegister: React.FC = () => {
         <section className="register-section description-section">
           <h2 className="section-title">📝 상품 상세 설명</h2>
           <textarea
-            className="form-textarea"
+            className={`form-textarea ${errors.description ? 'error' : ''}`}
             placeholder={`상품에 대한 상세 설명을 입력해주세요.
 
 예시:
@@ -522,10 +640,12 @@ const ProductRegister: React.FC = () => {
 최소 50자 이상 입력해주세요.`}
             value={description}
             onChange={handleDescriptionChange}
+            onBlur={() => handleBlur('description', description)}
             maxLength={2000}
             rows={10}
           />
           <div className="input-count">{description.length}/2000 (최소 50자)</div>
+          {errors.description && <div className="error-message">{errors.description}</div>}
         </section>
 
         {/* 지역 정보 섹션 */}
@@ -542,11 +662,13 @@ const ProductRegister: React.FC = () => {
           <div className="form-group" style={{ marginTop: '20px' }}>
             <input
               type="text"
-              className="form-input"
+              className={`form-input ${errors.selectedLocation ? 'error' : ''}`}
               placeholder="선택한 곳의 장소명을 입력해주세요"
               value={selectedLocation}
               onChange={(e) => setSelectedLocation(e.target.value)}
+              onBlur={() => handleBlur('selectedLocation', selectedLocation)}
             />
+            {errors.selectedLocation && <div className="error-message">{errors.selectedLocation}</div>}
           </div>
         </section>
 
