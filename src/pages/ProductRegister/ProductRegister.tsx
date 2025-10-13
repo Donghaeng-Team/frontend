@@ -193,8 +193,8 @@ const ProductRegister: React.FC = () => {
   const processImageFiles = (files: File[]) => {
     const totalImages = images.length + files.length;
 
-    if (totalImages > 5) {
-      alert('최대 5장까지 업로드 가능합니다.');
+    if (totalImages > 10) {
+      alert('최대 10장까지 업로드 가능합니다.');
       return;
     }
 
@@ -212,17 +212,17 @@ const ProductRegister: React.FC = () => {
     if (validFiles.length === 0) return;
 
     // 새 이미지 추가
-    const newImages = [...images, ...validFiles.slice(0, 5 - images.length)];
+    const newImages = [...images, ...validFiles.slice(0, 10 - images.length)];
     setImages(newImages);
 
     // 미리보기 생성
     const newPreviews: string[] = [];
-    validFiles.slice(0, 5 - images.length).forEach(file => {
+    validFiles.slice(0, 10 - images.length).forEach(file => {
       const reader = new FileReader();
       reader.onloadend = () => {
         newPreviews.push(reader.result as string);
-        if (newPreviews.length === validFiles.slice(0, 5 - images.length).length) {
-          setImagePreviews(prev => [...prev, ...newPreviews].slice(0, 5));
+        if (newPreviews.length === validFiles.slice(0, 10 - images.length).length) {
+          setImagePreviews(prev => [...prev, ...newPreviews].slice(0, 10));
         }
       };
       reader.readAsDataURL(file);
@@ -267,8 +267,8 @@ const ProductRegister: React.FC = () => {
     e.stopPropagation();
     setIsDragging(false);
 
-    if (images.length >= 5) {
-      alert('최대 5장까지 업로드 가능합니다.');
+    if (images.length >= 10) {
+      alert('최대 10장까지 업로드 가능합니다.');
       return;
     }
 
@@ -362,7 +362,7 @@ const ProductRegister: React.FC = () => {
         {/* 이미지 업로드 섹션 */}
         <section className="register-section image-section">
           <h2 className="section-title">📷 상품 이미지</h2>
-          <p className="section-description">최대 5장까지 업로드 가능합니다.</p>
+          <p className="section-description">최대 10장까지 업로드 가능합니다.</p>
           <div
             ref={dropZoneRef}
             className={`image-upload-container ${isDragging ? 'dragging' : ''}`}
@@ -370,8 +370,8 @@ const ProductRegister: React.FC = () => {
             onDragLeave={handleDragLeave}
             onDragOver={handleDragOver}
             onDrop={handleDrop}
-            onClick={() => images.length < 5 && fileInputRef.current?.click()}
-            style={{ cursor: images.length < 5 ? 'pointer' : 'default' }}
+            onClick={() => images.length < 10 && fileInputRef.current?.click()}
+            style={{ cursor: images.length < 10 ? 'pointer' : 'default' }}
           >
             <input
               ref={fileInputRef}
@@ -398,7 +398,7 @@ const ProductRegister: React.FC = () => {
                   <span className="upload-link">파일을 업로드</span>
                   <span className="upload-text"> 하세요.</span>
                 </div>
-                <span className="image-count">0/5</span>
+                <span className="image-count">0/10</span>
               </div>
             ) : (
               <>
@@ -418,10 +418,10 @@ const ProductRegister: React.FC = () => {
                     </button>
                   </div>
                 ))}
-                {images.length < 5 && (
+                {images.length < 10 && (
                   <div className="upload-more-hint">
                     <span className="plus-icon">+</span>
-                    <span className="image-count">{images.length}/5</span>
+                    <span className="image-count">{images.length}/10</span>
                   </div>
                 )}
               </>
