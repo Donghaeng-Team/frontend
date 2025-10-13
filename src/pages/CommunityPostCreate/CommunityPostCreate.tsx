@@ -310,21 +310,11 @@ const CommunityPostCreate: React.FC = () => {
         <div className="page-container">
             <div className="page-header">
               <h1 className="page-title">✏️ 게시글 작성</h1>
-              <div className="header-actions">
-                <button
-                  type="button"
-                  className="manual-save-button"
-                  onClick={handleManualSave}
-                  title="임시 저장"
-                >
-                  💾 임시저장
-                </button>
-                {lastSaved && (
-                  <div className="auto-save-status">
-                    {isSaving ? '저장 중...' : `✓ ${getLastSavedText()}`}
-                  </div>
-                )}
-              </div>
+              {lastSaved && (
+                <div className="auto-save-status">
+                  {isSaving ? '저장 중...' : `✓ ${getLastSavedText()}`}
+                </div>
+              )}
             </div>
 
             <form className="post-form" onSubmit={handleSubmit}>
@@ -447,6 +437,13 @@ const CommunityPostCreate: React.FC = () => {
                 onClick={handleCancel}
                 >
                 취소
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-save"
+                  onClick={handleManualSave}
+                >
+                  💾 임시저장
                 </button>
                 <button
                 type="submit"
