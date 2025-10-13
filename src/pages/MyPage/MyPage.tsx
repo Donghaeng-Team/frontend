@@ -249,11 +249,11 @@ const MyPage: React.FC<MyPageProps> = ({
               unit="건" 
               color="#6633cc" 
             />
-            <StatCard 
-              label="찜한 상품" 
-              value="8" 
-              unit="개" 
-              color="#ff3333" 
+            <StatCard
+              label="좋아요한 상품"
+              value="8"
+              unit="개"
+              color="#ff3333"
             />
           </div>
         </section>
