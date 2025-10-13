@@ -155,13 +155,13 @@ export const productService = {
     return response.data;
   },
 
-  // 찜하기/찜 해제
+  // 좋아요/좋아요 취소
   toggleWishlist: async (productId: string): Promise<ApiResponse<{ isWishlisted: boolean }>> => {
     const response = await apiClient.post(`/products/${productId}/wishlist`);
     return response.data;
   },
 
-  // 찜한 상품 목록
+  // 좋아요한 상품 목록
   getWishlistedProducts: async (params: { page?: number; size?: number } = {}): Promise<ApiResponse<PaginatedResponse<Product>>> => {
     const response = await apiClient.get('/products/wishlist', { params });
     return response.data;
