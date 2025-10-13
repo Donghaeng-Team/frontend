@@ -31,6 +31,7 @@ const CommunityPostCreate: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const dropZoneRef = useRef<HTMLDivElement>(null);
+  const hasPromptedRef = useRef(false); // 중복 알림 방지
 
   const DRAFT_KEY = 'communityPostDraft';
   const AUTO_SAVE_DELAY = 2000; // 2초
@@ -77,8 +78,13 @@ const CommunityPostCreate: React.FC = () => {
 
   // 컴포넌트 마운트 시 임시 저장 데이터 복원
   useEffect(() => {
+    // StrictMode에서 중복 실행 방지
+    if (hasPromptedRef.current) return;
+
     const draft = loadDraft();
     if (draft && (draft.title || draft.content)) {
+      hasPromptedRef.current = true; // 알림 표시 전에 먼저 설정
+
       const confirm = window.confirm(
         '이전에 작성하던 내용이 있습니다. 불러오시겠습니까?'
       );
