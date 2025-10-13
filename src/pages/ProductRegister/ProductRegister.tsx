@@ -539,6 +539,15 @@ const ProductRegister: React.FC = () => {
               <span className="location-pin">📍</span>
             </div>
           </div>
+          <div className="form-group" style={{ marginTop: '20px' }}>
+            <input
+              type="text"
+              className="form-input"
+              placeholder="선택한 곳의 장소명을 입력해주세요"
+              value={selectedLocation}
+              onChange={(e) => setSelectedLocation(e.target.value)}
+            />
+          </div>
         </section>
 
         {/* 버튼 섹션 */}
