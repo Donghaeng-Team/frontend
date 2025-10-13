@@ -370,6 +370,8 @@ const ProductRegister: React.FC = () => {
             onDragLeave={handleDragLeave}
             onDragOver={handleDragOver}
             onDrop={handleDrop}
+            onClick={() => images.length < 5 && fileInputRef.current?.click()}
+            style={{ cursor: images.length < 5 ? 'pointer' : 'default' }}
           >
             <input
               ref={fileInputRef}
@@ -388,33 +390,42 @@ const ProductRegister: React.FC = () => {
               </div>
             )}
 
-            <button
-              type="button"
-              className="image-add-button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={images.length >= 5}
-            >
-              <span className="upload-icon">📷</span>
-              <div className="upload-text-group">
-                <span className="upload-text">여기로 이미지를 드래그하거나 </span>
-                <span className="upload-link">파일을 업로드</span>
-                <span className="upload-text"> 하세요.</span>
+            {images.length === 0 ? (
+              <div className="upload-prompt">
+                <span className="upload-icon">📷</span>
+                <div className="upload-text-group">
+                  <span className="upload-text">여기로 이미지를 드래그하거나 </span>
+                  <span className="upload-link">파일을 업로드</span>
+                  <span className="upload-text"> 하세요.</span>
+                </div>
+                <span className="image-count">0/5</span>
               </div>
-              <span className="image-count">{images.length}/5</span>
-            </button>
-
-            {imagePreviews.map((preview, index) => (
-              <div key={index} className="image-preview">
-                <img src={preview} alt={`상품 이미지 ${index + 1}`} />
-                <button
-                  type="button"
-                  className="image-remove-button"
-                  onClick={() => handleRemoveImage(index)}
-                >
-                  ×
-                </button>
-              </div>
-            ))}
+            ) : (
+              <>
+                {imagePreviews.map((preview, index) => (
+                  <div key={index} className="image-preview">
+                    {index === 0 && <div className="main-badge">대표</div>}
+                    <img src={preview} alt={`상품 이미지 ${index + 1}`} />
+                    <button
+                      type="button"
+                      className="image-remove-button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveImage(index);
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+                {images.length < 5 && (
+                  <div className="upload-more-hint">
+                    <span className="plus-icon">+</span>
+                    <span className="image-count">{images.length}/5</span>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </section>
 
