@@ -2,13 +2,13 @@
     min-height: 100vh;
     background-color: #fafafa;
   }
-  
+
   .register-container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 40px 20px;
   }
-  
+
   .register-header {
     display: flex;
     justify-content: space-between;
@@ -31,7 +31,7 @@
     background-color: #f1f8f4;
     border-radius: 20px;
   }
-  
+
   /* 섹션 공통 */
   .register-section {
     background-color: #ffffff;
@@ -40,172 +40,229 @@
     padding: 40px;
     margin-bottom: 40px;
   }
-  
+
   .section-title {
     font-size: 20px;
     font-weight: 600;
     color: #333333;
     margin-bottom: 30px;
   }
-  
+
   .section-description {
     font-size: 14px;
     color: #666666;
     margin-bottom: 20px;
   }
-  
+
   /* 이미지 업로드 섹션 */
   .image-section {
-    background-color: #fafafa;
+    background-color: #ffffff;
   }
-  
+
   .image-upload-container {
+    position: relative;
     display: flex;
-    gap: 20px;
+    gap: 15px;
+    flex-wrap: wrap;
+    padding: 20px;
+    background-color: #fafafa;
+    border: 2px dashed #dfdfdf;
+    border-radius: 8px;
+    min-height: 200px;
+    align-items: flex-start;
+    transition: all 0.3s ease;
   }
-  
-  .image-upload-main {
-    flex-shrink: 0;
+
+  .image-upload-container.dragging {
+    border-color: #ff5e2f;
+    background-color: #fff5f0;
+    border-width: 3px;
   }
-  
-  .image-upload-additional {
+
+  .drag-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 94, 47, 0.1);
+    border-radius: 8px;
     display: flex;
-    gap: 20px;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    pointer-events: none;
   }
-  
-  .image-upload-box {
+
+  .drag-message {
+    font-size: 18px;
+    font-weight: 600;
+    color: #ff5e2f;
+    background-color: #ffffff;
+    padding: 20px 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .image-add-button {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 150px;
+    width: 180px;
     height: 180px;
     background-color: #ffffff;
     border: 2px dashed #cccccc;
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s;
-  }
-  
-  .image-upload-box.main {
-    width: 200px;
-    border-color: #ff5e2f;
+    padding: 20px;
   }
 
-  .image-upload-box.dragging {
-    border-color: #ff5e2f;
-    background-color: #fff5f0;
-    border-width: 3px;
-  }
-
-  .image-upload-box:hover {
+  .image-add-button:hover:not(:disabled) {
     border-color: #ff5e2f;
     background-color: #fff5f0;
   }
-  
-  .image-upload-box img {
+
+  .image-add-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .upload-icon {
+    font-size: 40px;
+    margin-bottom: 15px;
+  }
+
+  .upload-text-group {
+    text-align: center;
+    line-height: 1.5;
+    margin-bottom: 15px;
+  }
+
+  .upload-text {
+    font-size: 13px;
+    color: #666666;
+  }
+
+  .upload-link {
+    font-size: 13px;
+    font-weight: 600;
+    color: #ff5e2f;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  .image-count {
+    font-size: 12px;
+    color: #999999;
+    font-weight: 500;
+  }
+
+  .image-preview {
+    position: relative;
+    width: 180px;
+    height: 180px;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #f2f2f2;
+  }
+
+  .image-preview img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 6px;
-  }
-  
-  .upload-icon {
-    font-size: 36px;
-    color: #ff5e2f;
-    margin-bottom: 10px;
-  }
-  
-  .upload-text {
-    font-size: 14px;
-    font-weight: 600;
-    color: #ff5e2f;
   }
 
-  .upload-hint {
-    font-size: 12px;
-    color: #999999;
-    margin-top: 8px;
+  .image-remove-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
   }
-  
-  .upload-plus {
-    font-size: 30px;
-    font-weight: 300;
-    color: #999999;
+
+  .image-remove-button:hover {
+    background-color: #ff3333;
+    transform: scale(1.1);
   }
-  
-  /* 폼 요소 */
+
+  /* 폼 공통 */
   .form-group {
     margin-bottom: 30px;
   }
-  
+
   .form-row {
     display: flex;
-    gap: 40px;
+    gap: 20px;
   }
-  
+
   .form-row .form-group {
     flex: 1;
   }
-  
+
   .form-label {
     display: block;
     font-size: 16px;
-    font-weight: 500;
+    font-weight: 600;
     color: #333333;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
   }
-  
+
   .form-input {
     width: 100%;
     height: 48px;
     padding: 0 16px;
-    background-color: #ffffff;
-    border: 1px solid #d9d9d9;
-    border-radius: 6px;
+    border: 1px solid #dfdfdf;
+    border-radius: 8px;
     font-size: 15px;
     color: #333333;
+    background-color: #ffffff;
     transition: all 0.2s;
   }
-  
+
   .form-input:focus {
     outline: none;
     border-color: #ff5e2f;
     box-shadow: 0 0 0 3px rgba(255, 94, 47, 0.1);
   }
-  
+
   .form-input::placeholder {
     color: #b3b3b3;
   }
-  
-  .price-input {
-    max-width: 250px;
-  }
-  
-  .deadline-input {
-    max-width: 550px;
-  }
-  
+
   .form-textarea {
     width: 100%;
-    padding: 16px;
-    background-color: #ffffff;
-    border: 1px solid #d9d9d9;
-    border-radius: 6px;
-    font-size: 15px;
-    font-family: 'Inter', -apple-system, sans-serif;
-    color: #333333;
-    resize: vertical;
     min-height: 250px;
+    padding: 16px;
+    border: 1px solid #dfdfdf;
+    border-radius: 8px;
+    font-size: 15px;
+    color: #333333;
+    background-color: #ffffff;
+    resize: vertical;
+    font-family: inherit;
+    line-height: 1.6;
     transition: all 0.2s;
   }
-  
+
   .form-textarea:focus {
     outline: none;
     border-color: #ff5e2f;
     box-shadow: 0 0 0 3px rgba(255, 94, 47, 0.1);
   }
-  
+
   .form-textarea::placeholder {
     color: #b3b3b3;
     line-height: 1.5;
@@ -217,12 +274,12 @@
     color: #999999;
     margin-top: 8px;
   }
-  
+
   /* 카테고리 섹션 */
   .info-section .category-selector {
     margin-top: 10px;
   }
-  
+
   /* 지역 섹션 */
   .location-map {
     width: 100%;
@@ -236,16 +293,16 @@
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="%23f8f8f8"/><path d="M0 0L100 100M100 0L0 100" stroke="%23e6e6e6" stroke-width="0.5"/></svg>');
     background-size: 100px 100px;
   }
-  
+
   .map-placeholder {
     position: relative;
   }
-  
+
   .location-pin {
     font-size: 50px;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
   }
-  
+
   /* 버튼 섹션 */
   .button-section {
     display: flex;
@@ -254,141 +311,82 @@
     padding: 30px 0;
     background-color: #ffffff;
     margin-bottom: 40px;
+    border-radius: 12px;
   }
-  
-  /* 주의사항 섹션 */
+
+  /* 주의사항 */
   .notice-section {
-    background-color: #fffaf2;
-    border: 1px solid #ff5e2f;
-    border-radius: 8px;
-    padding: 20px 40px;
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    padding: 30px;
   }
-  
+
   .notice-title {
     font-size: 16px;
     font-weight: 600;
-    color: #ff5e2f;
+    color: #495057;
     margin-bottom: 15px;
   }
-  
+
   .notice-list {
     list-style: none;
     padding: 0;
     margin: 0;
   }
-  
+
   .notice-list li {
-    font-size: 14px;
-    color: #4d4d4d;
-    line-height: 1.7;
-    padding-left: 15px;
     position: relative;
+    padding-left: 20px;
+    font-size: 14px;
+    color: #6c757d;
+    line-height: 1.8;
+    margin-bottom: 8px;
   }
-  
-  .notice-list li::before {
+
+  .notice-list li:before {
     content: '•';
     position: absolute;
     left: 0;
-    color: #ff5e2f;
+    color: #6c757d;
   }
-  
+
   /* 반응형 */
   @media (max-width: 768px) {
     .register-container {
-      padding: 20px;
+      padding: 20px 16px;
     }
-    
+
     .register-section {
-      padding: 20px;
+      padding: 24px 20px;
     }
-    
-    .image-upload-container {
-      flex-direction: column;
-      align-items: center;
+
+    .register-title {
+      font-size: 24px;
     }
-    
-    .image-upload-additional {
-      flex-wrap: wrap;
-      justify-content: center;
+
+    .section-title {
+      font-size: 18px;
     }
-    
+
     .form-row {
       flex-direction: column;
       gap: 0;
     }
-    
+
+    .image-add-button {
+      width: 150px;
+      height: 150px;
+      padding: 15px;
+    }
+
+    .image-preview {
+      width: 150px;
+      height: 150px;
+    }
+
     .button-section {
       flex-direction: column;
-    }
-    
-    .button-section button {
-      width: 100%;
-    }
-  }
-
-  /* 카테고리 선택 영역 커스텀 스타일 */
-  .product-category-selector {
-    width: 100%;
-  }
-
-  .product-category-selector .category-levels {
-    grid-template-columns: repeat(4, minmax(200px, 1fr));
-    height: 280px;
-    min-width: 900px;
-    gap: 1px;
-  }
-
-  .product-category-selector .category-level {
-    background-color: #fafafa;
-    border-right: 1px solid #e6e6e6;
-    height: 280px;
-  }
-
-  .product-category-selector .category-level:last-child {
-    border-right: none;
-  }
-
-  .product-category-selector .category-level-header {
-    background-color: #ffffff;
-    border-bottom: 1px solid #e6e6e6;
-    padding: 16px;
-    flex-shrink: 0;
-  }
-
-  .product-category-selector .category-level-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: #666666;
-  }
-
-  .product-category-selector .category-item {
-    padding: 12px 20px;
-    font-size: 15px;
-    border-bottom: none;
-  }
-
-  .product-category-selector .category-item:hover {
-    background-color: #fff5f0;
-  }
-
-  .product-category-selector .category-item-selected {
-    background-color: rgba(255, 94, 47, 0.1);
-    border-left: 3px solid #ff5e2f;
-  }
-
-  /* 반응형 */
-  @media (max-width: 1024px) {
-    .product-category-selector .category-levels {
-      grid-template-columns: repeat(2, 1fr);
-      height: 320px;
-      min-width: auto;
-    }
-  }
-
-  @media (max-width: 768px) {
-    .product-category-selector .category-levels {
-      grid-template-columns: 1fr;
-      height: 350px;
-      min-width: auto;
+      padding: 20px;
     }
   }

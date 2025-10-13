@@ -60,8 +60,8 @@ const ProductRegister: React.FC = () => {
   const [maxParticipants, setMaxParticipants] = useState('');
   const [deadline, setDeadline] = useState('');
   const [description, setDescription] = useState('');
-  const [mainImage, setMainImage] = useState<File | null>(null);
-  const [additionalImages, setAdditionalImages] = useState<File[]>([]);
+  const [images, setImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedLocation, setSelectedLocation] = useState('');
   const [categoryData, setCategoryData] = useState<CategoryItem[]>([]);
@@ -71,7 +71,8 @@ const ProductRegister: React.FC = () => {
 
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasPromptedRef = useRef(false);
-  const mainImageInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const dropZoneRef = useRef<HTMLDivElement>(null);
 
   const DRAFT_KEY = 'productRegisterDraft';
   const AUTO_SAVE_DELAY = 2000;
@@ -188,40 +189,67 @@ const ProductRegister: React.FC = () => {
     return null;
   };
 
-  const handleMainImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
+  // 이미지 처리 공통 로직
+  const processImageFiles = (files: File[]) => {
+    const totalImages = images.length + files.length;
+
+    if (totalImages > 5) {
+      alert('최대 5장까지 업로드 가능합니다.');
+      return;
+    }
+
+    // 파일 검증
+    const validFiles: File[] = [];
+    for (const file of files) {
       const error = validateImageFile(file);
       if (error) {
         alert(error);
-        return;
+        continue;
       }
-      setMainImage(file);
+      validFiles.push(file);
+    }
+
+    if (validFiles.length === 0) return;
+
+    // 새 이미지 추가
+    const newImages = [...images, ...validFiles.slice(0, 5 - images.length)];
+    setImages(newImages);
+
+    // 미리보기 생성
+    const newPreviews: string[] = [];
+    validFiles.slice(0, 5 - images.length).forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        newPreviews.push(reader.result as string);
+        if (newPreviews.length === validFiles.slice(0, 5 - images.length).length) {
+          setImagePreviews(prev => [...prev, ...newPreviews].slice(0, 5));
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    processImageFiles(files);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
-  const handleAdditionalImageUpload = (index: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      const error = validateImageFile(file);
-      if (error) {
-        alert(error);
-        return;
-      }
-      const newImages = [...additionalImages];
-      newImages[index] = file;
-      setAdditionalImages(newImages);
-    }
+  const handleRemoveImage = (index: number) => {
+    setImages(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
   // 드래그 앤 드롭 핸들러
-  const handleDragEnter = (e: React.DragEvent<HTMLLabelElement>) => {
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(true);
   };
 
-  const handleDragLeave = (e: React.DragEvent<HTMLLabelElement>) => {
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     if (e.currentTarget === e.target) {
@@ -229,26 +257,23 @@ const ProductRegister: React.FC = () => {
     }
   };
 
-  const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
   };
 
-  const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
 
-    const files = Array.from(e.dataTransfer.files);
-    if (files.length > 0) {
-      const file = files[0];
-      const error = validateImageFile(file);
-      if (error) {
-        alert(error);
-        return;
-      }
-      setMainImage(file);
+    if (images.length >= 5) {
+      alert('최대 5장까지 업로드 가능합니다.');
+      return;
     }
+
+    const files = Array.from(e.dataTransfer.files);
+    processImageFiles(files);
   };
 
   // 본문 길이 제한 핸들러
@@ -336,57 +361,60 @@ const ProductRegister: React.FC = () => {
 
         {/* 이미지 업로드 섹션 */}
         <section className="register-section image-section">
-          <h2 className="section-title">📷 상품 이미지 *</h2>
-          <div className="image-upload-container">
-            <div className="image-upload-main">
-              <input
-                ref={mainImageInputRef}
-                type="file"
-                id="main-image"
-                accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
-                onChange={handleMainImageUpload}
-                hidden
-              />
-              <label
-                htmlFor="main-image"
-                className={`image-upload-box main ${isDragging ? 'dragging' : ''}`}
-                onDragEnter={handleDragEnter}
-                onDragLeave={handleDragLeave}
-                onDragOver={handleDragOver}
-                onDrop={handleDrop}
-              >
-                {mainImage ? (
-                  <img src={URL.createObjectURL(mainImage)} alt="메인 이미지" />
-                ) : (
-                  <>
-                    <span className="upload-icon">📷</span>
-                    <span className="upload-text">대표 이미지</span>
-                    <span className="upload-hint">또는 드래그하여 업로드</span>
-                  </>
-                )}
-              </label>
-            </div>
-            
-            <div className="image-upload-additional">
-              {[0, 1, 2].map(index => (
-                <div key={index}>
-                  <input
-                    type="file"
-                    id={`additional-image-${index}`}
-                    accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
-                    onChange={handleAdditionalImageUpload(index)}
-                    hidden
-                  />
-                  <label htmlFor={`additional-image-${index}`} className="image-upload-box">
-                    {additionalImages[index] ? (
-                      <img src={URL.createObjectURL(additionalImages[index])} alt={`추가 이미지 ${index + 1}`} />
-                    ) : (
-                      <span className="upload-plus">+</span>
-                    )}
-                  </label>
+          <h2 className="section-title">📷 상품 이미지</h2>
+          <p className="section-description">최대 5장까지 업로드 가능합니다.</p>
+          <div
+            ref={dropZoneRef}
+            className={`image-upload-container ${isDragging ? 'dragging' : ''}`}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+              multiple
+              onChange={handleImageUpload}
+              style={{ display: 'none' }}
+            />
+
+            {isDragging && (
+              <div className="drag-overlay">
+                <div className="drag-message">
+                  📸 이미지를 여기에 드롭하세요
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
+
+            <button
+              type="button"
+              className="image-add-button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={images.length >= 5}
+            >
+              <span className="upload-icon">📷</span>
+              <div className="upload-text-group">
+                <span className="upload-text">여기로 이미지를 드래그하거나 </span>
+                <span className="upload-link">파일을 업로드</span>
+                <span className="upload-text"> 하세요.</span>
+              </div>
+              <span className="image-count">{images.length}/5</span>
+            </button>
+
+            {imagePreviews.map((preview, index) => (
+              <div key={index} className="image-preview">
+                <img src={preview} alt={`상품 이미지 ${index + 1}`} />
+                <button
+                  type="button"
+                  className="image-remove-button"
+                  onClick={() => handleRemoveImage(index)}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
           </div>
         </section>
 
