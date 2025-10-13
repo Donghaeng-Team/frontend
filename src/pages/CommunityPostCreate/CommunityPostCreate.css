@@ -206,45 +206,61 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
-  .drop-hint {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex: 1;
-    min-width: 200px;
-    padding: 20px;
-    font-size: 14px;
-    color: #999999;
-    text-align: center;
-  }
-  
-  .image-add-button {
-    width: 70px;
-    height: 70px;
-    border: 1px solid #dfdfdf;
-    border-radius: 8px;
-    background-color: #ffffff;
+  .upload-prompt {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    width: 100%;
+    min-height: 150px;
+    padding: 30px;
+    text-align: center;
+  }
+
+  .upload-icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+  }
+
+  .upload-text-group {
+    margin-bottom: 10px;
+    line-height: 1.5;
+  }
+
+  .upload-text {
+    font-size: 14px;
+    color: #666666;
+  }
+
+  .upload-link {
+    font-size: 14px;
+    font-weight: 600;
+    color: #ff5e2f;
+    text-decoration: underline;
     cursor: pointer;
+  }
+
+  .upload-more-hint {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 70px;
+    height: 70px;
+    background-color: #f8f8f8;
+    border: 1px dashed #dfdfdf;
+    border-radius: 8px;
     transition: all 0.2s;
   }
-  
-  .image-add-button:hover:not(:disabled) {
+
+  .image-upload-area:hover .upload-more-hint {
     border-color: #ff5e2f;
     background-color: #fff5f0;
   }
-  
-  .image-add-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-  
-  .camera-icon {
-    font-size: 20px;
-    color: #ff5e2f;
+
+  .plus-icon {
+    font-size: 24px;
+    color: #cccccc;
     margin-bottom: 5px;
   }
   

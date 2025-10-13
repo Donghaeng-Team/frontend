@@ -381,6 +381,8 @@ const CommunityPostCreate: React.FC = () => {
                   onDragLeave={handleDragLeave}
                   onDragOver={handleDragOver}
                   onDrop={handleDrop}
+                  onClick={() => formData.images.length < 10 && fileInputRef.current?.click()}
+                  style={{ cursor: formData.images.length < 10 ? 'pointer' : 'default' }}
                 >
                 <input
                     ref={fileInputRef}
@@ -399,33 +401,40 @@ const CommunityPostCreate: React.FC = () => {
                   </div>
                 )}
 
-                <button
-                    type="button"
-                    className="image-add-button"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={formData.images.length >= 10}
-                >
-                    <span className="camera-icon">📷</span>
-                    <span className="image-count">{formData.images.length}/10</span>
-                </button>
-
-                {imagePreviews.map((preview, index) => (
-                    <div key={index} className="image-preview">
-                    <img src={preview} alt={`Preview ${index + 1}`} />
-                    <button
-                        type="button"
-                        className="image-remove-button"
-                        onClick={() => handleRemoveImage(index)}
-                    >
-                        ×
-                    </button>
+                {formData.images.length === 0 ? (
+                  <div className="upload-prompt">
+                    <span className="upload-icon">📷</span>
+                    <div className="upload-text-group">
+                      <span className="upload-text">여기로 이미지를 드래그하거나 </span>
+                      <span className="upload-link">파일을 업로드</span>
+                      <span className="upload-text"> 하세요.</span>
                     </div>
-                ))}
-
-                {formData.images.length === 0 && !isDragging && (
-                  <div className="drop-hint">
-                    또는 이미지를 드래그하여 업로드
+                    <span className="image-count">0/10</span>
                   </div>
+                ) : (
+                  <>
+                    {imagePreviews.map((preview, index) => (
+                      <div key={index} className="image-preview">
+                        <img src={preview} alt={`Preview ${index + 1}`} />
+                        <button
+                          type="button"
+                          className="image-remove-button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemoveImage(index);
+                          }}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                    {formData.images.length < 10 && (
+                      <div className="upload-more-hint">
+                        <span className="plus-icon">+</span>
+                        <span className="image-count">{formData.images.length}/10</span>
+                      </div>
+                    )}
+                  </>
                 )}
                 </div>
             </div>
