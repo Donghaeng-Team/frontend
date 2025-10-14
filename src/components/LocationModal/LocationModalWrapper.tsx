@@ -72,28 +72,22 @@ const LocationModalWrapper: React.FC<LocationModalWrapperProps> = ({ isOpen, onC
   };
 
   // currentDivision을 LocationModal의 initialLocation으로 변환
-  const getInitialLocation = (): SelectedLocation | undefined => {
+  const initialLocation = React.useMemo((): SelectedLocation | undefined => {
     if (!currentDivision || !currentDivision.id) return undefined;
 
-    // Division의 id는 10자리 행정구역 코드 (예: "1115051000")
-    // 앞 2자리: 시/도, 3-5자리: 구/군, 6-8자리: 동/읍/면
-    const sidoCode = currentDivision.sidoCode;
-    const sggCode = currentDivision.sggCode;
-    const emdCode = currentDivision.emdCode;
-
     return {
-      sido: { code: sidoCode, name: currentDivision.sidoName },
-      gugun: { code: sggCode, name: currentDivision.sggName },
-      dong: { code: emdCode, name: currentDivision.emdName }
+      sido: { code: currentDivision.sidoCode, name: currentDivision.sidoName },
+      gugun: { code: currentDivision.sggCode, name: currentDivision.sggName },
+      dong: { code: currentDivision.emdCode, name: currentDivision.emdName }
     };
-  };
+  }, [currentDivision]);
 
   return (
     <LocationModal
       isOpen={isOpen}
       onClose={onClose}
       onConfirm={handleConfirm}
-      initialLocation={getInitialLocation()}
+      initialLocation={initialLocation}
       fetchSidoList={fetchSidoList}
       fetchGugunList={handleFetchGugunList}
       fetchDongList={handleFetchDongList}
