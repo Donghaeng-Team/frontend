@@ -14,7 +14,9 @@ export { communityService } from './services/community';
 export { commentService } from './services/comment';
 export { imageService } from './services/image';
 export { userService } from './services/user';
+export { marketService } from './services/market';
+export { cartService } from './services/cart';
 
 // 타입은 src/types에서 import하세요:
-// import { marketApi, userApi, divisionApi, communityService, commentService, userService } from '@/api';
+// import { marketApi, userApi, divisionApi, communityService, userService, marketService, cartService } from '@/api';
 // import type { ApiResponse, MarketPost, User, Division, PostListResponse } from '@/types';
