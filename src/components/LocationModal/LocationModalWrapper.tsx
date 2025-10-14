@@ -23,6 +23,13 @@ const LocationModalWrapper: React.FC<LocationModalWrapperProps> = ({ isOpen, onC
   // 현재 선택된 시/도 코드를 추적하기 위한 ref
   const [currentSidoCode, setCurrentSidoCode] = React.useState<string>('');
 
+  // currentDivision이 있으면 초기 sido 코드 설정
+  React.useEffect(() => {
+    if (currentDivision && currentDivision.sidoCode) {
+      setCurrentSidoCode(currentDivision.sidoCode);
+    }
+  }, [currentDivision]);
+
   const handleFetchGugunList = async (sidoCode: string): Promise<LocationItem[]> => {
     setCurrentSidoCode(sidoCode);
     return fetchGugunList(sidoCode);
