@@ -26,6 +26,18 @@ export interface UserProfile extends User {
   };
 }
 
+// Internal API용 사용자 정보 (여러 사용자 조회)
+export interface UserInternalResponse {
+  userId: number;
+  nickName: string;
+  imageUrl: string | null;
+}
+
+// 여러 사용자 정보 조회 요청
+export interface UsersInfoRequest {
+  userIds: number[];
+}
+
 // 인증 관련
 export interface RegisterRequest {
   email: string;
