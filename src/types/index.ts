@@ -48,5 +48,8 @@ export * from './comment';
 // 이미지 업로드 관련
 export * from './image';
 
+// 장바구니 관련
+export * from './cart';
+
 // 사용 예시:
 // import { User, MarketPost, ButtonVariant, ApiResponse } from '@/types';
