@@ -52,8 +52,8 @@ const Login: React.FC<LoginProps> = ({
     // 사용자 정보 저장
     setUser(testUser);
 
-    // 홈으로 이동
-    navigate('/');
+    // 홈으로 이동 (새로고침하여 AuthContext가 업데이트되도록)
+    window.location.href = '/';
   };
 
   return (
