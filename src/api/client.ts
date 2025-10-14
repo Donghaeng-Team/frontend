@@ -88,6 +88,13 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       const refreshToken = getRefreshToken();
+      const accessToken = getAccessToken();
+
+      // 테스트 토큰인 경우 재발급 시도하지 않음
+      if (accessToken && accessToken.startsWith('fake-access-token-')) {
+        isRefreshing = false;
+        return Promise.reject(error);
+      }
 
       if (refreshToken) {
         try {

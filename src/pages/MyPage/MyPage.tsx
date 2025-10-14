@@ -6,6 +6,7 @@ import ToggleSwitch from '../../components/ToggleSwitch';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
 import { canChangePassword } from '../../utils/auth';
+import { clearAuth } from '../../utils/token';
 import './MyPage.css';
 
 interface UserProfile {
@@ -94,15 +95,13 @@ const MyPage: React.FC<MyPageProps> = ({
   };
 
   const handleLogout = () => {
-    // 실제 프로젝트에서는 여기서 서버에 로그아웃 요청을 보내고
-    // 로컬 스토리지나 쿠키에서 토큰을 제거해야 합니다
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userInfo');
-    
+    // 모든 인증 정보 제거
+    clearAuth();
+
     console.log('로그아웃 완료');
-    
-    // 로그인 페이지로 이동
-    navigate('/login');
+
+    // 메인 페이지로 이동
+    navigate('/');
   };
 
   const handleWithdrawal = () => {
