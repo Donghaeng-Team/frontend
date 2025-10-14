@@ -1,5 +1,6 @@
 import React from 'react';
-import LocationModal, { LocationItem, SelectedLocation } from './LocationModal';
+import LocationModal from './LocationModal';
+import type { LocationItem, SelectedLocation } from './LocationModal';
 import { fetchSidoList, fetchGugunList, fetchDongList, buildDivisionCode } from '../../services/locationService';
 import { useLocationStore } from '../../stores/locationStore';
 import { divisionApi } from '../../api/divisionApi';
