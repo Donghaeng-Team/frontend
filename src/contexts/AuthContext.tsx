@@ -1,6 +1,8 @@
-import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import type { ReactNode } from 'react';
 import { authService } from '../api/services/auth';
-import type { User, AuthResponse } from '../api/services/auth';
+import type { User } from '../types/auth';
+import { getAccessToken, clearAuth } from '../utils/token';
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -19,7 +21,7 @@ type AuthAction =
 
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name: string, phoneNumber?: string) => Promise<void>;
+  register: (email: string, password: string, nickName: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   updateProfile: (user: User) => void;
@@ -96,9 +98,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await authService.login({ email, password });
 
       if (response.success) {
-        localStorage.setItem('accessToken', response.data.accessToken);
-        localStorage.setItem('refreshToken', response.data.refreshToken);
-
+        // 토큰과 사용자 정보는 authService에서 자동으로 저장됨
         dispatch({
           type: 'AUTH_SUCCESS',
           payload: { user: response.data.user }
@@ -115,21 +115,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const register = async (email: string, password: string, name: string, phoneNumber?: string) => {
+  const register = async (email: string, password: string, nickName: string) => {
     try {
       dispatch({ type: 'AUTH_START' });
 
       const response = await authService.register({
         email,
         password,
-        name,
-        phoneNumber
+        passwordConfirm: password,
+        nickName
       });
 
       if (response.success) {
-        localStorage.setItem('accessToken', response.data.accessToken);
-        localStorage.setItem('refreshToken', response.data.refreshToken);
-
+        // 토큰과 사용자 정보는 authService에서 자동으로 저장됨
         dispatch({
           type: 'AUTH_SUCCESS',
           payload: { user: response.data.user }
@@ -149,11 +147,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = async () => {
     try {
       await authService.logout();
+      // authService.logout()에서 clearAuth()를 호출함
     } catch (error) {
       console.error('로그아웃 요청 실패:', error);
+      // 에러가 발생해도 로컬의 인증 정보는 제거
+      clearAuth();
     } finally {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
       dispatch({ type: 'LOGOUT' });
     }
   };
@@ -186,20 +185,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     const initializeAuth = async () => {
-      const token = localStorage.getItem('accessToken');
+      const token = getAccessToken();
 
       if (token) {
         // 테스트 토큰인 경우 API 호출 건너뛰기
         if (token === 'fake-access-token-for-testing') {
-          const testUser = {
-            id: 'test-user-123',
+          const testUser: User = {
             email: 'test@example.com',
-            name: '테스트 사용자',
-            phoneNumber: '010-1234-5678',
-            profileImage: undefined,
-            role: 'user',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
+            nickName: '테스트 사용자',
+            avatarUrl: null,
+            provider: 'LOCAL'
           };
 
           dispatch({
@@ -218,13 +213,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               payload: { user: response.data }
             });
           } else {
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('refreshToken');
+            clearAuth();
             dispatch({ type: 'LOGOUT' });
           }
         } catch (error) {
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
+          clearAuth();
           dispatch({ type: 'LOGOUT' });
         }
       } else {

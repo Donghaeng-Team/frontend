@@ -1,5 +1,6 @@
 import axios from 'axios';
-import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import type { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
+import { getAccessToken, setAccessToken, getRefreshToken, clearAuth } from '../utils/token';
 
 // 토큰 재발급 중인지 추적
 let isRefreshing = false;
@@ -50,8 +51,8 @@ if (import.meta.env.VITE_DEBUG === 'true') {
 
 // 요청 인터셉터: 토큰 자동 추가
 apiClient.interceptors.request.use(
-  (config: AxiosRequestConfig) => {
-    const token = localStorage.getItem('authToken');
+  (config: InternalAxiosRequestConfig) => {
+    const token = getAccessToken();
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -86,27 +87,21 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const refreshToken = localStorage.getItem('refreshToken');
+      const refreshToken = getRefreshToken();
 
       if (refreshToken) {
         try {
           // 토큰 재발급 요청
           const response = await axios.post(
-            `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/v1/user/public/refresh`,
-            {},
-            {
-              headers: {
-                'Authorization': `Bearer ${refreshToken}`
-              }
-            }
+            `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/auth/refresh`,
+            { refreshToken }
           );
 
           if (response.data.success && response.data.data) {
-            const { accessToken, refreshToken: newRefreshToken } = response.data.data;
+            const { accessToken } = response.data.data;
 
             // 새 토큰 저장
-            localStorage.setItem('authToken', accessToken);
-            localStorage.setItem('refreshToken', newRefreshToken);
+            setAccessToken(accessToken);
 
             // 헤더 업데이트
             originalRequest.headers.Authorization = `Bearer ${accessToken}`;
@@ -121,9 +116,7 @@ apiClient.interceptors.response.use(
           processQueue(refreshError, null);
 
           // 모든 토큰 삭제 및 로그인 페이지로 리다이렉트
-          localStorage.removeItem('authToken');
-          localStorage.removeItem('refreshToken');
-          localStorage.removeItem('userInfo');
+          clearAuth();
           window.location.href = '/login';
 
           return Promise.reject(refreshError);
@@ -132,9 +125,7 @@ apiClient.interceptors.response.use(
         }
       } else {
         // 리프레시 토큰이 없으면 바로 로그인 페이지로
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('userInfo');
+        clearAuth();
         window.location.href = '/login';
       }
     }

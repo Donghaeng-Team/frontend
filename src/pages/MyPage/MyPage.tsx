@@ -5,6 +5,7 @@ import StatCard from '../../components/StatCard';
 import ToggleSwitch from '../../components/ToggleSwitch';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
+import { canChangePassword } from '../../utils/auth';
 import './MyPage.css';
 
 interface UserProfile {
@@ -210,13 +211,16 @@ const MyPage: React.FC<MyPageProps> = ({
                   >
                     프로필 편집
                   </button>
-                  <button 
-                    className="profile-action-btn"
-                    onClick={handlePasswordChange}
-                  >
-                    비밀번호 변경
-                  </button>
-                  <button 
+                  {/* 로컬 계정 사용자만 비밀번호 변경 가능 (소셜 로그인 사용자 제외) */}
+                  {canChangePassword() && (
+                    <button
+                      className="profile-action-btn"
+                      onClick={handlePasswordChange}
+                    >
+                      비밀번호 변경
+                    </button>
+                  )}
+                  <button
                     className="profile-action-btn"
                     onClick={handleLogout}
                   >
