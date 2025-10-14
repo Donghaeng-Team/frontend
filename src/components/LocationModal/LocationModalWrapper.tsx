@@ -69,6 +69,21 @@ const LocationModalWrapper: React.FC<LocationModalWrapperProps> = ({ isOpen, onC
     }
   };
 
+  const handleCurrentLocation = async () => {
+    try {
+      console.log('현재 위치 가져오기 시작...');
+      const division = await divisionApi.getCurrentDivision();
+
+      if (division) {
+        setCurrentDivision(division);
+        console.log('현재 위치 설정 완료:', division);
+      }
+    } catch (error) {
+      console.error('현재 위치 가져오기 실패:', error);
+      throw error; // LocationModal에서 에러 처리
+    }
+  };
+
   // currentDivision을 LocationModal의 initialLocation으로 변환
   const initialLocation = React.useMemo((): SelectedLocation | undefined => {
     if (!currentDivision || !currentDivision.id) return undefined;
@@ -85,6 +100,7 @@ const LocationModalWrapper: React.FC<LocationModalWrapperProps> = ({ isOpen, onC
       isOpen={isOpen}
       onClose={onClose}
       onConfirm={handleConfirm}
+      onCurrentLocation={handleCurrentLocation}
       initialLocation={initialLocation}
       fetchSidoList={fetchSidoList}
       fetchGugunList={handleFetchGugunList}
