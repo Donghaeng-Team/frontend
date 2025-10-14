@@ -6,7 +6,7 @@ import ToggleSwitch from '../../components/ToggleSwitch';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
 import { canChangePassword } from '../../utils/auth';
-import { clearAuth } from '../../utils/token';
+import { useAuth } from '../../contexts';
 import './MyPage.css';
 
 interface UserProfile {
@@ -20,7 +20,7 @@ interface MyPageProps {
   user?: UserProfile;
 }
 
-const MyPage: React.FC<MyPageProps> = ({ 
+const MyPage: React.FC<MyPageProps> = ({
   user = {
     name: '홍길동',
     email: 'example@email.com',
@@ -28,6 +28,7 @@ const MyPage: React.FC<MyPageProps> = ({
   }
 }) => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   // 프로필 상태
   const [profile, setProfile] = useState<UserProfile>(user);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -95,13 +96,9 @@ const MyPage: React.FC<MyPageProps> = ({
   };
 
   const handleLogout = () => {
-    // 모든 인증 정보 제거
-    clearAuth();
-
-    console.log('로그아웃 완료');
-
-    // 메인 페이지로 이동
-    navigate('/');
+    console.log('로그아웃 시도');
+    // AuthContext의 logout 함수 호출 (자동으로 메인 페이지로 리다이렉트됨)
+    logout();
   };
 
   const handleWithdrawal = () => {

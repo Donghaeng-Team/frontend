@@ -154,6 +154,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       clearAuth();
     } finally {
       dispatch({ type: 'LOGOUT' });
+      // 메인 페이지로 리다이렉트
+      window.location.href = '/';
     }
   };
 
