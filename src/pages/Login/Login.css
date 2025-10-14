@@ -125,7 +125,28 @@
     opacity: 0.8;
     text-decoration: underline;
   }
-  
+
+  /* Test Login Buttons */
+  .test-login-buttons {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    background-color: #f9fafb;
+    border-radius: 8px;
+    border: 1px dashed #e5e7eb;
+  }
+
+  .test-login-buttons button {
+    font-size: 13px;
+    opacity: 0.85;
+  }
+
+  .test-login-buttons button:hover {
+    opacity: 1;
+  }
+
   /* Responsive */
   @media (max-width: 600px) {
     .login-box {

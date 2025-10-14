@@ -5,6 +5,8 @@ import StatCard from '../../components/StatCard';
 import ToggleSwitch from '../../components/ToggleSwitch';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
+import { canChangePassword } from '../../utils/auth';
+import { useAuth } from '../../contexts';
 import './MyPage.css';
 
 interface UserProfile {
@@ -18,7 +20,7 @@ interface MyPageProps {
   user?: UserProfile;
 }
 
-const MyPage: React.FC<MyPageProps> = ({ 
+const MyPage: React.FC<MyPageProps> = ({
   user = {
     name: '홍길동',
     email: 'example@email.com',
@@ -26,6 +28,7 @@ const MyPage: React.FC<MyPageProps> = ({
   }
 }) => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   // 프로필 상태
   const [profile, setProfile] = useState<UserProfile>(user);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -93,15 +96,9 @@ const MyPage: React.FC<MyPageProps> = ({
   };
 
   const handleLogout = () => {
-    // 실제 프로젝트에서는 여기서 서버에 로그아웃 요청을 보내고
-    // 로컬 스토리지나 쿠키에서 토큰을 제거해야 합니다
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userInfo');
-    
-    console.log('로그아웃 완료');
-    
-    // 로그인 페이지로 이동
-    navigate('/login');
+    console.log('로그아웃 시도');
+    // AuthContext의 logout 함수 호출 (자동으로 메인 페이지로 리다이렉트됨)
+    logout();
   };
 
   const handleWithdrawal = () => {
@@ -210,13 +207,16 @@ const MyPage: React.FC<MyPageProps> = ({
                   >
                     프로필 편집
                   </button>
-                  <button 
-                    className="profile-action-btn"
-                    onClick={handlePasswordChange}
-                  >
-                    비밀번호 변경
-                  </button>
-                  <button 
+                  {/* 로컬 계정 사용자만 비밀번호 변경 가능 (소셜 로그인 사용자 제외) */}
+                  {canChangePassword() && (
+                    <button
+                      className="profile-action-btn"
+                      onClick={handlePasswordChange}
+                    >
+                      비밀번호 변경
+                    </button>
+                  )}
+                  <button
                     className="profile-action-btn"
                     onClick={handleLogout}
                   >

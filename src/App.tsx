@@ -17,6 +17,9 @@ import PurchaseHistory from './pages/PurchaseHistory';
 import ChangePassword from './pages/ChangePassword';
 import ComponentShowcase from './pages/ComponentShowcase';
 
+// Components
+import ProtectedRoute from './components/ProtectedRoute';
+
 function App() {
   return (
     <Router>
@@ -28,20 +31,20 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/login-form" element={<LoginForm />} />
         <Route path="/signup" element={<SignUp />} />
-        <Route path="/change-password" element={<ChangePassword />} />
+        <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
 
         {/* 마이페이지 */}
-        <Route path="/mypage" element={<MyPage />} />
-        <Route path="/purchase-history" element={<PurchaseHistory />} />
+        <Route path="/mypage" element={<ProtectedRoute><MyPage /></ProtectedRoute>} />
+        <Route path="/purchase-history" element={<ProtectedRoute><PurchaseHistory /></ProtectedRoute>} />
 
         {/* 상품 관련 */}
         <Route path="/products" element={<ProductList />} />
         <Route path="/products/:id" element={<ProductDetail />} />
-        <Route path="/products/register" element={<ProductRegister />} />
+        <Route path="/products/register" element={<ProtectedRoute><ProductRegister /></ProtectedRoute>} />
 
         {/* 커뮤니티 */}
         <Route path="/community" element={<CommunityBoard />} />
-        <Route path="/community/create" element={<CommunityPostCreate />} />
+        <Route path="/community/create" element={<ProtectedRoute><CommunityPostCreate /></ProtectedRoute>} />
         <Route path="/community/:id" element={<CommunityPostDetail />} />
 
         {/* 개발용 컴포넌트 쇼케이스 */}

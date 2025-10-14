@@ -1,7 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts';
 import Button from '../../components/Button';
+import { setAccessToken, setRefreshToken, setUser } from '../../utils/token';
+import type { User } from '../../types/auth';
 import './Login.css';
 
 interface LoginProps {
@@ -18,30 +19,41 @@ const Login: React.FC<LoginProps> = ({
   onSignup
 }) => {
   const navigate = useNavigate();
-  const { updateProfile } = useAuth();
 
-  const handleTestLogin = () => {
-    // 테스트용 가짜 사용자 데이터
-    const testUser = {
-      id: 'test-user-123',
-      email: 'test@example.com',
-      name: '테스트 사용자',
-      phoneNumber: '010-1234-5678',
-      profileImage: undefined,
-      role: 'user',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+  const handleTestLogin = (provider: 'LOCAL' | 'KAKAO' | 'GOOGLE') => {
+    // Provider에 따른 테스트 사용자 데이터
+    const testUsers: Record<'LOCAL' | 'KAKAO' | 'GOOGLE', User> = {
+      LOCAL: {
+        email: 'local@example.com',
+        nickName: '로컬 테스트 사용자',
+        avatarUrl: null,
+        provider: 'LOCAL'
+      },
+      KAKAO: {
+        email: 'kakao@example.com',
+        nickName: '카카오 테스트 사용자',
+        avatarUrl: 'https://via.placeholder.com/150',
+        provider: 'KAKAO'
+      },
+      GOOGLE: {
+        email: 'google@example.com',
+        nickName: '구글 테스트 사용자',
+        avatarUrl: 'https://via.placeholder.com/150',
+        provider: 'GOOGLE'
+      }
     };
 
-    // 가짜 토큰 저장
-    localStorage.setItem('accessToken', 'fake-access-token-for-testing');
-    localStorage.setItem('refreshToken', 'fake-refresh-token-for-testing');
+    const testUser = testUsers[provider];
 
-    // 사용자 정보 업데이트
-    updateProfile(testUser);
+    // 테스트용 토큰 저장
+    setAccessToken(`fake-access-token-${provider.toLowerCase()}`);
+    setRefreshToken(`fake-refresh-token-${provider.toLowerCase()}`);
 
-    // 홈으로 이동
-    navigate('/');
+    // 사용자 정보 저장
+    setUser(testUser);
+
+    // 홈으로 이동 (새로고침하여 AuthContext가 업데이트되도록)
+    window.location.href = '/';
   };
 
   return (
@@ -100,18 +112,38 @@ const Login: React.FC<LoginProps> = ({
 
             <div className="login-divider">
               <span className="login-divider-line"></span>
-              <span className="login-divider-text">개발용</span>
+              <span className="login-divider-text">개발용 테스트</span>
               <span className="login-divider-line"></span>
             </div>
 
-            <Button
-              variant="secondary"
-              size="large"
-              fullWidth
-              onClick={handleTestLogin}
-            >
-              🧪 테스트 로그인
-            </Button>
+            <div className="test-login-buttons">
+              <Button
+                variant="secondary"
+                size="large"
+                fullWidth
+                onClick={() => handleTestLogin('LOCAL')}
+              >
+                🧪 LOCAL 테스트
+              </Button>
+
+              <Button
+                variant="secondary"
+                size="large"
+                fullWidth
+                onClick={() => handleTestLogin('KAKAO')}
+              >
+                💬 KAKAO 테스트
+              </Button>
+
+              <Button
+                variant="secondary"
+                size="large"
+                fullWidth
+                onClick={() => handleTestLogin('GOOGLE')}
+              >
+                🔍 GOOGLE 테스트
+              </Button>
+            </div>
           </div>
 
           <div className="login-footer">
