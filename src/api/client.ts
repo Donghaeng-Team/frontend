@@ -23,7 +23,7 @@ const processQueue = (error: any, token: string | null = null) => {
 
 // API 클라이언트 인스턴스 생성
 const apiClient: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
+  baseURL: import.meta.env.VITE_API_BASE_URL || '', // 개발 환경에서는 Vite proxy 사용
   timeout: Number(import.meta.env.VITE_API_TIMEOUT) || 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -100,7 +100,7 @@ apiClient.interceptors.response.use(
         try {
           // 토큰 재발급 요청
           const response = await axios.post(
-            `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/auth/refresh`,
+            `${import.meta.env.VITE_API_BASE_URL || ''}/auth/refresh`,
             { refreshToken }
           );
 

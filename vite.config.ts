@@ -8,6 +8,62 @@ export default defineConfig({
     hmr: true,  // HMR 활성화 (기본값)
     watch: {
       usePolling: true  // WSL이나 Docker 사용 시
+    },
+    proxy: {
+      // Division API (Port 8080)
+      '/api/v1/division': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false
+      },
+      '/internal/v1/division': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false
+      },
+      // Market API (Port 8082)
+      '/api/v1/market': {
+        target: 'http://localhost:8082',
+        changeOrigin: true,
+        secure: false
+      },
+      '/internal/v1/market': {
+        target: 'http://localhost:8082',
+        changeOrigin: true,
+        secure: false
+      },
+      '/api/v1/cart': {
+        target: 'http://localhost:8082',
+        changeOrigin: true,
+        secure: false
+      },
+      // User API (Port 8083)
+      '/api/v1/user': {
+        target: 'http://localhost:8083',
+        changeOrigin: true,
+        secure: false
+      },
+      '/internal/v1/user': {
+        target: 'http://localhost:8083',
+        changeOrigin: true,
+        secure: false
+      },
+      // Community API (Port 8085)
+      '/api/v1/post': {
+        target: 'http://localhost:8085',
+        changeOrigin: true,
+        secure: false
+      },
+      '/api/v1/comment': {
+        target: 'http://localhost:8085',
+        changeOrigin: true,
+        secure: false
+      },
+      '/api/v1/image': {
+        target: 'http://localhost:8085',
+        changeOrigin: true,
+        secure: false
+      }
     }
   }
 })
