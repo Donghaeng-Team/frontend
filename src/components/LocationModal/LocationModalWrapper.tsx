@@ -35,22 +35,35 @@ const LocationModalWrapper: React.FC<LocationModalWrapperProps> = ({ isOpen, onC
     }
 
     try {
-      // 행정구역 코드 생성
-      const divisionId = buildDivisionCode(
+      // 행정구역 코드 생성 (8자리)
+      const emdCode = buildDivisionCode(
         location.sido.code,
         location.gugun.code,
         location.dong.code
       );
 
+      console.log('위치 선택 정보:', {
+        sido: `${location.sido.code} (${location.sido.name})`,
+        gugun: `${location.gugun.code} (${location.gugun.name})`,
+        dong: `${location.dong.code} (${location.dong.name})`,
+        emdCode
+      });
+
       // API를 통해 Division 정보 가져오기
-      const division = await divisionApi.getDivisionByCode({ divisionId });
+      const division = await divisionApi.getDivisionByCode({ emdCode });
 
       // Zustand store에 저장
       setCurrentDivision(division);
 
       console.log('위치 설정 완료:', division);
+      onClose();
     } catch (error) {
       console.error('위치 설정 실패:', error);
+      console.error('실패한 emdCode:', buildDivisionCode(
+        location.sido.code,
+        location.gugun.code,
+        location.dong.code
+      ));
       // 에러 처리 - 토스트 메시지 등으로 사용자에게 알림
       alert('위치 설정에 실패했습니다. 다시 시도해주세요.');
     }

@@ -75,21 +75,21 @@ export const fetchDongList = async (sidoCode: string, sggCode: string): Promise<
 
 /**
  * 전체 행정구역 코드 생성
- * @param sidoCode 시/도 코드
- * @param sggCode 구/군 코드
- * @param emdCode 동/읍/면 코드
- * @returns 10자리 행정구역 코드 (예: "1101010100")
+ * @param sidoCode 시/도 코드 (2자리)
+ * @param sggCode 구/군 코드 (3자리)
+ * @param emdCode 동/읍/면 코드 (3자리)
+ * @returns 8자리 행정구역 코드 (예: "11010530")
  */
 export const buildDivisionCode = (sidoCode: string, sggCode: string, emdCode: string): string => {
-  return `${sidoCode}${sggCode}${emdCode}00`;
+  return `${sidoCode}${sggCode}${emdCode}`;
 };
 
 /**
  * Division ID로부터 시/도/구/군/동 정보 추출
- * @param divisionId 10자리 행정구역 코드
+ * @param divisionId 8자리 행정구역 코드
  */
 export const parseDivisionCode = (divisionId: string) => {
-  if (divisionId.length !== 10) {
+  if (divisionId.length !== 8) {
     throw new Error('Invalid division code length');
   }
 
