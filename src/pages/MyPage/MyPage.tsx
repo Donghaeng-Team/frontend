@@ -6,7 +6,7 @@ import ToggleSwitch from '../../components/ToggleSwitch';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
 import { canChangePassword } from '../../utils/auth';
-import { useAuth } from '../../contexts';
+import { useAuthStore } from '../../stores/authStore';
 import './MyPage.css';
 
 interface UserProfile {
@@ -28,7 +28,7 @@ const MyPage: React.FC<MyPageProps> = ({
   }
 }) => {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const logout = useAuthStore((state) => state.logout);
   // 프로필 상태
   const [profile, setProfile] = useState<UserProfile>(user);
   const [isEditMode, setIsEditMode] = useState(false);
