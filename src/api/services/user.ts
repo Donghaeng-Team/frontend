@@ -147,6 +147,25 @@ export const userService = {
   },
 
   /**
+   * 프로필 이미지 변경
+   */
+  changeProfileImage: async (
+    userId: number,
+    imageFile: File
+  ): Promise<ApiResponse<unknown>> => {
+    const formData = new FormData();
+    formData.append('image', imageFile);
+
+    const response = await apiClient.put('/api/v1/user/private/me/image', formData, {
+      headers: {
+        'X-User-Id': userId.toString(),
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
+  /**
    * 로그아웃
    */
   logout: async (userId: number): Promise<ApiResponse<unknown>> => {

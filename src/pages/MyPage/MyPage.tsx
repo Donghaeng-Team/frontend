@@ -38,6 +38,7 @@ const MyPage: React.FC<MyPageProps> = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [editName, setEditName] = useState(profile.name);
   const [tempAvatar, setTempAvatar] = useState(profile.avatar);
+  const [uploadedImageFile, setUploadedImageFile] = useState<File | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -71,13 +72,16 @@ const MyPage: React.FC<MyPageProps> = () => {
 
   const handleProfileEdit = async () => {
     if (isEditMode) {
-      // 저장 모드 - 닉네임 변경 API 호출
+      // 저장 모드 - 닉네임/이미지 변경 API 호출
       if (!authUser?.userId) {
         alert('사용자 정보를 찾을 수 없습니다.');
         return;
       }
 
-      if (editName === profile.name) {
+      const hasNicknameChange = editName !== profile.name;
+      const hasImageChange = uploadedImageFile !== null;
+
+      if (!hasNicknameChange && !hasImageChange) {
         // 변경사항 없으면 그냥 편집 모드 종료
         setIsEditMode(false);
         return;
@@ -85,9 +89,17 @@ const MyPage: React.FC<MyPageProps> = () => {
 
       setIsSaving(true);
       try {
-        await userService.changeNickname(authUser.userId, {
-          nickName: editName
-        });
+        // 닉네임 변경
+        if (hasNicknameChange) {
+          await userService.changeNickname(authUser.userId, {
+            nickName: editName
+          });
+        }
+
+        // 이미지 변경
+        if (hasImageChange && uploadedImageFile) {
+          await userService.changeProfileImage(authUser.userId, uploadedImageFile);
+        }
 
         // 성공 시 프로필 업데이트
         setProfile({
@@ -99,11 +111,16 @@ const MyPage: React.FC<MyPageProps> = () => {
         // authStore 프로필도 새로고침
         await refreshProfile();
 
-        alert('닉네임이 변경되었습니다.');
+        const changeMessages = [];
+        if (hasNicknameChange) changeMessages.push('닉네임');
+        if (hasImageChange) changeMessages.push('프로필 이미지');
+
+        alert(`${changeMessages.join('과 ')}이(가) 변경되었습니다.`);
         setIsEditMode(false);
+        setUploadedImageFile(null);
       } catch (error: any) {
-        console.error('닉네임 변경 실패:', error);
-        alert(error.message || '닉네임 변경에 실패했습니다.');
+        console.error('프로필 변경 실패:', error);
+        alert(error.message || '프로필 변경에 실패했습니다.');
       } finally {
         setIsSaving(false);
       }
@@ -111,6 +128,7 @@ const MyPage: React.FC<MyPageProps> = () => {
       // 편집 모드
       setEditName(profile.name);
       setTempAvatar(profile.avatar);
+      setUploadedImageFile(null);
       setIsEditMode(true);
     }
   };
@@ -118,6 +136,7 @@ const MyPage: React.FC<MyPageProps> = () => {
   const handleCancelEdit = () => {
     setEditName(profile.name);
     setTempAvatar(profile.avatar);
+    setUploadedImageFile(null);
     setIsEditMode(false);
   };
 
@@ -130,11 +149,27 @@ const MyPage: React.FC<MyPageProps> = () => {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // 파일 크기 체크 (예: 5MB 제한)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('이미지 크기는 5MB 이하여야 합니다.');
+        return;
+      }
+
+      // 파일 타입 체크
+      if (!file.type.startsWith('image/')) {
+        alert('이미지 파일만 업로드 가능합니다.');
+        return;
+      }
+
+      // 미리보기를 위해 FileReader 사용
       const reader = new FileReader();
       reader.onloadend = () => {
         setTempAvatar(reader.result as string);
       };
       reader.readAsDataURL(file);
+
+      // 실제 업로드할 파일 객체 저장
+      setUploadedImageFile(file);
     }
   };
 
