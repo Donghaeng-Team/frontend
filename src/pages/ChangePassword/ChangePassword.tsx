@@ -1,18 +1,28 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
+import { userService } from '../../api/services/user';
+import { useAuthStore } from '../../stores/authStore';
 import './ChangePassword.css';
 
 const ChangePassword = () => {
+  const navigate = useNavigate();
+  const authUser = useAuthStore((state) => state.user);
+
   const [passwords, setPasswords] = useState({
+    currentPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
 
   const [errors, setErrors] = useState({
+    currentPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setPasswords(prev => ({
@@ -31,10 +41,17 @@ const ChangePassword = () => {
 
   const validateForm = () => {
     const newErrors = {
+      currentPassword: '',
       newPassword: '',
       confirmPassword: ''
     };
     let isValid = true;
+
+    // 현재 비밀번호 검증
+    if (!passwords.currentPassword) {
+      newErrors.currentPassword = '현재 비밀번호를 입력해주세요';
+      isValid = false;
+    }
 
     // 새 비밀번호 검증
     if (!passwords.newPassword) {
@@ -42,6 +59,9 @@ const ChangePassword = () => {
       isValid = false;
     } else if (passwords.newPassword.length < 8) {
       newErrors.newPassword = '비밀번호는 8자 이상이어야 합니다';
+      isValid = false;
+    } else if (!/(?=.*[a-zA-Z])(?=.*[0-9])/.test(passwords.newPassword)) {
+      newErrors.newPassword = '비밀번호는 영문과 숫자를 포함해야 합니다';
       isValid = false;
     }
 
@@ -58,37 +78,61 @@ const ChangePassword = () => {
     return isValid;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validateForm()) {
       return;
     }
 
-    // 비밀번호 변경 처리
-    console.log('비밀번호 변경:', passwords.newPassword);
-    alert('비밀번호가 변경되었습니다!');
-    
-    // 폼 초기화
-    setPasswords({
-      newPassword: '',
-      confirmPassword: ''
-    });
+    if (!authUser?.userId) {
+      alert('로그인이 필요합니다.');
+      navigate('/login');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      await userService.changePassword(authUser.userId, {
+        oldPassword: passwords.currentPassword,
+        newPassword: passwords.newPassword
+      });
+
+      alert('비밀번호가 변경되었습니다!');
+
+      // 폼 초기화
+      setPasswords({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+
+      // 마이페이지로 이동
+      navigate('/mypage');
+    } catch (error: any) {
+      console.error('비밀번호 변경 실패:', error);
+      alert(error.message || '비밀번호 변경에 실패했습니다. 현재 비밀번호를 확인해주세요.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCancel = () => {
     // 폼 초기화
     setPasswords({
+      currentPassword: '',
       newPassword: '',
       confirmPassword: ''
     });
     setErrors({
+      currentPassword: '',
       newPassword: '',
       confirmPassword: ''
     });
-    
-    // 이전 페이지로 이동 또는 마이페이지로 이동
-    window.history.back();
+
+    // 마이페이지로 이동
+    navigate('/mypage');
   };
 
   return (
@@ -100,18 +144,35 @@ const ChangePassword = () => {
 
           {/* 비밀번호 변경 폼 */}
           <form onSubmit={handleSubmit} className="change-password-form">
+            {/* 현재 비밀번호 */}
+            <div className="password-field">
+              <label className="password-label">현재 비밀번호</label>
+              <Input
+                type="password"
+                name="currentPassword"
+                placeholder="현재 비밀번호를 입력하세요"
+                value={passwords.currentPassword}
+                onChange={handleInputChange('currentPassword')}
+                error={errors.currentPassword}
+                fullWidth
+                variant="filled"
+                disabled={isLoading}
+              />
+            </div>
+
             {/* 새 비밀번호 */}
             <div className="password-field">
               <label className="password-label">새 비밀번호</label>
               <Input
                 type="password"
                 name="newPassword"
-                placeholder="새 비밀번호를 입력하세요"
+                placeholder="새 비밀번호를 입력하세요 (8자 이상, 영문+숫자)"
                 value={passwords.newPassword}
                 onChange={handleInputChange('newPassword')}
                 error={errors.newPassword}
                 fullWidth
                 variant="filled"
+                disabled={isLoading}
               />
             </div>
 
@@ -127,6 +188,7 @@ const ChangePassword = () => {
                 error={errors.confirmPassword}
                 fullWidth
                 variant="filled"
+                disabled={isLoading}
               />
             </div>
 
@@ -137,6 +199,7 @@ const ChangePassword = () => {
                 variant="secondary"
                 onClick={handleCancel}
                 className="cancel-button"
+                disabled={isLoading}
               >
                 취소
               </Button>
@@ -144,8 +207,9 @@ const ChangePassword = () => {
                 type="submit"
                 variant="primary"
                 className="submit-button"
+                disabled={isLoading}
               >
-                비밀번호 변경
+                {isLoading ? '변경 중...' : '비밀번호 변경'}
               </Button>
             </div>
           </form>
