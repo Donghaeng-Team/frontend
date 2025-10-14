@@ -20,27 +20,12 @@ const LocationModalWrapper: React.FC<LocationModalWrapperProps> = ({ isOpen, onC
   const setCurrentDivision = useLocationStore((state) => state.setCurrentDivision);
   const currentDivision = useLocationStore((state) => state.currentDivision);
 
-  // 현재 선택된 시/도 코드를 추적하기 위한 ref
-  const [currentSidoCode, setCurrentSidoCode] = React.useState<string>('');
-
-  // currentDivision이 있으면 초기 sido 코드 설정
-  React.useEffect(() => {
-    if (currentDivision && currentDivision.sidoCode) {
-      setCurrentSidoCode(currentDivision.sidoCode);
-    }
-  }, [currentDivision]);
-
   const handleFetchGugunList = async (sidoCode: string): Promise<LocationItem[]> => {
-    setCurrentSidoCode(sidoCode);
     return fetchGugunList(sidoCode);
   };
 
-  const handleFetchDongList = async (gugunCode: string): Promise<LocationItem[]> => {
-    if (!currentSidoCode) {
-      console.error('Sido code is not set');
-      return [];
-    }
-    return fetchDongList(currentSidoCode, gugunCode);
+  const handleFetchDongList = async (sidoCode: string, gugunCode: string): Promise<LocationItem[]> => {
+    return fetchDongList(sidoCode, gugunCode);
   };
 
   const handleConfirm = async (location: SelectedLocation) => {

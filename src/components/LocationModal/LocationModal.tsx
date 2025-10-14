@@ -21,7 +21,7 @@ interface LocationModalProps {
   // API 호출 함수들을 props로 받음
   fetchSidoList: () => Promise<LocationItem[]>;
   fetchGugunList: (sidoCode: string) => Promise<LocationItem[]>;
-  fetchDongList: (gugunCode: string) => Promise<LocationItem[]>;
+  fetchDongList: (sidoCode: string, gugunCode: string) => Promise<LocationItem[]>;
 }
 
 const LocationModal: React.FC<LocationModalProps> = ({
@@ -72,12 +72,12 @@ const LocationModal: React.FC<LocationModalProps> = ({
 
   // 구/군 선택 시 동 목록 로드
   useEffect(() => {
-    if (selectedLocation.gugun) {
-      loadDongList(selectedLocation.gugun.code);
+    if (selectedLocation.sido && selectedLocation.gugun) {
+      loadDongList(selectedLocation.sido.code, selectedLocation.gugun.code);
     } else {
       setDongList([]);
     }
-  }, [selectedLocation.gugun]);
+  }, [selectedLocation.sido, selectedLocation.gugun]);
 
   const loadSidoList = async () => {
     setLoading(prev => ({ ...prev, sido: true }));
@@ -104,10 +104,10 @@ const LocationModal: React.FC<LocationModalProps> = ({
     }
   };
 
-  const loadDongList = async (gugunCode: string) => {
+  const loadDongList = async (sidoCode: string, gugunCode: string) => {
     setLoading(prev => ({ ...prev, dong: true }));
     try {
-      const data = await fetchDongList(gugunCode);
+      const data = await fetchDongList(sidoCode, gugunCode);
       setDongList(data);
     } catch (error) {
       console.error('동 목록 로드 실패:', error);
