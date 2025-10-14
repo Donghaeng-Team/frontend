@@ -44,10 +44,11 @@ cp .env.example .env
 
 ```env
 # 마이크로서비스별 API URL (필수)
-VITE_DIVISION_API_URL=http://localhost:8080
-VITE_MARKET_API_URL=http://localhost:8082
+VITE_MARKET_API_URL=http://localhost:8081
+VITE_DIVISION_API_URL=http://localhost:8082
 VITE_USER_API_URL=http://localhost:8083
 VITE_COMMUNITY_API_URL=http://localhost:8085
+VITE_CHAT_API_URL=http://localhost:8086
 
 # 카카오맵 API 키 (선택)
 VITE_KAKAO_MAP_API_KEY=your_kakao_map_api_key_here
@@ -56,10 +57,12 @@ VITE_KAKAO_MAP_API_KEY=your_kakao_map_api_key_here
 ```
 
 > **참고**: 각 마이크로서비스가 다른 포트에서 실행됩니다:
-> - **Division API** (8080): 행정구역/위치 관련
-> - **Market API** (8082): 공동구매/장바구니 관련
+> - **Market API** (8081): 공동구매/장바구니 관련
+> - **Division API** (8082): 행정구역/위치 관련
 > - **User API** (8083): 사용자/인증 관련
 > - **Community API** (8085): 커뮤니티/댓글 관련
+> - **Chat API** (8086): 채팅 관련
+> - **Notification API** (미정): 알림 관련
 
 ### 4. 개발 서버 실행
 
