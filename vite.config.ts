@@ -14,30 +14,30 @@ export default defineConfig(({ mode }) => {
         usePolling: true  // WSL이나 Docker 사용 시
       },
       proxy: {
-        // Market API (Port 8081)
-        '/api/v1/market': {
-          target: env.VITE_MARKET_API_URL || 'http://localhost:8081',
-          changeOrigin: true,
-          secure: false
-        },
-        '/internal/v1/market': {
-          target: env.VITE_MARKET_API_URL || 'http://localhost:8081',
-          changeOrigin: true,
-          secure: false
-        },
-        '/api/v1/cart': {
-          target: env.VITE_MARKET_API_URL || 'http://localhost:8081',
-          changeOrigin: true,
-          secure: false
-        },
-        // Division API (Port 8082)
+        // Division API (Port 8081)
         '/api/v1/division': {
-          target: env.VITE_DIVISION_API_URL || 'http://localhost:8082',
+          target: env.VITE_DIVISION_API_URL || 'http://localhost:8081',
           changeOrigin: true,
           secure: false
         },
         '/internal/v1/division': {
-          target: env.VITE_DIVISION_API_URL || 'http://localhost:8082',
+          target: env.VITE_DIVISION_API_URL || 'http://localhost:8081',
+          changeOrigin: true,
+          secure: false
+        },
+        // Market API (Port 8082)
+        '/api/v1/market': {
+          target: env.VITE_MARKET_API_URL || 'http://localhost:8082',
+          changeOrigin: true,
+          secure: false
+        },
+        '/internal/v1/market': {
+          target: env.VITE_MARKET_API_URL || 'http://localhost:8082',
+          changeOrigin: true,
+          secure: false
+        },
+        '/api/v1/cart': {
+          target: env.VITE_MARKET_API_URL || 'http://localhost:8082',
           changeOrigin: true,
           secure: false
         },
