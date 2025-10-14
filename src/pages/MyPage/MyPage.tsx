@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import StatCard from '../../components/StatCard';
@@ -7,6 +7,7 @@ import Button from '../../components/Button';
 import Input from '../../components/Input';
 import { canChangePassword } from '../../utils/auth';
 import { useAuthStore } from '../../stores/authStore';
+import { userService } from '../../api/services/user';
 import './MyPage.css';
 
 interface UserProfile {
@@ -20,21 +21,39 @@ interface MyPageProps {
   user?: UserProfile;
 }
 
-const MyPage: React.FC<MyPageProps> = ({
-  user = {
-    name: '홍길동',
-    email: 'example@email.com',
-    joinDate: '2025년 9월',
-  }
-}) => {
+const MyPage: React.FC<MyPageProps> = () => {
   const navigate = useNavigate();
+  const authUser = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
-  // 프로필 상태
-  const [profile, setProfile] = useState<UserProfile>(user);
+  const refreshProfile = useAuthStore((state) => state.refreshProfile);
+
+  // 프로필 상태 (authStore의 user를 기반으로 초기화)
+  const [profile, setProfile] = useState<UserProfile>({
+    name: authUser?.nickName || '사용자',
+    email: authUser?.email || '',
+    joinDate: '2025년 9월',
+    avatar: authUser?.avatarUrl || undefined
+  });
+
   const [isEditMode, setIsEditMode] = useState(false);
   const [editName, setEditName] = useState(profile.name);
   const [tempAvatar, setTempAvatar] = useState(profile.avatar);
+  const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // authUser가 변경되면 profile 업데이트
+  useEffect(() => {
+    if (authUser) {
+      setProfile({
+        name: authUser.nickName,
+        email: authUser.email,
+        joinDate: '2025년 9월',
+        avatar: authUser.avatarUrl || undefined
+      });
+      setEditName(authUser.nickName);
+      setTempAvatar(authUser.avatarUrl || undefined);
+    }
+  }, [authUser]);
 
   // 알림 설정 상태
   const [notificationSettings, setNotificationSettings] = useState({
@@ -50,15 +69,44 @@ const MyPage: React.FC<MyPageProps> = ({
     setExpandedSection(expandedSection === section ? null : section);
   };
 
-  const handleProfileEdit = () => {
+  const handleProfileEdit = async () => {
     if (isEditMode) {
-      // 저장 모드
-      setProfile({
-        ...profile,
-        name: editName,
-        avatar: tempAvatar
-      });
-      setIsEditMode(false);
+      // 저장 모드 - 닉네임 변경 API 호출
+      if (!authUser?.userId) {
+        alert('사용자 정보를 찾을 수 없습니다.');
+        return;
+      }
+
+      if (editName === profile.name) {
+        // 변경사항 없으면 그냥 편집 모드 종료
+        setIsEditMode(false);
+        return;
+      }
+
+      setIsSaving(true);
+      try {
+        await userService.changeNickname(authUser.userId, {
+          nickName: editName
+        });
+
+        // 성공 시 프로필 업데이트
+        setProfile({
+          ...profile,
+          name: editName,
+          avatar: tempAvatar
+        });
+
+        // authStore 프로필도 새로고침
+        await refreshProfile();
+
+        alert('닉네임이 변경되었습니다.');
+        setIsEditMode(false);
+      } catch (error: any) {
+        console.error('닉네임 변경 실패:', error);
+        alert(error.message || '닉네임 변경에 실패했습니다.');
+      } finally {
+        setIsSaving(false);
+      }
     } else {
       // 편집 모드
       setEditName(profile.name);

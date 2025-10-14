@@ -6,6 +6,7 @@ export type VerifyType = 'EMAIL' | 'PASSWORD';
 
 // 사용자 정보
 export interface User {
+  userId?: number; // User API 호출 시 필요
   email: string;
   nickName: string;
   avatarUrl: string | null;
