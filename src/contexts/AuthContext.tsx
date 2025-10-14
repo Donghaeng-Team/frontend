@@ -2,7 +2,7 @@ import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { authService } from '../api/services/auth';
 import type { User } from '../types/auth';
-import { getAccessToken, clearAuth } from '../utils/token';
+import { getAccessToken, getUser, clearAuth } from '../utils/token';
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -189,19 +189,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (token) {
         // 테스트 토큰인 경우 API 호출 건너뛰기
-        if (token === 'fake-access-token-for-testing') {
-          const testUser: User = {
-            email: 'test@example.com',
-            nickName: '테스트 사용자',
-            avatarUrl: null,
-            provider: 'LOCAL'
-          };
-
-          dispatch({
-            type: 'AUTH_SUCCESS',
-            payload: { user: testUser }
-          });
-          return;
+        if (token.startsWith('fake-access-token-')) {
+          // localStorage에서 이미 저장된 사용자 정보 사용
+          const user = getUser();
+          if (user) {
+            dispatch({
+              type: 'AUTH_SUCCESS',
+              payload: { user }
+            });
+            return;
+          }
         }
 
         try {
