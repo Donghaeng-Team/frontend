@@ -24,7 +24,7 @@ export interface DivisionListByCoordRequest {
 }
 
 export interface DivisionByCodeRequest {
-  emdCode: string;
+  divisionId: string;
 }
 
 export interface DivisionListByCodeRequest {

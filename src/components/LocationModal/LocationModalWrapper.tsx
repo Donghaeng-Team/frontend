@@ -66,12 +66,13 @@ const LocationModalWrapper: React.FC<LocationModalWrapperProps> = ({ isOpen, onC
 
   // currentDivision을 LocationModal의 initialLocation으로 변환
   const getInitialLocation = (): SelectedLocation | undefined => {
-    if (!currentDivision) return undefined;
+    if (!currentDivision || !currentDivision.id) return undefined;
 
-    // Division에서 시/도/구/군/동 정보 추출
-    const sidoCode = currentDivision.divisionId.substring(0, 2);
-    const sggCode = currentDivision.divisionId.substring(2, 5);
-    const emdCode = currentDivision.divisionId.substring(5, 8);
+    // Division의 id는 10자리 행정구역 코드 (예: "1115051000")
+    // 앞 2자리: 시/도, 3-5자리: 구/군, 6-8자리: 동/읍/면
+    const sidoCode = currentDivision.sidoCode;
+    const sggCode = currentDivision.sggCode;
+    const emdCode = currentDivision.emdCode;
 
     return {
       sido: { code: sidoCode, name: currentDivision.sidoName },
