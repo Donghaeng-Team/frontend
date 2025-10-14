@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts';
+import { useAuthStore } from '../../stores/authStore';
 import Button from '../../components/Button';
 import './LoginForm.css';
 
 const LoginForm: React.FC = () => {
   const navigate = useNavigate();
-  const { login, loading, error, clearError } = useAuth();
+  const login = useAuthStore((state) => state.login);
+  const loading = useAuthStore((state) => state.loading);
+  const error = useAuthStore((state) => state.error);
+  const clearError = useAuthStore((state) => state.clearError);
 
   const [formData, setFormData] = useState({
     email: '',

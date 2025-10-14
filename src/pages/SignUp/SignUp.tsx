@@ -3,17 +3,21 @@ import { useNavigate } from 'react-router-dom';
 import Input from '../../components/Input';
 import Checkbox from '../../components/Checkbox';
 import Button from '../../components/Button';
+import { userService } from '../../api/services/user';
+import { useAuthStore } from '../../stores/authStore';
 import './SignUp.css';
 
 const SignUp = () => {
   const navigate = useNavigate();
+  const register = useAuthStore((state) => state.register);
+
   const [formData, setFormData] = useState({
     email: '',
     nickname: '',
     password: '',
     passwordConfirm: ''
   });
-  
+
   const [agreements, setAgreements] = useState({
     all: false,
     terms: false,
@@ -27,6 +31,10 @@ const SignUp = () => {
     password: '',
     passwordConfirm: ''
   });
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [checkingEmail, setCheckingEmail] = useState(false);
+  const [checkingNickname, setCheckingNickname] = useState(false);
 
   const handleInputChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -126,17 +134,85 @@ const SignUp = () => {
     return !Object.values(newErrors).some(error => error !== '');
   };
 
+  // 이메일 중복 체크
+  const checkEmailDuplicate = async (email: string) => {
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return;
+    }
+
+    setCheckingEmail(true);
+    try {
+      const response = await userService.checkEmail({ email });
+      // API 응답에 따라 에러 설정
+      // 응답 형식에 따라 조정 필요
+      if (!response.success) {
+        setErrors(prev => ({
+          ...prev,
+          email: '이미 사용 중인 이메일입니다'
+        }));
+      }
+    } catch (error: any) {
+      console.error('이메일 중복 체크 실패:', error);
+      // 에러가 발생하면 이미 사용중인 이메일로 간주
+      setErrors(prev => ({
+        ...prev,
+        email: '이미 사용 중인 이메일입니다'
+      }));
+    } finally {
+      setCheckingEmail(false);
+    }
+  };
+
+  // 닉네임 중복 체크
+  const checkNicknameDuplicate = async (nickname: string) => {
+    if (!nickname || nickname.length < 2) {
+      return;
+    }
+
+    setCheckingNickname(true);
+    try {
+      const response = await userService.checkNickname({ nickName: nickname });
+      // API 응답에 따라 에러 설정
+      // 응답 형식에 따라 조정 필요
+      if (!(response as any).success) {
+        setErrors(prev => ({
+          ...prev,
+          nickname: '이미 사용 중인 닉네임입니다'
+        }));
+      }
+    } catch (error: any) {
+      console.error('닉네임 중복 체크 실패:', error);
+      // 에러가 발생하면 이미 사용중인 닉네임으로 간주
+      setErrors(prev => ({
+        ...prev,
+        nickname: '이미 사용 중인 닉네임입니다'
+      }));
+    } finally {
+      setCheckingNickname(false);
+    }
+  };
+
   // 필드별 블러 이벤트 핸들러
-  const handleBlur = (field: string) => () => {
+  const handleBlur = (field: string) => async () => {
     const value = formData[field as keyof typeof formData];
     const error = validateField(field, value);
+
     setErrors(prev => ({
       ...prev,
       [field]: error
     }));
+
+    // 중복 체크 (검증 에러가 없을 때만)
+    if (!error) {
+      if (field === 'email') {
+        await checkEmailDuplicate(value);
+      } else if (field === 'nickname') {
+        await checkNicknameDuplicate(value);
+      }
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // 폼 검증
@@ -151,13 +227,21 @@ const SignUp = () => {
       return;
     }
 
-    // 회원가입 처리
-    console.log('회원가입 데이터:', { ...formData, agreements });
-    alert('회원가입이 완료되었습니다!');
+    setIsLoading(true);
 
-    // TODO: 실제로는 로그인 페이지로 이동
-    // navigate('/login');
-    window.location.href = '/login';
+    try {
+      // authStore의 register 사용 (자동 로그인 포함)
+      await register(formData.email, formData.password, formData.nickname);
+
+      alert('회원가입이 완료되었습니다!');
+      // 회원가입 후 자동 로그인되어 메인 페이지로 이동
+      navigate('/');
+    } catch (error: any) {
+      console.error('회원가입 실패:', error);
+      alert(error.message || '회원가입에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -273,8 +357,9 @@ const SignUp = () => {
               variant="primary"
               size="large"
               fullWidth
+              disabled={isLoading || checkingEmail || checkingNickname}
             >
-              회원가입
+              {isLoading ? '가입 중...' : checkingEmail || checkingNickname ? '확인 중...' : '회원가입'}
             </Button>
           </form>
 
