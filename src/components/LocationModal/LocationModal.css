@@ -174,9 +174,36 @@
     padding: 20px 40px;
     border-top: 1px solid #e6e6e6;
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+    gap: 12px;
   }
-  
+
+  .location-btn-current {
+    padding: 12px 24px;
+    background-color: #ffffff;
+    color: #ff5e2f;
+    border: 2px solid #ff5e2f;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+
+  .location-btn-current:hover:not(:disabled) {
+    background-color: #fff7ed;
+    border-color: #e54420;
+    color: #e54420;
+  }
+
+  .location-btn-current:disabled {
+    background-color: #f5f5f5;
+    border-color: #cccccc;
+    color: #999999;
+    cursor: not-allowed;
+  }
+
   .location-btn-confirm {
     padding: 12px 32px;
     background-color: #ff5e2f;
@@ -189,12 +216,12 @@
     transition: all 0.2s;
     font-family: 'Inter', -apple-system, sans-serif;
   }
-  
+
   .location-btn-confirm:hover:not(:disabled) {
     background-color: #e54420;
     box-shadow: 0 2px 8px rgba(255, 94, 47, 0.3);
   }
-  
+
   .location-btn-confirm:disabled {
     background-color: #cccccc;
     cursor: not-allowed;

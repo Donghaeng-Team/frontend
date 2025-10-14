@@ -17,17 +17,19 @@ interface LocationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (location: SelectedLocation) => void;
+  onCurrentLocation?: () => Promise<void>;
   initialLocation?: SelectedLocation;
   // API 호출 함수들을 props로 받음
   fetchSidoList: () => Promise<LocationItem[]>;
   fetchGugunList: (sidoCode: string) => Promise<LocationItem[]>;
-  fetchDongList: (gugunCode: string) => Promise<LocationItem[]>;
+  fetchDongList: (sidoCode: string, gugunCode: string) => Promise<LocationItem[]>;
 }
 
 const LocationModal: React.FC<LocationModalProps> = ({
   isOpen,
   onClose,
   onConfirm,
+  onCurrentLocation,
   initialLocation = { sido: null, gugun: null, dong: null },
   fetchSidoList,
   fetchGugunList,
@@ -42,6 +44,7 @@ const LocationModal: React.FC<LocationModalProps> = ({
     gugun: false,
     dong: false
   });
+  const [loadingCurrentLocation, setLoadingCurrentLocation] = useState(false);
 
   // 시/도 목록 로드 및 외부 스크롤 제어
   useEffect(() => {
@@ -72,12 +75,12 @@ const LocationModal: React.FC<LocationModalProps> = ({
 
   // 구/군 선택 시 동 목록 로드
   useEffect(() => {
-    if (selectedLocation.gugun) {
-      loadDongList(selectedLocation.gugun.code);
+    if (selectedLocation.sido && selectedLocation.gugun) {
+      loadDongList(selectedLocation.sido.code, selectedLocation.gugun.code);
     } else {
       setDongList([]);
     }
-  }, [selectedLocation.gugun]);
+  }, [selectedLocation.sido, selectedLocation.gugun]);
 
   const loadSidoList = async () => {
     setLoading(prev => ({ ...prev, sido: true }));
@@ -104,10 +107,10 @@ const LocationModal: React.FC<LocationModalProps> = ({
     }
   };
 
-  const loadDongList = async (gugunCode: string) => {
+  const loadDongList = async (sidoCode: string, gugunCode: string) => {
     setLoading(prev => ({ ...prev, dong: true }));
     try {
-      const data = await fetchDongList(gugunCode);
+      const data = await fetchDongList(sidoCode, gugunCode);
       setDongList(data);
     } catch (error) {
       console.error('동 목록 로드 실패:', error);
@@ -143,6 +146,21 @@ const LocationModal: React.FC<LocationModalProps> = ({
     if (selectedLocation.sido && selectedLocation.gugun && selectedLocation.dong) {
       onConfirm(selectedLocation);
       onClose();
+    }
+  };
+
+  const handleCurrentLocation = async () => {
+    if (!onCurrentLocation) return;
+
+    setLoadingCurrentLocation(true);
+    try {
+      await onCurrentLocation();
+      onClose();
+    } catch (error) {
+      console.error('현재 위치 가져오기 실패:', error);
+      alert('현재 위치를 가져올 수 없습니다.');
+    } finally {
+      setLoadingCurrentLocation(false);
     }
   };
 
@@ -276,7 +294,16 @@ const LocationModal: React.FC<LocationModalProps> = ({
 
         {/* 하단 버튼 영역 */}
         <div className="location-modal-footer">
-          <button 
+          {onCurrentLocation && (
+            <button
+              className="location-btn-current"
+              onClick={handleCurrentLocation}
+              disabled={loadingCurrentLocation}
+            >
+              {loadingCurrentLocation ? '위치 확인 중...' : '📍 현재 위치'}
+            </button>
+          )}
+          <button
             className="location-btn-confirm"
             onClick={handleConfirm}
             disabled={!selectedLocation.sido || !selectedLocation.gugun || !selectedLocation.dong}
