@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import './ProductDetail.css';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
@@ -9,6 +9,7 @@ import Progress from '../../components/Progress';
 import Accordion from '../../components/Accordion';
 import type { AccordionItem } from '../../components/Accordion';
 import { useAuthStore } from '../../stores/authStore';
+import { productService, type Product } from '../../api/services/product';
 
 interface ProductDetailProps {
   productId?: string;
@@ -38,63 +39,80 @@ interface RelatedProduct {
   image?: string;
 }
 
-const ProductDetail: React.FC<ProductDetailProps> = ({ productId }) => {
+// Fallback Mock 상품 데이터 생성 함수
+const generateFallbackMockProduct = (id: string): Product => {
+  return {
+    id: id,
+    title: '유기농 사과 10kg (부사) - 샘플 상품',
+    description: '신선한 유기농 사과입니다. 직접 재배한 부사 품종으로 달콤하고 아삭합니다.\n\n이 상품은 API 연동 전 샘플 데이터입니다.\n실제 상품을 등록하시면 이 데이터 대신 표시됩니다.',
+    price: 35000,
+    category: '식품',
+    images: [],
+    targetQuantity: 20,
+    currentQuantity: 15,
+    deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    status: 'active',
+    location: {
+      sido: '서울',
+      gugun: '서초구',
+      dong: '서초동',
+      fullAddress: '서울시 서초구 서초동'
+    },
+    seller: {
+      id: '101',
+      name: '사과조아',
+      rating: 0
+    },
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+};
+
+const ProductDetail: React.FC<ProductDetailProps> = () => {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const authUser = useAuthStore((state) => state.user);
+
+  const [loading, setLoading] = useState(true);
+  const [product, setProduct] = useState<Product | null>(null);
   const [isWished, setIsWished] = useState(false);
   const [activeAccordion, setActiveAccordion] = useState<string[]>(['1']);
 
-  // 샘플 데이터
-  const product = {
-    id: '1', // 샘플 ID 추가
-    category: '식품',
-    title: '유기농 사과 10kg (부사)',
-    price: 35000,
-    originalPrice: 50000,
-    discount: 30,
-    currentParticipants: 15,
-    maxParticipants: 20,
-    remainingTime: '2일 3시간',
-    minParticipants: 10,
-    description: {
-      main: '🍎 프리미엄 유기농 사과',
-      features: [
-        '품종: 부사 (당도 15Brix 이상)',
-        '중량: 10kg (30~35과)',
-        '산지: 충청북도 충주시 직송',
-        '재배방법: 100% 유기농 인증'
-      ],
-      details: [
-        'GAP 인증 농장에서 재배한 프리미엄 사과',
-        '농약과 화학비료를 전혀 사용하지 않은 친환경 재배',
-        '수확 후 24시간 이내 발송으로 신선도 보장',
-        '개별 완충포장으로 안전하게 배송'
-      ],
-      process: [
-        '최소 모집 인원: 10명',
-        '최대 모집 인원: 20명',
-        '모집 기간: 2025년 9월 27일까지',
-        '발송 예정일: 모집 완료 후 3일 이내'
-      ],
-      storage: [
-        '받으신 후 냉장보관 권장',
-        '서늘한 곳에 보관 시 2주 이상 신선도 유지'
-      ]
-    },
-    seller: {
-      id: authUser?.userId?.toString() || '1', // 샘플: 현재 로그인한 사용자를 작성자로 설정 (테스트용)
-      name: '김농부네 과수원',
-      avatar: '김농',
-      rating: 4.8,
-      reviewCount: 124,
-      successRate: 95,
-      location: '서초동',
-      verified: true
-    }
-  };
+  // 상품 데이터 로드
+  useEffect(() => {
+    const loadProduct = async () => {
+      if (!id) {
+        alert('상품 ID가 없습니다.');
+        navigate('/products');
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const response = await productService.getProduct(id);
+
+        if (!response.success || !response.data) {
+          throw new Error('상품을 찾을 수 없습니다.');
+        }
+
+        setProduct(response.data);
+      } catch (error: any) {
+        console.error('❌ 상품 로드 실패:', error);
+        console.warn('⚠️ Using fallback mock product data');
+
+        // Fallback: mock 데이터 사용
+        const mockProduct = generateFallbackMockProduct(id);
+        setProduct(mockProduct);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProduct();
+  }, [id, navigate]);
 
   // 작성자 여부 확인
-  const isAuthor = authUser && product.seller.id === authUser.userId?.toString();
+  const isAuthor = authUser && product && product.seller.id === authUser.userId?.toString();
 
   const participants: Participant[] = [
     { id: '1', name: '김민', color: '#ff8080' },
@@ -147,8 +165,6 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId }) => {
     }
   ];
 
-  const progressPercent = (product.currentParticipants / product.maxParticipants) * 100;
-
   const handleJoinChat = () => {
     // 채팅방 참여 로직
     console.log('채팅방 참여');
@@ -162,92 +178,119 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId }) => {
     return `₩${price.toLocaleString()}`;
   };
 
+  // 로딩 중
+  if (loading) {
+    return (
+      <div className="product-detail-page">
+        <Header isLoggedIn={true} notificationCount={3} />
+        <div className="product-detail-container">
+          <div className="loading-message">상품 정보를 불러오는 중...</div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // 상품 없음
+  if (!product) {
+    return (
+      <div className="product-detail-page">
+        <Header isLoggedIn={true} notificationCount={3} />
+        <div className="product-detail-container">
+          <div className="loading-message">상품을 찾을 수 없습니다.</div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  const progressPercent = (product.currentQuantity / product.targetQuantity) * 100;
+
   return (
     <div className="product-detail-page">
       <Header isLoggedIn={true} notificationCount={3} />
-      
+
       <main className="product-detail-container">
         {/* 상품 메인 섹션 */}
         <section className="product-main-section">
           <div className="product-image-container">
-            <div className="product-image-placeholder">
-              🍎 유기농 사과 이미지
-            </div>
+            {product.images && product.images.length > 0 ? (
+              <img src={product.images[0]} alt={product.title} className="product-image" />
+            ) : (
+              <div className="product-image-placeholder">
+                📦 상품 이미지
+              </div>
+            )}
           </div>
 
           <div className="product-info-section">
-            <div className="product-category">{product.category}</div>
-            <h1 className="product-title">{product.title}</h1>
-            
-            <div className="price-container">
-              <span className="current-price">{formatPrice(product.price)}</span>
-              <span className="original-price">{formatPrice(product.originalPrice)}</span>
-              <span className="discount-badge">{product.discount}%</span>
-            </div>
-
-            <div className="recruitment-status">
-              <div className="recruitment-header">
-                <span className="participants-count">
-                  🔥 {product.currentParticipants}/{product.maxParticipants}명 참여중
-                </span>
-                <span className="time-badge">
-                  ⏰ {product.remainingTime}
-                </span>
-              </div>
-              
-              <Progress 
-                percent={progressPercent} 
-                strokeColor="#ff5e2f"
-                showInfo={false}
-              />
-              
-              <div className="progress-text">
-                최소 인원 {product.minParticipants}명 달성! • {Math.round(progressPercent)}% 진행
+            <div className="product-header-info">
+              <div className="product-category">{product.category}</div>
+              <h1 className="product-title">{product.title}</h1>
+              <div className="price-container">
+                <span className="current-price">{formatPrice(product.price)}</span>
               </div>
             </div>
 
-            <div className="action-buttons">
-              {isAuthor ? (
-                <>
-                  <Button
-                    variant="outline"
-                    size="large"
-                    fullWidth
-                    onClick={() => navigate(`/products/${product.id}/edit`)}
-                    className="edit-button"
-                  >
-                    ✏️ 수정
-                  </Button>
-                  <Button
-                    variant={isWished ? "primary" : "outline"}
-                    size="large"
-                    onClick={handleWish}
-                    className="wish-button"
-                  >
-                    ♥
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button
-                    variant="outline"
-                    size="large"
-                    fullWidth
-                    onClick={handleJoinChat}
-                    className="chat-button"
-                  >
-                    💬 채팅방 참여
-                  </Button>
-                  <Button
-                    variant={isWished ? "primary" : "outline"}
-                    size="large"
-                    onClick={handleWish}
-                    className="wish-button"
-                  >
-                    ♥
-                  </Button>
-                </>
-              )}
+            <div className="product-action-info">
+              <div className="recruitment-status">
+                <div className="recruitment-header">
+                  <span className="participants-count">
+                    🔥 {product.currentQuantity}/{product.targetQuantity}명 참여중
+                  </span>
+                  <span className="time-badge">
+                    ⏰ {new Date(product.deadline) > new Date() ? '모집중' : '마감'}
+                  </span>
+                </div>
+
+                <Progress
+                  percent={progressPercent}
+                  strokeColor="#ff5e2f"
+                  showInfo={false}
+                />
+
+                <div className="progress-text">
+                  목표 인원 {product.targetQuantity}명 • {Math.round(progressPercent)}% 진행
+                </div>
+              </div>
+
+              <div className="action-buttons">
+                {isAuthor ? (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="large"
+                      onClick={() => navigate(`/products/${product.id}/edit`)}
+                      className="edit-button"
+                    >
+                      ✏️ 수정
+                    </Button>
+                    <button
+                      onClick={handleWish}
+                      className="wish-button"
+                      data-variant={isWished ? "primary" : "outline"}
+                    >
+                      ♥
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={handleJoinChat}
+                      className="chat-button"
+                    >
+                      💬 채팅방 참여
+                    </button>
+                    <button
+                      onClick={handleWish}
+                      className="wish-button"
+                      data-variant={isWished ? "primary" : "outline"}
+                    >
+                      ♥
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </section>
@@ -257,14 +300,16 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId }) => {
           <h2 className="section-title">👤 판매자 정보</h2>
           <div className="seller-card">
             <div className="seller-avatar">
-              <span>{product.seller.avatar}</span>
+              {product.seller.profileImage ? (
+                <img src={product.seller.profileImage} alt={product.seller.name} />
+              ) : (
+                <span>{product.seller.name.slice(0, 2)}</span>
+              )}
             </div>
             <div className="seller-info">
               <h3 className="seller-name">{product.seller.name}</h3>
-              <div className="seller-rating">
-                ⭐ {product.seller.rating} ({product.seller.reviewCount}개 평가) • 
-                성공률 {product.seller.successRate}% • 
-                {product.seller.location} {product.seller.verified && '인증'}
+              <div className="seller-location">
+                📍 {product.location.dong}
               </div>
             </div>
           </div>
@@ -274,32 +319,18 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId }) => {
         <section className="description-section">
           <h2 className="section-title">📝 상품 상세 설명</h2>
           <div className="description-content">
-            <h3>{product.description.main}</h3>
-            <div className="description-group">
-              {product.description.features.map((feature, index) => (
-                <p key={index}>- {feature}</p>
+            <div className="description-text">
+              {product.description.split('\n').map((line, index) => (
+                <p key={index}>{line}</p>
               ))}
             </div>
-            
-            <h4>📦 상품 특징</h4>
-            <div className="description-group">
-              {product.description.details.map((detail, index) => (
-                <p key={index}>• {detail}</p>
-              ))}
-            </div>
-            
+
             <h4>⏰ 공동구매 진행 안내</h4>
             <div className="description-group">
-              {product.description.process.map((item, index) => (
-                <p key={index}>• {item}</p>
-              ))}
-            </div>
-            
-            <h4>💡 보관 방법</h4>
-            <div className="description-group">
-              {product.description.storage.map((item, index) => (
-                <p key={index}>• {item}</p>
-              ))}
+              <p>• 목표 수량: {product.targetQuantity}개</p>
+              <p>• 현재 수량: {product.currentQuantity}개</p>
+              <p>• 모집 마감: {new Date(product.deadline).toLocaleDateString('ko-KR')}</p>
+              <p>• 거래 장소: {product.location.fullAddress}</p>
             </div>
           </div>
         </section>
@@ -307,21 +338,21 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId }) => {
         {/* 참여자 현황 섹션 */}
         <section className="participants-section">
           <h2 className="section-title">
-            👥 참여자 현황 ({product.currentParticipants}/{product.maxParticipants}명)
+            👥 참여자 현황 ({product.currentQuantity}/{product.targetQuantity}개)
           </h2>
           <div className="participants-list">
             {participants.map((participant) => (
-              <div 
-                key={participant.id} 
+              <div
+                key={participant.id}
                 className="participant-avatar"
                 style={{ backgroundColor: participant.color }}
               >
                 {participant.name}
               </div>
             ))}
-            {product.currentParticipants > 5 && (
+            {product.currentQuantity > 5 && (
               <div className="participant-more">
-                +{product.currentParticipants - 5}
+                +{product.currentQuantity - 5}
               </div>
             )}
           </div>
@@ -341,6 +372,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId }) => {
                 participants={item.participants}
                 location={item.location}
                 image={item.image}
+                onClick={() => navigate(`/products/${item.id}`)}
               />
             ))}
           </div>
