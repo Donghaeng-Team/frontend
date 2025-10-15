@@ -91,7 +91,7 @@ const ProductRegister: React.FC = () => {
     selectedLocation?: string;
   }>({});
 
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const saveTimeoutRef = useRef<number | null>(null);
   const hasPromptedRef = useRef(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropZoneRef = useRef<HTMLDivElement>(null);
@@ -459,7 +459,7 @@ const ProductRegister: React.FC = () => {
           longitude: locationCoords.lng
         },
         seller: {
-          id: authUser.userId.toString(),
+          id: authUser.userId?.toString() || '',
           name: authUser.nickName,
           rating: 0
         }
@@ -536,7 +536,7 @@ const ProductRegister: React.FC = () => {
 
   return (
     <div className="product-register">
-      <Header isLoggedIn={true} notificationCount={3} />
+      <Header notificationCount={3} />
       
       <div className="register-container">
         <div className="register-header">

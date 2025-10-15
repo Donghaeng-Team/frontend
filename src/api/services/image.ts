@@ -11,6 +11,27 @@ import type {
  */
 export const imageService = {
   /**
+   * 단일 파일용 Presigned URL 생성
+   * @param request 파일 정보
+   * @returns Presigned URL 및 이미지 URL
+   */
+  getPresignedUrl: async (request: { fileName: string; fileType: string }): Promise<{ success: boolean; data?: { presignedUrl: string; imageUrl: string } }> => {
+    try {
+      const response = await apiClient.post('/images/presigned-url', request);
+      return {
+        success: true,
+        data: {
+          presignedUrl: response.data.presignedUrl || response.data.uploadUrl,
+          imageUrl: response.data.imageUrl || response.data.s3Url
+        }
+      };
+    } catch (error) {
+      console.error('Presigned URL 생성 실패:', error);
+      return { success: false };
+    }
+  },
+
+  /**
    * S3 업로드 URL 생성
    * @param userId 사용자 ID (헤더로 전송)
    * @param postId 게시글 ID

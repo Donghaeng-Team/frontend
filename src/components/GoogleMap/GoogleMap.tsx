@@ -18,7 +18,7 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
 
   // 현재 위치 가져오기 (타임아웃 5초)
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: number;
 
     if (navigator.geolocation) {
       // 5초 타임아웃 설정

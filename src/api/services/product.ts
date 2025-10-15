@@ -36,10 +36,24 @@ export interface ProductCreateRequest {
   price: number;
   discountPrice?: number;
   category: string;
-  images: File[];
+  images: string[];
   targetQuantity: number;
+  currentQuantity: number;
   deadline: string;
-  locationCode: string;
+  status: string;
+  location: {
+    sido: string;
+    gugun: string;
+    dong: string;
+    fullAddress: string;
+    latitude?: number;
+    longitude?: number;
+  };
+  seller: {
+    id: string;
+    name: string;
+    rating: number;
+  };
 }
 
 export interface ProductUpdateRequest extends Partial<ProductCreateRequest> {
@@ -75,25 +89,7 @@ export const productService = {
 
   // 상품 생성
   createProduct: async (data: ProductCreateRequest): Promise<ApiResponse<Product>> => {
-    const formData = new FormData();
-
-    // 이미지 파일들 추가
-    data.images.forEach((image, index) => {
-      formData.append(`images`, image);
-    });
-
-    // 나머지 데이터 추가
-    Object.entries(data).forEach(([key, value]) => {
-      if (key !== 'images') {
-        formData.append(key, typeof value === 'object' ? JSON.stringify(value) : String(value));
-      }
-    });
-
-    const response = await apiClient.post('/products', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    const response = await apiClient.post('/products', data);
     return response.data;
   },
 
