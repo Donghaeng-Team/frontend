@@ -13,31 +13,56 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
 }) => {
   const [center, setCenter] = useState(initialCenter);
   const [currentAddress, setCurrentAddress] = useState('위치를 가져오는 중...');
+  const [isLoadingLocation, setIsLoadingLocation] = useState(true);
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
 
-  // 현재 위치 가져오기
+  // 현재 위치 가져오기 (타임아웃 5초)
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+
     if (navigator.geolocation) {
+      // 5초 타임아웃 설정
+      timeoutId = setTimeout(() => {
+        console.warn('위치 가져오기 타임아웃, 기본 위치 사용');
+        setCurrentAddress('서울특별시 중구 태평로1가');
+        reverseGeocode(initialCenter.lat, initialCenter.lng);
+        setIsLoadingLocation(false);
+      }, 5000);
+
       navigator.geolocation.getCurrentPosition(
         (position) => {
+          clearTimeout(timeoutId);
           const newCenter = {
             lat: position.coords.latitude,
             lng: position.coords.longitude
           };
           setCenter(newCenter);
           reverseGeocode(newCenter.lat, newCenter.lng);
+          setIsLoadingLocation(false);
         },
         (error) => {
+          clearTimeout(timeoutId);
           console.error('위치 정보를 가져올 수 없습니다:', error);
           setCurrentAddress('서울특별시 중구 태평로1가');
           reverseGeocode(initialCenter.lat, initialCenter.lng);
+          setIsLoadingLocation(false);
+        },
+        {
+          timeout: 5000,
+          maximumAge: 0,
+          enableHighAccuracy: false // 빠른 응답을 위해 정확도 낮춤
         }
       );
     } else {
       console.error('Geolocation을 지원하지 않는 브라우저입니다.');
       setCurrentAddress('서울특별시 중구 태평로1가');
       reverseGeocode(initialCenter.lat, initialCenter.lng);
+      setIsLoadingLocation(false);
     }
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, []);
 
   // Reverse Geocoding: 좌표 → 주소
@@ -110,7 +135,9 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
       {/* 현재 주소 표시 */}
       <div className="current-address">
         <span className="address-icon">📍</span>
-        <span className="address-text">{currentAddress}</span>
+        <span className="address-text">
+          {isLoadingLocation ? '위치를 가져오는 중...' : currentAddress}
+        </span>
       </div>
     </div>
   );
