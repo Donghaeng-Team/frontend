@@ -86,6 +86,17 @@ const CommunityPostDetail: React.FC = () => {
   // 작성자 여부 확인
   const isAuthor = authUser && post && post.authorId === authUser.userId;
 
+  // 디버깅: 작성자 여부 확인
+  useEffect(() => {
+    if (post && authUser) {
+      console.log('🔍 작성자 확인:', {
+        postAuthorId: post.authorId,
+        currentUserId: authUser.userId,
+        isAuthor: post.authorId === authUser.userId
+      });
+    }
+  }, [post, authUser]);
+
   // 댓글 데이터 로드
   useEffect(() => {
     const loadComments = async () => {
@@ -299,34 +310,35 @@ const CommunityPostDetail: React.FC = () => {
         <section className="post-section">
             <div className="post-container">
             {/* 뒤로가기 버튼 */}
-            <button
-              onClick={() => navigate('/community')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '8px 16px',
-                marginBottom: '20px',
-                border: '1px solid #e6e6e6',
-                borderRadius: '8px',
-                backgroundColor: '#ffffff',
-                color: '#666666',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#f5f5f5';
-                e.currentTarget.style.borderColor = '#cccccc';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#ffffff';
-                e.currentTarget.style.borderColor = '#e6e6e6';
-              }}
-            >
-              ← 목록으로
-            </button>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
+              <button
+                onClick={() => navigate('/community')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px 16px',
+                  border: '1px solid #e6e6e6',
+                  borderRadius: '8px',
+                  backgroundColor: '#ffffff',
+                  color: '#666666',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#f5f5f5';
+                  e.currentTarget.style.borderColor = '#cccccc';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#ffffff';
+                  e.currentTarget.style.borderColor = '#e6e6e6';
+                }}
+              >
+                ← 목록으로
+              </button>
+            </div>
 
             {/* 카테고리 태그 */}
             <div className="post-category-tag">{getCategoryName(post.tag)}</div>
