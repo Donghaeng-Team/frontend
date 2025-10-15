@@ -1,5 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
+import { useAuthStore } from '../../stores/authStore';
+import { communityService } from '../../api/services/community';
+import { imageService } from '../../api/services/image';
 import './CommunityPostCreate.css';
 
 interface PostFormData {
@@ -17,6 +21,9 @@ interface DraftData {
 }
 
 const CommunityPostCreate: React.FC = () => {
+  const navigate = useNavigate();
+  const authUser = useAuthStore((state) => state.user);
+
   const [formData, setFormData] = useState<PostFormData>({
     category: 'local-news',
     title: '',
@@ -27,6 +34,7 @@ const CommunityPostCreate: React.FC = () => {
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -300,8 +308,14 @@ const CommunityPostCreate: React.FC = () => {
     processImageFiles(files);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // 로그인 확인
+    if (!authUser) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
 
     // 전체 폼 검증
     if (!validateForm()) {
@@ -309,15 +323,67 @@ const CommunityPostCreate: React.FC = () => {
       return;
     }
 
-    // API 호출 또는 상태 관리 로직
-    console.log('Submitting:', formData);
+    try {
+      setIsSubmitting(true);
 
-    // 성공 시 임시 저장 데이터 삭제
-    clearDraft();
-    alert('게시글이 성공적으로 등록되었습니다!');
+      // 1. 이미지 업로드 (있는 경우)
+      let imageUrls: string[] = [];
+      if (formData.images.length > 0) {
+        console.log('📤 이미지 업로드 중...');
 
-    // TODO: 실제로는 게시판 목록 페이지로 이동
-    // navigate('/community');
+        for (const image of formData.images) {
+          try {
+            const presignedResponse = await imageService.getPresignedUrl({
+              fileName: image.name,
+              fileType: image.type
+            });
+
+            if (presignedResponse.success && presignedResponse.data) {
+              const { presignedUrl, imageUrl } = presignedResponse.data;
+
+              // S3에 이미지 업로드
+              await imageService.uploadToS3(presignedUrl, image);
+              imageUrls.push(imageUrl);
+            }
+          } catch (error) {
+            console.error('이미지 업로드 실패:', error);
+          }
+        }
+      }
+
+      // 2. 카테고리 태그 변환
+      const tagMap: { [key: string]: string } = {
+        'local-news': 'general',
+        'group-review': 'review',
+        'qna': 'question'
+      };
+
+      // 3. 게시글 생성
+      const response = await communityService.createPost(authUser.userId, {
+        title: formData.title,
+        content: formData.content,
+        region: '서초구', // TODO: 사용자 지역 정보 사용
+        tag: tagMap[formData.category] || 'general',
+        imageUrls: imageUrls,
+        thumbnailUrl: imageUrls.length > 0 ? imageUrls[0] : null
+      });
+
+      if (response.success) {
+        // 성공 시 임시 저장 데이터 삭제
+        clearDraft();
+        alert('게시글이 성공적으로 등록되었습니다!');
+
+        // 목록으로 이동 (상세 페이지로 이동하려면 postId 필요)
+        navigate('/community');
+      } else {
+        alert('게시글 등록에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('게시글 등록 실패:', error);
+      alert('게시글 등록 중 오류가 발생했습니다.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCancel = () => {
@@ -397,7 +463,7 @@ const CommunityPostCreate: React.FC = () => {
                 id="title"
                 type="text"
                 className={`form-input ${errors.title ? 'error' : ''}`}
-                placeholder="제목을 입력하세요 (최대 100자)"
+                placeholder="제목을 입력하세요 (최소 2자, 최대 100자)"
                 value={formData.title}
                 onChange={handleTitleChange}
                 onBlur={() => handleBlur('title', formData.title)}
@@ -414,7 +480,7 @@ const CommunityPostCreate: React.FC = () => {
                 <textarea
                 id="content"
                 className={`form-textarea ${errors.content ? 'error' : ''}`}
-                placeholder="내용을 입력하세요 (최대 2000자)"
+                placeholder="내용을 입력하세요 (최소 10자, 최대 2000자)"
                 value={formData.content}
                 onChange={handleContentChange}
                 onBlur={() => handleBlur('content', formData.content)}
@@ -464,13 +530,21 @@ const CommunityPostCreate: React.FC = () => {
                       <span className="upload-link">파일을 업로드</span>
                       <span className="upload-text"> 하세요.</span>
                     </div>
-                    <span className="image-count">0/10</span>
+                    <div className="upload-info">
+                      <span className="image-count">0/10</span>
+                      <span className="thumbnail-hint">💡 첫 번째 이미지가 썸네일로 사용됩니다</span>
+                    </div>
                   </div>
                 ) : (
                   <>
                     {imagePreviews.map((preview, index) => (
                       <div key={index} className="image-preview">
                         <img src={preview} alt={`Preview ${index + 1}`} />
+                        {index === 0 && (
+                          <div className="thumbnail-badge">
+                            썸네일
+                          </div>
+                        )}
                         <button
                           type="button"
                           className="image-remove-button"
@@ -512,8 +586,9 @@ const CommunityPostCreate: React.FC = () => {
                 <button
                 type="submit"
                 className="btn btn-submit"
+                disabled={isSubmitting}
                 >
-                등록
+                {isSubmitting ? '등록 중...' : '등록'}
                 </button>
             </div>
             </form>
