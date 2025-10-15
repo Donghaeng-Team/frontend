@@ -49,6 +49,17 @@
     display: flex;
     flex-direction: column;
     padding: 0 10px;
+    justify-content: space-between;
+  }
+
+  .product-header-info {
+    flex-shrink: 0;
+  }
+
+  .product-action-info {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
   }
   
   .product-category {
@@ -70,7 +81,6 @@
     display: flex;
     align-items: center;
     gap: 15px;
-    margin-bottom: 20px;
   }
   
   .current-price {
@@ -100,7 +110,6 @@
     border: 1px solid #e6e6e6;
     border-radius: 12px;
     padding: 20px 25px;
-    margin-bottom: 16px;
   }
   
   .recruitment-header {
@@ -136,7 +145,6 @@
   .action-buttons {
     display: flex;
     gap: 12px;
-    margin-top: auto;
   }
 
   .chat-button {

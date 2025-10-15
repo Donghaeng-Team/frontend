@@ -224,70 +224,74 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
           </div>
 
           <div className="product-info-section">
-            <div className="product-category">{product.category}</div>
-            <h1 className="product-title">{product.title}</h1>
-
-            <div className="price-container">
-              <span className="current-price">{formatPrice(product.price)}</span>
+            <div className="product-header-info">
+              <div className="product-category">{product.category}</div>
+              <h1 className="product-title">{product.title}</h1>
             </div>
 
-            <div className="recruitment-status">
-              <div className="recruitment-header">
-                <span className="participants-count">
-                  🔥 {product.currentQuantity}/{product.targetQuantity}명 참여중
-                </span>
-                <span className="time-badge">
-                  ⏰ {new Date(product.deadline) > new Date() ? '모집중' : '마감'}
-                </span>
+            <div className="product-action-info">
+              <div className="price-container">
+                <span className="current-price">{formatPrice(product.price)}</span>
               </div>
 
-              <Progress
-                percent={progressPercent}
-                strokeColor="#ff5e2f"
-                showInfo={false}
-              />
+              <div className="recruitment-status">
+                <div className="recruitment-header">
+                  <span className="participants-count">
+                    🔥 {product.currentQuantity}/{product.targetQuantity}명 참여중
+                  </span>
+                  <span className="time-badge">
+                    ⏰ {new Date(product.deadline) > new Date() ? '모집중' : '마감'}
+                  </span>
+                </div>
 
-              <div className="progress-text">
-                목표 인원 {product.targetQuantity}명 • {Math.round(progressPercent)}% 진행
+                <Progress
+                  percent={progressPercent}
+                  strokeColor="#ff5e2f"
+                  showInfo={false}
+                />
+
+                <div className="progress-text">
+                  목표 인원 {product.targetQuantity}명 • {Math.round(progressPercent)}% 진행
+                </div>
               </div>
-            </div>
 
-            <div className="action-buttons">
-              {isAuthor ? (
-                <>
-                  <Button
-                    variant="outline"
-                    size="large"
-                    onClick={() => navigate(`/products/${product.id}/edit`)}
-                    className="edit-button"
-                  >
-                    ✏️ 수정
-                  </Button>
-                  <button
-                    onClick={handleWish}
-                    className="wish-button"
-                    data-variant={isWished ? "primary" : "outline"}
-                  >
-                    ♥
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={handleJoinChat}
-                    className="chat-button"
-                  >
-                    💬 채팅방 참여
-                  </button>
-                  <button
-                    onClick={handleWish}
-                    className="wish-button"
-                    data-variant={isWished ? "primary" : "outline"}
-                  >
-                    ♥
-                  </button>
-                </>
-              )}
+              <div className="action-buttons">
+                {isAuthor ? (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="large"
+                      onClick={() => navigate(`/products/${product.id}/edit`)}
+                      className="edit-button"
+                    >
+                      ✏️ 수정
+                    </Button>
+                    <button
+                      onClick={handleWish}
+                      className="wish-button"
+                      data-variant={isWished ? "primary" : "outline"}
+                    >
+                      ♥
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={handleJoinChat}
+                      className="chat-button"
+                    >
+                      💬 채팅방 참여
+                    </button>
+                    <button
+                      onClick={handleWish}
+                      className="wish-button"
+                      data-variant={isWished ? "primary" : "outline"}
+                    >
+                      ♥
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </section>
