@@ -9,6 +9,7 @@ import Dropdown from '../../components/Dropdown';
 import ProductCard from '../../components/ProductCard';
 import Button from '../../components/Button';
 import Skeleton from '../../components/Skeleton';
+import { productService, type Product as ApiProduct } from '../../api/services/product';
 // 임시로 작은 샘플 데이터를 사용하여 테스트
 const sampleFoodCategoriesData = [
   {
@@ -46,27 +47,6 @@ const sampleFoodCategoriesData = [
   }
 ];
 import './ProductList.css';
-
-// 상품 데이터 타입
-interface Product {
-  id: string;
-  category: string;
-  title: string;
-  price: number;
-  originalPrice?: number;
-  discount?: number;
-  seller: {
-    name: string;
-    avatar?: string;
-  };
-  participants: {
-    current: number;
-    max: number;
-  };
-  location: string;
-  status: 'active' | 'completed' | 'pending';
-  image?: string;
-}
 
 // foodCategories.json 데이터 타입
 interface FoodCategoryData {
@@ -114,50 +94,13 @@ const sortOptions = [
   { value: 'closing', label: '마감 임박순' }
 ];
 
-// 더미 상품 생성 함수
-const generateMockProducts = (start: number, count: number): Product[] => {
-  const categories = ['식품', '생활용품', '육아용품', '전자제품', '패션/뷰티', '가구/인테리어', '기타'];
-  const titles = [
-    '유기농 사과 10kg (부사)', '프리미엄 화장지 30롤', '기저귀 대형 4박스',
-    '공기청정기 렌탈', '겨울 패딩 공동구매', '유기농 닭가슴살 100팩',
-    '사무용 의자 10개 세트', '반려동물 사료 대량구매'
-  ];
-  const sellers = ['사과조아', '생활마트', '아기사랑', '렌탈킹', '패션매니아', '헬스마트', '오피스매니아', '펫러버'];
-  const locations = ['서초동', '방배동', '역삼동', '잠원동', '반포동', '양재동', '삼성동', '대치동'];
-
-  return Array.from({ length: count }, (_, i) => {
-    return {
-      id: generateUniqueId(),
-      category: categories[Math.floor(Math.random() * categories.length)],
-      title: `${titles[Math.floor(Math.random() * titles.length)]} #${start + i}`,
-      price: Math.floor(Math.random() * 200000) + 10000,
-      originalPrice: Math.random() > 0.5 ? Math.floor(Math.random() * 250000) + 50000 : undefined,
-      discount: Math.random() > 0.7 ? Math.floor(Math.random() * 50) + 10 : undefined,
-      seller: { name: sellers[Math.floor(Math.random() * sellers.length)] },
-      participants: {
-        current: Math.floor(Math.random() * 20) + 1,
-        max: 20
-      },
-      location: locations[Math.floor(Math.random() * locations.length)],
-      status: Math.random() > 0.8 ? 'completed' : 'active' as 'active' | 'completed'
-    };
-  });
-};
-
 const ITEMS_PER_PAGE = 12;
-
-// 고유 ID 생성기
-let productIdCounter = 1;
-const generateUniqueId = (): string => {
-  return `product-${Date.now()}-${productIdCounter++}-${Math.random().toString(36).substr(2, 9)}`;
-};
 
 const ProductList: React.FC = () => {
   const navigate = useNavigate();
 
   // 상태 관리
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
-  const [displayedProducts, setDisplayedProducts] = useState<Product[]>([]);
+  const [displayedProducts, setDisplayedProducts] = useState<ApiProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -176,21 +119,30 @@ const ProductList: React.FC = () => {
   useEffect(() => {
     const initializeData = async () => {
       try {
+        setLoading(true);
+
         // 카테고리 데이터 로드
         const categories = await loadCategoryData();
         setCategoryData(categories);
 
-        // 상품 데이터 로드 시뮬레이션
-        setTimeout(() => {
-          const mockProducts = generateMockProducts(1, 100);
-          setAllProducts(mockProducts);
-          setDisplayedProducts(mockProducts.slice(0, ITEMS_PER_PAGE));
-          setTotalCount(mockProducts.length);
-          setHasMore(mockProducts.length > ITEMS_PER_PAGE);
-          setLoading(false);
-        }, 1000);
+        // 상품 데이터 로드
+        const response = await productService.getProducts({
+          page: 1,
+          size: ITEMS_PER_PAGE,
+          sortBy: 'createdAt',
+          sortOrder: 'desc'
+        });
+
+        if (response.success && response.data) {
+          setDisplayedProducts(response.data.content);
+          setTotalCount(response.data.totalElements);
+          setPage(1);
+          setHasMore(response.data.content.length < response.data.totalElements);
+        }
       } catch (error) {
         console.error('Failed to initialize data:', error);
+        alert('상품 목록을 불러오는데 실패했습니다.');
+      } finally {
         setLoading(false);
       }
     };
@@ -207,33 +159,52 @@ const ProductList: React.FC = () => {
   }, [tempDistanceRange, distanceRange, tempCategories, selectedCategories]);
 
   // 무한 스크롤 - 더보기 버튼 클릭
-  const handleLoadMore = useCallback(() => {
+  const handleLoadMore = useCallback(async () => {
     if (!hasMore || loadingMore) return;
 
-    setLoadingMore(true);
-    
-    // API 호출 시뮬레이션
-    setTimeout(() => {
+    try {
+      setLoadingMore(true);
       const nextPage = page + 1;
-      const startIndex = page * ITEMS_PER_PAGE;
-      const endIndex = startIndex + ITEMS_PER_PAGE;
-      const nextProducts = allProducts.slice(startIndex, endIndex);
-      
-      if (nextProducts.length > 0) {
-        setDisplayedProducts(prev => {
-          const existingIds = new Set(prev.map(p => p.id));
-          const newProducts = nextProducts.filter(p => !existingIds.has(p.id));
-          return [...prev, ...newProducts];
-        });
-        setPage(nextPage);
-        setHasMore(endIndex < allProducts.length);
-      } else {
-        setHasMore(false);
+
+      // 정렬 기준 변환
+      let sortByApi: 'createdAt' | 'deadline' | 'price' | 'popularity' = 'createdAt';
+      let sortOrderApi: 'asc' | 'desc' = 'desc';
+
+      if (sortBy === 'price-low') {
+        sortByApi = 'price';
+        sortOrderApi = 'asc';
+      } else if (sortBy === 'price-high') {
+        sortByApi = 'price';
+        sortOrderApi = 'desc';
+      } else if (sortBy === 'popular') {
+        sortByApi = 'popularity';
+        sortOrderApi = 'desc';
+      } else if (sortBy === 'closing') {
+        sortByApi = 'deadline';
+        sortOrderApi = 'asc';
       }
-      
+
+      const response = await productService.getProducts({
+        page: nextPage,
+        size: ITEMS_PER_PAGE,
+        query: searchKeyword || undefined,
+        category: selectedCategories.length > 0 ? selectedCategories[selectedCategories.length - 1] : undefined,
+        sortBy: sortByApi,
+        sortOrder: sortOrderApi
+      });
+
+      if (response.success && response.data) {
+        setDisplayedProducts(prev => [...prev, ...response.data!.content]);
+        setPage(nextPage);
+        setHasMore(displayedProducts.length + response.data.content.length < response.data.totalElements);
+      }
+    } catch (error) {
+      console.error('Failed to load more products:', error);
+      alert('상품을 더 불러오는데 실패했습니다.');
+    } finally {
       setLoadingMore(false);
-    }, 500);
-  }, [page, allProducts, hasMore, loadingMore]);
+    }
+  }, [page, hasMore, loadingMore, sortBy, searchKeyword, selectedCategories, displayedProducts.length]);
 
   // 스크롤 이벤트 처리 (자동 로드)
   useEffect(() => {
@@ -260,80 +231,141 @@ const ProductList: React.FC = () => {
   };
 
   // 조건 적용 핸들러
-  const handleApplyFilters = () => {
-    setDistanceRange(tempDistanceRange);
-    setSelectedCategories(tempCategories);
-    setIsFilterChanged(false);
-    
-    // 실제로는 API 호출하여 필터링된 상품 목록 가져오기
-    
-    // 필터 적용 시 목록 초기화
-    setPage(1);
-    setLoadingMore(true);
-    
-    setTimeout(() => {
-      // 더미 필터링 (실제로는 서버에서 필터링된 데이터 받아옴)
-      let filtered = [...allProducts];
-      if (tempCategories.length > 0) {
-        // 카테고리 필터링 로직
+  const handleApplyFilters = async () => {
+    try {
+      setDistanceRange(tempDistanceRange);
+      setSelectedCategories(tempCategories);
+      setIsFilterChanged(false);
+      setLoadingMore(true);
+
+      const response = await productService.getProducts({
+        page: 1,
+        size: ITEMS_PER_PAGE,
+        category: tempCategories.length > 0 ? tempCategories[tempCategories.length - 1] : undefined,
+        query: searchKeyword || undefined,
+        sortBy: 'createdAt',
+        sortOrder: 'desc'
+      });
+
+      if (response.success && response.data) {
+        setDisplayedProducts(response.data.content);
+        setTotalCount(response.data.totalElements);
+        setPage(1);
+        setHasMore(response.data.content.length < response.data.totalElements);
       }
-      setDisplayedProducts(filtered.slice(0, ITEMS_PER_PAGE));
-      setHasMore(filtered.length > ITEMS_PER_PAGE);
+    } catch (error) {
+      console.error('Failed to apply filters:', error);
+      alert('필터 적용에 실패했습니다.');
+    } finally {
       setLoadingMore(false);
-    }, 500);
+    }
   };
 
   // 필터 초기화 핸들러
-  const handleResetFilters = () => {
-    setTempDistanceRange(2);
-    setTempCategories([]);
-    setDistanceRange(2);
-    setSelectedCategories([]);
-    setIsFilterChanged(false);
-    setPage(1);
-    setDisplayedProducts(allProducts.slice(0, ITEMS_PER_PAGE));
-    setHasMore(allProducts.length > ITEMS_PER_PAGE);
+  const handleResetFilters = async () => {
+    try {
+      setTempDistanceRange(2);
+      setTempCategories([]);
+      setDistanceRange(2);
+      setSelectedCategories([]);
+      setIsFilterChanged(false);
+      setLoadingMore(true);
+
+      const response = await productService.getProducts({
+        page: 1,
+        size: ITEMS_PER_PAGE,
+        sortBy: 'createdAt',
+        sortOrder: 'desc'
+      });
+
+      if (response.success && response.data) {
+        setDisplayedProducts(response.data.content);
+        setTotalCount(response.data.totalElements);
+        setPage(1);
+        setHasMore(response.data.content.length < response.data.totalElements);
+      }
+    } catch (error) {
+      console.error('Failed to reset filters:', error);
+      alert('필터 초기화에 실패했습니다.');
+    } finally {
+      setLoadingMore(false);
+    }
   };
 
   // 검색 핸들러
-  const handleSearch = (keyword: string) => {
-    setSearchKeyword(keyword);
-    setPage(1);
-    
-    const filtered = allProducts.filter(product => 
-      product.title.toLowerCase().includes(keyword.toLowerCase()) ||
-      product.category.toLowerCase().includes(keyword.toLowerCase())
-    );
-    
-    setDisplayedProducts(filtered.slice(0, ITEMS_PER_PAGE));
-    setHasMore(filtered.length > ITEMS_PER_PAGE);
-    setTotalCount(filtered.length);
+  const handleSearch = async (keyword: string) => {
+    try {
+      setSearchKeyword(keyword);
+      setLoadingMore(true);
+
+      const response = await productService.getProducts({
+        page: 1,
+        size: ITEMS_PER_PAGE,
+        query: keyword || undefined,
+        category: selectedCategories.length > 0 ? selectedCategories[selectedCategories.length - 1] : undefined,
+        sortBy: 'createdAt',
+        sortOrder: 'desc'
+      });
+
+      if (response.success && response.data) {
+        setDisplayedProducts(response.data.content);
+        setTotalCount(response.data.totalElements);
+        setPage(1);
+        setHasMore(response.data.content.length < response.data.totalElements);
+      }
+    } catch (error) {
+      console.error('Failed to search products:', error);
+      alert('검색에 실패했습니다.');
+    } finally {
+      setLoadingMore(false);
+    }
   };
 
   // 정렬 핸들러
-  const handleSort = (value: string | number) => {
-    setSortBy(value as string);
-    const sorted = [...displayedProducts];
-    
-    switch(value) {
-      case 'price-low':
-        sorted.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-high':
-        sorted.sort((a, b) => b.price - a.price);
-        break;
-      case 'popular':
-        sorted.sort((a, b) => 
-          (b.participants.current / b.participants.max) - 
-          (a.participants.current / a.participants.max)
-        );
-        break;
-      default:
-        // 최신순 정렬
-        break;
+  const handleSort = async (value: string | number) => {
+    try {
+      setSortBy(value as string);
+      setLoadingMore(true);
+
+      // 정렬 기준 변환
+      let sortByApi: 'createdAt' | 'deadline' | 'price' | 'popularity' = 'createdAt';
+      let sortOrderApi: 'asc' | 'desc' = 'desc';
+
+      if (value === 'price-low') {
+        sortByApi = 'price';
+        sortOrderApi = 'asc';
+      } else if (value === 'price-high') {
+        sortByApi = 'price';
+        sortOrderApi = 'desc';
+      } else if (value === 'popular') {
+        sortByApi = 'popularity';
+        sortOrderApi = 'desc';
+      } else if (value === 'closing') {
+        sortByApi = 'deadline';
+        sortOrderApi = 'asc';
+      }
+
+      const response = await productService.getProducts({
+        page: 1,
+        size: ITEMS_PER_PAGE,
+        query: searchKeyword || undefined,
+        category: selectedCategories.length > 0 ? selectedCategories[selectedCategories.length - 1] : undefined,
+        sortBy: sortByApi,
+        sortOrder: sortOrderApi
+      });
+
+      if (response.success && response.data) {
+        setDisplayedProducts(response.data.content);
+        setTotalCount(response.data.totalElements);
+        setPage(1);
+        setHasMore(response.data.content.length < response.data.totalElements);
+      }
+    } catch (error) {
+      console.error('Failed to sort products:', error);
+      alert('정렬에 실패했습니다.');
+    } finally {
+      setLoadingMore(false);
     }
-    
-    setDisplayedProducts(sorted);
   };
 
   // 카테고리 경로 생성
@@ -463,7 +495,22 @@ const ProductList: React.FC = () => {
               displayedProducts.map(product => (
                 <ProductCard
                   key={product.id}
-                  {...product}
+                  image={product.images && product.images.length > 0 ? product.images[0] : undefined}
+                  category={product.category}
+                  title={product.title}
+                  price={product.price}
+                  originalPrice={product.discountPrice}
+                  discount={product.discountPrice ? Math.round(((product.discountPrice - product.price) / product.discountPrice) * 100) : undefined}
+                  seller={{
+                    name: product.seller.name,
+                    avatar: product.seller.profileImage
+                  }}
+                  participants={{
+                    current: product.currentQuantity,
+                    max: product.targetQuantity
+                  }}
+                  location={product.location.dong}
+                  status={product.status}
                   onClick={() => navigate(`/products/${product.id}`)}
                 />
               ))
