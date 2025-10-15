@@ -57,14 +57,14 @@ const CommunityPostDetail: React.FC = () => {
         console.error('❌ 게시글 로드 실패:', error);
         console.warn('⚠️ Using fallback mock post data');
 
-        // Fallback: mock 데이터 사용
+        // Fallback: mock 데이터 사용 (현재 로그인한 사용자 작성으로 설정)
         const mockPost: PostDetailResponse = {
           postId: parseInt(id || '1', 10),
-          title: '김농부 유기농 사과 10kg 공동구매 후기 - 샘플 게시글',
-          content: '이번에 참여한 유기농 사과 공동구매 정말 만족스러웠어요!\n\n이 게시글은 API 연동 전 샘플 데이터입니다.\n실제 게시글을 등록하시면 이 데이터 대신 표시됩니다.',
+          title: '김농부 유기농 사과 10kg 공동구매 후기 - 샘플 게시글 (내가 작성)',
+          content: '이번에 참여한 유기농 사과 공동구매 정말 만족스러웠어요!\n\n이 게시글은 API 연동 전 샘플 데이터입니다.\n현재 로그인한 사용자가 작성한 것으로 설정되어 수정/삭제 버튼이 표시됩니다.\n실제 게시글을 등록하시면 이 데이터 대신 표시됩니다.',
           region: '서초구',
           tag: 'review',
-          authorId: 999,
+          authorId: authUser?.userId || 999,
           imageUrls: [],
           thumbnailUrl: null,
           createdAt: new Date().toISOString(),
