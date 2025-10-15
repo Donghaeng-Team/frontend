@@ -38,8 +38,22 @@ export interface ProductCreateRequest {
   category: string;
   images: string[];
   targetQuantity: number;
+  currentQuantity: number;
   deadline: string;
-  locationCode: string;
+  status: string;
+  location: {
+    sido: string;
+    gugun: string;
+    dong: string;
+    fullAddress: string;
+    latitude?: number;
+    longitude?: number;
+  };
+  seller: {
+    id: string;
+    name: string;
+    rating: number;
+  };
 }
 
 export interface ProductUpdateRequest extends Partial<ProductCreateRequest> {
