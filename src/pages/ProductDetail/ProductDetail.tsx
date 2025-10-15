@@ -227,13 +227,12 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
             <div className="product-header-info">
               <div className="product-category">{product.category}</div>
               <h1 className="product-title">{product.title}</h1>
-            </div>
-
-            <div className="product-action-info">
               <div className="price-container">
                 <span className="current-price">{formatPrice(product.price)}</span>
               </div>
+            </div>
 
+            <div className="product-action-info">
               <div className="recruitment-status">
                 <div className="recruitment-header">
                   <span className="participants-count">
