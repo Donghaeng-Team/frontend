@@ -309,8 +309,9 @@ const CommunityPostDetail: React.FC = () => {
         {/* 게시글 본문 섹션 */}
         <section className="post-section">
             <div className="post-container">
-            {/* 뒤로가기 버튼 */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
+            {/* 상단 액션 바 */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              {/* 뒤로가기 버튼 */}
               <button
                 onClick={() => navigate('/community')}
                 style={{
@@ -338,6 +339,66 @@ const CommunityPostDetail: React.FC = () => {
               >
                 ← 목록으로
               </button>
+
+              {/* 수정/삭제 버튼 */}
+              {isAuthor && (
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    onClick={handleEdit}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '8px 16px',
+                      border: '1px solid #e6e6e6',
+                      borderRadius: '8px',
+                      backgroundColor: '#ffffff',
+                      color: '#666666',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#f5f5f5';
+                      e.currentTarget.style.borderColor = '#cccccc';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#ffffff';
+                      e.currentTarget.style.borderColor = '#e6e6e6';
+                    }}
+                  >
+                    ✏️ 수정
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '8px 16px',
+                      border: '1px solid #ffcccc',
+                      borderRadius: '8px',
+                      backgroundColor: '#ffffff',
+                      color: '#ff5e2f',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#fff5f0';
+                      e.currentTarget.style.borderColor = '#ff5e2f';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#ffffff';
+                      e.currentTarget.style.borderColor = '#ffcccc';
+                    }}
+                  >
+                    🗑️ 삭제
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* 카테고리 태그 */}
@@ -393,18 +454,6 @@ const CommunityPostDetail: React.FC = () => {
                 <span className="action-icon">🔗</span>
                 <span className="action-text">공유하기</span>
                 </button>
-                {isAuthor && (
-                  <>
-                    <button className="action-btn" onClick={handleEdit}>
-                      <span className="action-icon">✏️</span>
-                      <span className="action-text">수정</span>
-                    </button>
-                    <button className="action-btn action-btn-delete" onClick={handleDelete}>
-                      <span className="action-icon">🗑️</span>
-                      <span className="action-text">삭제</span>
-                    </button>
-                  </>
-                )}
             </div>
             </div>
         </section>
