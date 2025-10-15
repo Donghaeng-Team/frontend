@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import Tab from '../../components/Tab';
 import type { TabItem } from '../../components/Tab';
 import Badge from '../../components/Badge';
 import Button from '../../components/Button';
+import { productService, type Product } from '../../api/services/product';
+import { useAuthStore } from '../../stores/authStore';
 import './PurchaseHistory.css';
 
 interface PurchaseItem {
@@ -30,6 +32,14 @@ interface PurchaseItem {
 const PurchaseHistory: React.FC = () => {
   const [activeTab, setActiveTab] = useState('hosting');
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const authUser = useAuthStore((state) => state.user);
+
+  const [loading, setLoading] = useState(false);
+  const [hostingItems, setHostingItems] = useState<PurchaseItem[]>([]);
+  const [participatingItems, setParticipatingItems] = useState<PurchaseItem[]>([]);
+  const [completedItems, setCompletedItems] = useState<PurchaseItem[]>([]);
+  const [likedItems, setLikedItems] = useState<PurchaseItem[]>([]);
 
   // URL 파라미터에서 탭 설정
   useEffect(() => {
@@ -39,14 +49,96 @@ const PurchaseHistory: React.FC = () => {
     }
   }, [searchParams]);
 
+  // Product를 PurchaseItem으로 변환
+  const convertProductToPurchaseItem = (product: Product, role: 'host' | 'participant'): PurchaseItem => {
+    return {
+      id: product.id,
+      title: product.title,
+      category: product.category,
+      price: product.price,
+      image: product.images && product.images.length > 0 ? product.images[0] : undefined,
+      status: product.status === 'active' ? 'recruiting' : product.status === 'completed' ? 'completed' : 'cancelled',
+      participants: {
+        current: product.currentQuantity,
+        max: product.targetQuantity
+      },
+      seller: {
+        name: product.seller.name,
+        avatar: product.seller.profileImage
+      },
+      location: product.location.dong,
+      date: new Date(product.createdAt).toISOString().split('T')[0],
+      role
+    };
+  };
+
+  // 데이터 로드
+  useEffect(() => {
+    const loadData = async () => {
+      if (!authUser) return;
+
+      try {
+        setLoading(true);
+
+        // 주최한 상품
+        const hostingResponse = await productService.getMyProducts();
+        if (hostingResponse.success && hostingResponse.data) {
+          const items = hostingResponse.data.items.map(p => convertProductToPurchaseItem(p, 'host'));
+          setHostingItems(items);
+        }
+
+        // 참여중인 상품
+        const participatingResponse = await productService.getMyJoinedProducts();
+        if (participatingResponse.success && participatingResponse.data) {
+          const items = participatingResponse.data.items
+            .filter(p => p.status === 'active')
+            .map(p => convertProductToPurchaseItem(p, 'participant'));
+          setParticipatingItems(items);
+        }
+
+        // 완료된 상품 (주최 + 참여)
+        const myCompletedResponse = await productService.getMyProducts();
+        const joinedCompletedResponse = await productService.getMyJoinedProducts();
+
+        const myCompleted = myCompletedResponse.success && myCompletedResponse.data
+          ? myCompletedResponse.data.items.filter(p => p.status === 'completed').map(p => convertProductToPurchaseItem(p, 'host'))
+          : [];
+
+        const joinedCompleted = joinedCompletedResponse.success && joinedCompletedResponse.data
+          ? joinedCompletedResponse.data.items.filter(p => p.status === 'completed').map(p => convertProductToPurchaseItem(p, 'participant'))
+          : [];
+
+        setCompletedItems([...myCompleted, ...joinedCompleted]);
+
+        // 좋아요한 상품
+        const likedResponse = await productService.getWishlistedProducts();
+        if (likedResponse.success && likedResponse.data) {
+          const items = likedResponse.data.items.map(p => convertProductToPurchaseItem(p, 'participant'));
+          setLikedItems(items);
+        }
+      } catch (error) {
+        console.error('데이터 로드 실패:', error);
+        // Fallback to empty arrays
+        setHostingItems([]);
+        setParticipatingItems([]);
+        setCompletedItems([]);
+        setLikedItems([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [authUser]);
+
   // 탭 변경 시 URL 업데이트
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
     setSearchParams({ tab });
   };
 
-  // 더미 데이터
-  const hostingItems: PurchaseItem[] = [
+  // 더미 데이터 (fallback용)
+  const fallbackHostingItems: PurchaseItem[] = [
     {
       id: '1',
       title: '유기농 사과 10kg (부사)',
@@ -73,7 +165,7 @@ const PurchaseHistory: React.FC = () => {
     }
   ];
 
-  const participatingItems: PurchaseItem[] = [
+  const fallbackParticipatingItems: PurchaseItem[] = [
     {
       id: '3',
       title: '기저귀 대형 4박스',
@@ -112,7 +204,7 @@ const PurchaseHistory: React.FC = () => {
     }
   ];
 
-  const completedItems: PurchaseItem[] = [
+  const fallbackCompletedItems: PurchaseItem[] = [
     {
       id: '6',
       title: '겨울 이불 세트',
@@ -151,7 +243,7 @@ const PurchaseHistory: React.FC = () => {
     }
   ];
 
-  const likedItems: PurchaseItem[] = [
+  const fallbackLikedItems: PurchaseItem[] = [
     {
       id: '9',
       title: '프리미엄 에어프라이어',
@@ -190,6 +282,45 @@ const PurchaseHistory: React.FC = () => {
     }
   ];
 
+  // 상품 카드 클릭 - 상세 페이지 이동
+  const handleCardClick = (productId: string) => {
+    navigate(`/products/${productId}`);
+  };
+
+  // 참여 취소
+  const handleCancelParticipation = async (productId: string) => {
+    if (!confirm('정말 참여를 취소하시겠습니까?')) return;
+
+    try {
+      const response = await productService.leaveProduct(productId);
+      if (response.success) {
+        alert('참여가 취소되었습니다.');
+        // 데이터 다시 로드
+        setParticipatingItems(prev => prev.filter(item => item.id !== productId));
+      }
+    } catch (error) {
+      console.error('참여 취소 실패:', error);
+      alert('참여 취소 중 오류가 발생했습니다.');
+    }
+  };
+
+  // 좋아요 취소
+  const handleRemoveWishlist = async (productId: string) => {
+    if (!confirm('좋아요를 취소하시겠습니까?')) return;
+
+    try {
+      const response = await productService.toggleWishlist(productId);
+      if (response.success) {
+        alert('좋아요가 취소되었습니다.');
+        // 데이터 다시 로드
+        setLikedItems(prev => prev.filter(item => item.id !== productId));
+      }
+    } catch (error) {
+      console.error('좋아요 취소 실패:', error);
+      alert('좋아요 취소 중 오류가 발생했습니다.');
+    }
+  };
+
   const getStatusBadge = (status: PurchaseItem['status']) => {
     const statusConfig = {
       recruiting: { label: '모집중', color: 'success' as const },
@@ -211,7 +342,7 @@ const PurchaseHistory: React.FC = () => {
         </div>
       </div>
       
-      <div className="purchase-card-body">
+      <div className="purchase-card-body" onClick={() => handleCardClick(item.id)} style={{ cursor: 'pointer' }}>
         <div className="purchase-image-container">
           {item.image ? (
             <img src={item.image} alt={item.title} className="purchase-image" />
@@ -221,15 +352,15 @@ const PurchaseHistory: React.FC = () => {
             </div>
           )}
         </div>
-        
+
         <div className="purchase-info">
           <div className="purchase-category">{item.category}</div>
           <h3 className="purchase-title">{item.title}</h3>
           <div className="purchase-price">₩{item.price.toLocaleString()}</div>
-          
+
           <div className="purchase-meta">
             <span className="purchase-participants">
-              {item.participants.current}/{item.participants.max}명 
+              {item.participants.current}/{item.participants.max}명
               {item.status === 'recruiting' ? ' 모집중' : ' 모집완료'}
             </span>
             <span className="purchase-location">• {item.location}</span>
@@ -243,24 +374,24 @@ const PurchaseHistory: React.FC = () => {
       <div className="purchase-card-footer">
         {item.status === 'recruiting' && item.role === 'host' && (
           <>
-            <Button size="small" variant="outline">수정</Button>
-            <Button size="small" variant="outline">모집 마감</Button>
+            <Button size="small" variant="outline" onClick={(e) => { e.stopPropagation(); navigate(`/products/${item.id}/edit`); }}>수정</Button>
+            <Button size="small" variant="outline" onClick={(e) => { e.stopPropagation(); }}>모집 마감</Button>
           </>
         )}
         {item.status === 'recruiting' && item.role === 'participant' && (
-          <Button size="small" variant="outline">참여 취소</Button>
+          <Button size="small" variant="outline" onClick={(e) => { e.stopPropagation(); handleCancelParticipation(item.id); }}>참여 취소</Button>
         )}
         {item.status === 'processing' && (
-          <Button size="small" variant="primary">채팅방 입장</Button>
+          <Button size="small" variant="primary" onClick={(e) => { e.stopPropagation(); }}>채팅방 입장</Button>
         )}
         {item.status === 'completed' && (
           <>
-            <Button size="small" variant="outline">상세보기</Button>
-            <Button size="small" variant="primary">다시 구매</Button>
+            <Button size="small" variant="outline" onClick={(e) => { e.stopPropagation(); handleCardClick(item.id); }}>상세보기</Button>
+            <Button size="small" variant="primary" onClick={(e) => { e.stopPropagation(); }}>다시 구매</Button>
           </>
         )}
-        {item.role === 'participant' && (
-          <Button size="small" variant="outline">♥ 좋아요 취소</Button>
+        {activeTab === 'liked' && (
+          <Button size="small" variant="outline" onClick={(e) => { e.stopPropagation(); handleRemoveWishlist(item.id); }}>♥ 좋아요 취소</Button>
         )}
       </div>
     </div>
