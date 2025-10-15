@@ -536,7 +536,7 @@ const ProductRegister: React.FC = () => {
 
   return (
     <div className="product-register">
-      <Header isLoggedIn={true} notificationCount={3} />
+      <Header notificationCount={3} />
       
       <div className="register-container">
         <div className="register-header">
