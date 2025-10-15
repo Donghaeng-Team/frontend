@@ -182,7 +182,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
   if (loading) {
     return (
       <div className="product-detail-page">
-        <Header isLoggedIn={true} notificationCount={3} />
+        <Header notificationCount={3} />
         <div className="product-detail-container">
           <div className="loading-message">상품 정보를 불러오는 중...</div>
         </div>
@@ -195,7 +195,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
   if (!product) {
     return (
       <div className="product-detail-page">
-        <Header isLoggedIn={true} notificationCount={3} />
+        <Header notificationCount={3} />
         <div className="product-detail-container">
           <div className="loading-message">상품을 찾을 수 없습니다.</div>
         </div>
@@ -208,7 +208,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
 
   return (
     <div className="product-detail-page">
-      <Header isLoggedIn={true} notificationCount={3} />
+      <Header notificationCount={3} />
 
       <main className="product-detail-container">
         {/* 상품 메인 섹션 */}
