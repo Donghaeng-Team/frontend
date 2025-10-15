@@ -218,11 +218,25 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
         const convertedPosts = response.data.map(convertApiPostToPost);
         setPosts(convertedPosts);
       } else {
-        setPosts([]);
+        console.warn('⚠️ No API data, using filtered fallback mock data');
+        // Fallback: 카테고리별로 필터링된 mock 데이터 사용
+        if (category === '전체') {
+          setPosts(defaultPosts);
+        } else {
+          const filteredPosts = defaultPosts.filter(post => post.category === category);
+          setPosts(filteredPosts);
+        }
       }
     } catch (error) {
       console.error('❌ Failed to load posts by category:', error);
-      setPosts([]);
+      console.warn('⚠️ Using filtered fallback mock data');
+      // 에러 시에도 fallback 데이터 사용
+      if (category === '전체') {
+        setPosts(defaultPosts);
+      } else {
+        const filteredPosts = defaultPosts.filter(post => post.category === category);
+        setPosts(filteredPosts);
+      }
     } finally {
       setLoading(false);
     }
