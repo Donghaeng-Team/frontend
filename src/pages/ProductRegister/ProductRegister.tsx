@@ -459,7 +459,7 @@ const ProductRegister: React.FC = () => {
           longitude: locationCoords.lng
         },
         seller: {
-          id: authUser.userId.toString(),
+          id: authUser.userId?.toString() || '',
           name: authUser.nickName,
           rating: 0
         }
