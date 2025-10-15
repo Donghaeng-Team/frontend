@@ -9,7 +9,15 @@
     margin: 0 auto;
     padding: 0 120px;
   }
-  
+
+  .loading-message {
+    text-align: center;
+    padding: 100px 20px;
+    font-size: 18px;
+    color: #666666;
+    font-weight: 500;
+  }
+
   /* 상품 메인 섹션 */
   .product-main-section {
     display: flex;
@@ -127,19 +135,60 @@
   /* 액션 버튼 */
   .action-buttons {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     margin-top: auto;
   }
-  
+
   .chat-button {
     flex: 1;
+    font-size: 16px;
+    font-weight: 600;
+    height: 56px;
+    background-color: #ff5e2f;
+    border-color: #ff5e2f;
+    color: #ffffff;
   }
-  
+
+  .chat-button:hover {
+    background-color: #e54420;
+    border-color: #e54420;
+  }
+
+  .edit-button {
+    flex: 1;
+    font-size: 16px;
+    font-weight: 600;
+    height: 56px;
+  }
+
   .wish-button {
-    width: 54px;
-    min-width: 54px;
+    width: 56px;
+    min-width: 56px;
+    height: 56px;
     font-size: 24px;
     padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #dfdfdf;
+    background-color: #ffffff;
+    transition: all 0.2s ease;
+  }
+
+  .wish-button:hover {
+    border-color: #ff5e2f;
+    background-color: #fff5f0;
+  }
+
+  .wish-button[data-variant="primary"] {
+    background-color: #ff5e2f;
+    border-color: #ff5e2f;
+    color: #ffffff;
+  }
+
+  .wish-button[data-variant="primary"]:hover {
+    background-color: #e54420;
+    border-color: #e54420;
   }
   
   /* 섹션 공통 */

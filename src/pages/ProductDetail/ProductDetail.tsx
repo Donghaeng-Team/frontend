@@ -267,40 +267,34 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
                   <Button
                     variant="outline"
                     size="large"
-                    fullWidth
                     onClick={() => navigate(`/products/${product.id}/edit`)}
                     className="edit-button"
                   >
                     ✏️ 수정
                   </Button>
-                  <Button
-                    variant={isWished ? "primary" : "outline"}
-                    size="large"
+                  <button
                     onClick={handleWish}
                     className="wish-button"
+                    data-variant={isWished ? "primary" : "outline"}
                   >
                     ♥
-                  </Button>
+                  </button>
                 </>
               ) : (
                 <>
-                  <Button
-                    variant="outline"
-                    size="large"
-                    fullWidth
+                  <button
                     onClick={handleJoinChat}
                     className="chat-button"
                   >
                     💬 채팅방 참여
-                  </Button>
-                  <Button
-                    variant={isWished ? "primary" : "outline"}
-                    size="large"
+                  </button>
+                  <button
                     onClick={handleWish}
                     className="wish-button"
+                    data-variant={isWished ? "primary" : "outline"}
                   >
                     ♥
-                  </Button>
+                  </button>
                 </>
               )}
             </div>
