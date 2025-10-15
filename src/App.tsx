@@ -10,9 +10,11 @@ import MyPage from './pages/MyPage';
 import ProductList from './pages/ProductList';
 import ProductDetail from './pages/ProductDetail';
 import ProductRegister from './pages/ProductRegister';
+import ProductEdit from './pages/ProductEdit';
 import CommunityBoard from './pages/CommunityBoard';
 import CommunityPostCreate from './pages/CommunityPostCreate';
 import CommunityPostDetail from './pages/CommunityPostDetail';
+import CommunityPostEdit from './pages/CommunityPostEdit';
 import PurchaseHistory from './pages/PurchaseHistory';
 import ChangePassword from './pages/ChangePassword';
 import ComponentShowcase from './pages/ComponentShowcase';
@@ -41,11 +43,13 @@ function App() {
         <Route path="/products" element={<ProductList />} />
         <Route path="/products/:id" element={<ProductDetail />} />
         <Route path="/products/register" element={<ProtectedRoute><ProductRegister /></ProtectedRoute>} />
+        <Route path="/products/:id/edit" element={<ProtectedRoute><ProductEdit /></ProtectedRoute>} />
 
         {/* 커뮤니티 */}
         <Route path="/community" element={<CommunityBoard />} />
         <Route path="/community/create" element={<ProtectedRoute><CommunityPostCreate /></ProtectedRoute>} />
         <Route path="/community/:id" element={<CommunityPostDetail />} />
+        <Route path="/community/:id/edit" element={<ProtectedRoute><CommunityPostEdit /></ProtectedRoute>} />
 
         {/* 개발용 컴포넌트 쇼케이스 */}
         <Route path="/showcase" element={<ComponentShowcase />} />
