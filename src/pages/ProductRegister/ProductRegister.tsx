@@ -6,6 +6,7 @@ import CategorySelector from '../../components/CategorySelector';
 import type { CategoryItem } from '../../components/CategorySelector';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
+import GoogleMap from '../../components/GoogleMap';
 import { useAuthStore } from '../../stores/authStore';
 import { productService } from '../../api/services/product';
 import { imageService } from '../../api/services/image';
@@ -71,6 +72,7 @@ const ProductRegister: React.FC = () => {
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedLocation, setSelectedLocation] = useState('');
+  const [locationCoords, setLocationCoords] = useState<{ lat: number; lng: number }>({ lat: 37.5665, lng: 126.9780 });
   const [categoryData, setCategoryData] = useState<CategoryItem[]>([]);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -390,6 +392,12 @@ const ProductRegister: React.FC = () => {
     }
   };
 
+  // 지도 위치 변경 핸들러
+  const handleLocationChange = (location: { lat: number; lng: number; address: string }) => {
+    setLocationCoords({ lat: location.lat, lng: location.lng });
+    setSelectedLocation(location.address);
+  };
+
   const handleSubmit = async () => {
     // 로그인 확인
     if (!authUser) {
@@ -446,7 +454,9 @@ const ProductRegister: React.FC = () => {
           sido: '서울',
           gugun: '서초구',
           dong: selectedLocation,
-          fullAddress: `서울시 서초구 ${selectedLocation}`
+          fullAddress: selectedLocation,
+          latitude: locationCoords.lat,
+          longitude: locationCoords.lng
         },
         seller: {
           id: authUser.userId.toString(),
@@ -726,19 +736,18 @@ const ProductRegister: React.FC = () => {
           <p className="section-description">
             공동구매를 진행할 동네를 설정해주세요. 설정한 동네 주변 사용자에게만 노출됩니다.
           </p>
-          <div className="location-map">
-            <div className="map-placeholder">
-              <span className="location-pin">📍</span>
-            </div>
-          </div>
+          <GoogleMap
+            onLocationChange={handleLocationChange}
+            initialCenter={locationCoords}
+          />
           <div className="form-group" style={{ marginTop: '20px' }}>
+            <label className="form-label">선택된 위치</label>
             <input
               type="text"
               className={`form-input ${errors.selectedLocation ? 'error' : ''}`}
-              placeholder="선택한 곳의 장소명을 입력해주세요"
+              placeholder="지도에서 위치를 선택하면 자동으로 입력됩니다"
               value={selectedLocation}
-              onChange={(e) => setSelectedLocation(e.target.value)}
-              onBlur={() => handleBlur('selectedLocation', selectedLocation)}
+              readOnly
             />
             {errors.selectedLocation && <div className="error-message">{errors.selectedLocation}</div>}
           </div>
