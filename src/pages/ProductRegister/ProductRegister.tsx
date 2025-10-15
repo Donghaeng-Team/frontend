@@ -1,10 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import CategorySelector from '../../components/CategorySelector';
 import type { CategoryItem } from '../../components/CategorySelector';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
+import { useAuthStore } from '../../stores/authStore';
+import { productService } from '../../api/services/product';
+import { imageService } from '../../api/services/image';
 import './ProductRegister.css';
 
 // foodCategories.json 데이터 타입
@@ -54,6 +58,9 @@ const loadCategoryData = async (): Promise<CategoryItem[]> => {
 };
 
 const ProductRegister: React.FC = () => {
+  const navigate = useNavigate();
+  const authUser = useAuthStore((state) => state.user);
+
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
   const [minParticipants, setMinParticipants] = useState('');
@@ -67,6 +74,7 @@ const ProductRegister: React.FC = () => {
   const [categoryData, setCategoryData] = useState<CategoryItem[]>([]);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
   // 에러 상태 관리
@@ -382,32 +390,96 @@ const ProductRegister: React.FC = () => {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    // 로그인 확인
+    if (!authUser) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+
     // 전체 폼 검증
     if (!validateForm()) {
       alert('입력하신 내용을 다시 확인해주세요.');
       return;
     }
 
-    // 등록 로직
-    console.log('상품 등록:', {
-      title,
-      price,
-      minParticipants,
-      maxParticipants,
-      deadline,
-      description,
-      categories: selectedCategories,
-      location: selectedLocation,
-      images
-    });
+    try {
+      setIsSubmitting(true);
 
-    // 성공 시 임시 저장 데이터 삭제
-    clearDraft();
-    alert('상품이 성공적으로 등록되었습니다!');
+      // 1. 이미지 업로드 (있는 경우)
+      let imageUrls: string[] = [];
+      if (images.length > 0) {
+        console.log('📤 이미지 업로드 중...');
 
-    // TODO: 실제로는 상품 목록 페이지로 이동
-    // navigate('/products');
+        for (const image of images) {
+          try {
+            const presignedResponse = await imageService.getPresignedUrl({
+              fileName: image.name,
+              fileType: image.type
+            });
+
+            if (presignedResponse.success && presignedResponse.data) {
+              const { presignedUrl, imageUrl } = presignedResponse.data;
+
+              // S3에 이미지 업로드
+              await imageService.uploadToS3(presignedUrl, image);
+              imageUrls.push(imageUrl);
+            }
+          } catch (error) {
+            console.error('이미지 업로드 실패:', error);
+          }
+        }
+      }
+
+      // 2. 상품 등록
+      const response = await productService.createProduct({
+        title,
+        description,
+        price: parseInt(price, 10),
+        category: selectedCategories.join(' > '),
+        images: imageUrls,
+        targetQuantity: parseInt(maxParticipants, 10),
+        currentQuantity: parseInt(minParticipants, 10),
+        deadline,
+        status: 'active',
+        location: {
+          sido: '서울',
+          gugun: '서초구',
+          dong: selectedLocation,
+          fullAddress: `서울시 서초구 ${selectedLocation}`
+        },
+        seller: {
+          id: authUser.userId.toString(),
+          name: authUser.nickName,
+          rating: 0
+        }
+      });
+
+      if (response.success) {
+        // 성공 시 임시 저장 데이터 삭제
+        clearDraft();
+
+        // productId가 반환되면 상세 페이지로, 없으면 목록으로 이동
+        const productId = (response.data as any)?.id;
+
+        if (productId) {
+          console.log('✅ 상품 생성 성공, productId:', productId);
+          alert('상품이 성공적으로 등록되었습니다!');
+          navigate(`/products/${productId}`);
+        } else {
+          console.warn('⚠️ productId가 반환되지 않음, 목록으로 이동');
+          alert('상품이 성공적으로 등록되었습니다!');
+          navigate('/products');
+        }
+      } else {
+        alert('상품 등록에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('상품 등록 실패:', error);
+      alert('상품 등록 중 오류가 발생했습니다.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // 필드별 블러 이벤트 핸들러
@@ -703,8 +775,9 @@ const ProductRegister: React.FC = () => {
             type="button"
             className="btn btn-submit"
             onClick={handleSubmit}
+            disabled={isSubmitting}
           >
-            등록
+            {isSubmitting ? '등록 중...' : '등록'}
           </button>
         </div>
       </div>
