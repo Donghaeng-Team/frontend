@@ -91,7 +91,7 @@ const ProductRegister: React.FC = () => {
     selectedLocation?: string;
   }>({});
 
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const saveTimeoutRef = useRef<number | null>(null);
   const hasPromptedRef = useRef(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropZoneRef = useRef<HTMLDivElement>(null);
