@@ -3,17 +3,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import { useAuthStore } from '../../stores/authStore';
 import { communityService } from '../../api/services/community';
+import { commentService } from '../../api/services/comment';
 import type { PostDetailResponse } from '../../types/community';
+import type { CommentResponse } from '../../types/comment';
 import './CommunityPostDetail.css';
-
-interface Comment {
-  id: number;
-  author: string;
-  location: string;
-  time: string;
-  content: string;
-  profileColor?: string;
-}
 
 interface RelatedPost {
   id: number;
@@ -34,32 +27,10 @@ const CommunityPostDetail: React.FC = () => {
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [commentText, setCommentText] = useState('');
-  const [comments, setComments] = useState<Comment[]>([
-    {
-      id: 1,
-      author: '과일러버',
-      location: '문래동',
-      time: '2시간 전',
-      content: '저도 이번 공구 참여했는데 정말 만족스러웠어요! 다음에도 또 참여하고 싶네요 😊',
-      profileColor: '#ff5e2f'
-    },
-    {
-      id: 2,
-      author: '서초맘',
-      location: '문래동',
-      time: '1시간 전',
-      content: '김농부네 과수원 사과는 항상 믿고 사요~ 농약도 적게 쓰시고 당도도 보장되어 있어요',
-      profileColor: '#6d2fff'
-    },
-    {
-      id: 3,
-      author: '공구매니아',
-      location: '문래동',
-      time: '5분 전',
-      content: '다음주에 배 공동구매도 있던데 그것도 참여해보려고요! 정보 공유 감사합니다 👍',
-      profileColor: '#6d2fff'
-    }
-  ]);
+  const [comments, setComments] = useState<CommentResponse[]>([]);
+  const [allComments, setAllComments] = useState<CommentResponse[]>([]);
+  const [displayedCommentsCount, setDisplayedCommentsCount] = useState(10);
+  const [commentsLoading, setCommentsLoading] = useState(false);
 
   // 게시글 데이터 로드
   useEffect(() => {
@@ -115,6 +86,35 @@ const CommunityPostDetail: React.FC = () => {
   // 작성자 여부 확인
   const isAuthor = authUser && post && post.authorId === authUser.userId;
 
+  // 댓글 데이터 로드
+  useEffect(() => {
+    const loadComments = async () => {
+      if (!id) return;
+
+      try {
+        setCommentsLoading(true);
+        const response = await commentService.getComments(parseInt(id, 10));
+
+        console.log('✅ Comments API Response:', response);
+
+        if (response.success && response.data) {
+          setAllComments(response.data);
+          setComments(response.data.slice(0, 10));
+        }
+      } catch (error) {
+        console.error('❌ 댓글 로드 실패:', error);
+        setAllComments([]);
+        setComments([]);
+      } finally {
+        setCommentsLoading(false);
+      }
+    };
+
+    if (post) {
+      loadComments();
+    }
+  }, [id, post]);
+
   const relatedPosts: RelatedPost[] = [
     {
       id: 1,
@@ -147,20 +147,60 @@ const CommunityPostDetail: React.FC = () => {
     setLikeCount(liked ? likeCount - 1 : likeCount + 1);
   };
 
-  const handleCommentSubmit = () => {
-    if (!commentText.trim()) return;
+  const handleCommentSubmit = async () => {
+    if (!commentText.trim() || !authUser || !post) return;
 
-    const newComment: Comment = {
-      id: comments.length + 1,
-      author: '나',
-      location: '문래동',
-      time: '방금',
-      content: commentText,
-      profileColor: '#ff5e2f'
-    };
+    try {
+      const response = await commentService.createComment(post.postId, {
+        postId: post.postId,
+        userId: authUser.userId,
+        content: commentText,
+      });
 
-    setComments([...comments, newComment]);
-    setCommentText('');
+      if (response.success && response.data) {
+        // 댓글 목록 새로고침
+        const updatedComments = await commentService.getComments(post.postId);
+        if (updatedComments.success && updatedComments.data) {
+          setAllComments(updatedComments.data);
+          setComments(updatedComments.data.slice(0, displayedCommentsCount));
+        }
+        setCommentText('');
+      }
+    } catch (error) {
+      console.error('❌ 댓글 작성 실패:', error);
+      alert('댓글 작성에 실패했습니다.');
+    }
+  };
+
+  const handleCommentDelete = async (commentId: number) => {
+    if (!authUser) return;
+
+    if (!window.confirm('댓글을 삭제하시겠습니까?')) return;
+
+    try {
+      await commentService.deleteComment({
+        commentId,
+        authorId: authUser.userId,
+      });
+
+      // 댓글 목록 새로고침
+      if (post) {
+        const updatedComments = await commentService.getComments(post.postId);
+        if (updatedComments.success && updatedComments.data) {
+          setAllComments(updatedComments.data);
+          setComments(updatedComments.data.slice(0, displayedCommentsCount));
+        }
+      }
+    } catch (error) {
+      console.error('❌ 댓글 삭제 실패:', error);
+      alert('댓글 삭제에 실패했습니다.');
+    }
+  };
+
+  const handleLoadMoreComments = () => {
+    const newCount = displayedCommentsCount + 10;
+    setDisplayedCommentsCount(newCount);
+    setComments(allComments.slice(0, newCount));
   };
 
   const handleShare = () => {
@@ -198,6 +238,18 @@ const CommunityPostDetail: React.FC = () => {
 
   const getInitials = (name: string) => {
     return name.slice(0, 2);
+  };
+
+  const getTimeAgo = (dateString: string) => {
+    const diff = Date.now() - new Date(dateString).getTime();
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+
+    if (minutes < 1) return '방금 전';
+    if (minutes < 60) return `${minutes}분 전`;
+    if (hours < 24) return `${hours}시간 전`;
+    return `${days}일 전`;
   };
 
   const getCategoryName = (tag: string) => {
@@ -246,6 +298,36 @@ const CommunityPostDetail: React.FC = () => {
         {/* 게시글 본문 섹션 */}
         <section className="post-section">
             <div className="post-container">
+            {/* 뒤로가기 버튼 */}
+            <button
+              onClick={() => navigate('/community')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 16px',
+                marginBottom: '20px',
+                border: '1px solid #e6e6e6',
+                borderRadius: '8px',
+                backgroundColor: '#ffffff',
+                color: '#666666',
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#f5f5f5';
+                e.currentTarget.style.borderColor = '#cccccc';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#ffffff';
+                e.currentTarget.style.borderColor = '#e6e6e6';
+              }}
+            >
+              ← 목록으로
+            </button>
+
             {/* 카테고리 태그 */}
             <div className="post-category-tag">{getCategoryName(post.tag)}</div>
 
@@ -321,29 +403,95 @@ const CommunityPostDetail: React.FC = () => {
             <h2 className="comments-title">댓글 {post.commentCount}개</h2>
 
             {/* 댓글 목록 */}
-            <div className="comments-list">
-                {comments.map((comment) => (
-                <div key={comment.id} className="comment-item">
-                    <div className="comment-author-info">
-                    <div 
-                        className="comment-profile" 
-                        style={{ backgroundColor: comment.profileColor || '#ff5e2f' }}
-                    >
-                        <span className="comment-initial">
-                        {getInitials(comment.author)}
-                        </span>
-                    </div>
-                    <div className="comment-meta">
-                        <div className="comment-author">{comment.author}</div>
-                        <div className="comment-time">
-                        {comment.location} · {comment.time}
+            {commentsLoading ? (
+              <div style={{ textAlign: 'center', padding: '40px 0', color: '#999' }}>
+                댓글을 불러오는 중...
+              </div>
+            ) : comments.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '40px 0', color: '#999' }}>
+                첫 댓글을 작성해보세요!
+              </div>
+            ) : (
+              <>
+                <div className="comments-list">
+                  {comments.map((comment) => (
+                    <div key={comment.commentId} className="comment-item">
+                      <div className="comment-author-info">
+                        <div
+                          className="comment-profile"
+                          style={{ backgroundColor: '#ff5e2f' }}
+                        >
+                          <span className="comment-initial">
+                            {getInitials(comment.userName)}
+                          </span>
                         </div>
+                        <div className="comment-meta">
+                          <div className="comment-author">{comment.userName}</div>
+                          <div className="comment-time">
+                            {getTimeAgo(comment.createdAt)}
+                          </div>
+                        </div>
+                        {authUser && comment.userId === authUser.userId && (
+                          <button
+                            onClick={() => handleCommentDelete(comment.commentId)}
+                            style={{
+                              marginLeft: 'auto',
+                              padding: '4px 12px',
+                              fontSize: '12px',
+                              color: '#ff5e2f',
+                              backgroundColor: 'transparent',
+                              border: '1px solid #ff5e2f',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = '#fff5f0';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = 'transparent';
+                            }}
+                          >
+                            삭제
+                          </button>
+                        )}
+                      </div>
+                      <div className="comment-content">{comment.content}</div>
                     </div>
-                    </div>
-                    <div className="comment-content">{comment.content}</div>
+                  ))}
                 </div>
-                ))}
-            </div>
+
+                {/* 더보기 버튼 */}
+                {allComments.length > comments.length && (
+                  <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                    <button
+                      onClick={handleLoadMoreComments}
+                      style={{
+                        padding: '12px 24px',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        color: '#666',
+                        backgroundColor: '#f5f5f5',
+                        border: '1px solid #e6e6e6',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#eeeeee';
+                        e.currentTarget.style.borderColor = '#cccccc';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = '#f5f5f5';
+                        e.currentTarget.style.borderColor = '#e6e6e6';
+                      }}
+                    >
+                      댓글 더보기 ({allComments.length - comments.length}개 남음)
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
 
             {/* 댓글 입력 폼 */}
             <div className="comment-form">
