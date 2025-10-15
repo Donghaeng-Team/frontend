@@ -104,7 +104,6 @@ const generateFallbackMockProducts = (): ApiProduct[] => {
       title: '유기농 사과 10kg (부사)',
       description: '신선한 유기농 사과입니다. 직접 재배한 부사 품종으로 달콤하고 아삭합니다.',
       price: 35000,
-      discountPrice: 45000,
       category: '식품',
       images: [],
       targetQuantity: 20,
@@ -120,7 +119,7 @@ const generateFallbackMockProducts = (): ApiProduct[] => {
       seller: {
         id: '101',
         name: '사과조아',
-        rating: 4.8
+        rating: 0
       },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -145,7 +144,7 @@ const generateFallbackMockProducts = (): ApiProduct[] => {
       seller: {
         id: '102',
         name: '생활마트',
-        rating: 4.5
+        rating: 0
       },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -155,7 +154,6 @@ const generateFallbackMockProducts = (): ApiProduct[] => {
       title: '기저귀 대형 4박스',
       description: '아기 피부에 안전한 프리미엄 기저귀입니다.',
       price: 124000,
-      discountPrice: 150000,
       category: '육아용품',
       images: [],
       targetQuantity: 20,
@@ -171,7 +169,7 @@ const generateFallbackMockProducts = (): ApiProduct[] => {
       seller: {
         id: '103',
         name: '아기사랑',
-        rating: 4.9
+        rating: 0
       },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -196,7 +194,7 @@ const generateFallbackMockProducts = (): ApiProduct[] => {
       seller: {
         id: '104',
         name: '렌탈킹',
-        rating: 4.6
+        rating: 0
       },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -206,7 +204,6 @@ const generateFallbackMockProducts = (): ApiProduct[] => {
       title: '겨울 패딩 공동구매',
       description: '따뜻하고 가벼운 겨울 패딩입니다.',
       price: 89000,
-      discountPrice: 120000,
       category: '패션/뷰티',
       images: [],
       targetQuantity: 25,
@@ -222,7 +219,7 @@ const generateFallbackMockProducts = (): ApiProduct[] => {
       seller: {
         id: '105',
         name: '패션매니아',
-        rating: 4.7
+        rating: 0
       },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -247,7 +244,7 @@ const generateFallbackMockProducts = (): ApiProduct[] => {
       seller: {
         id: '106',
         name: '헬스마트',
-        rating: 4.8
+        rating: 0
       },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -676,8 +673,6 @@ const ProductList: React.FC = () => {
                   category={product.category}
                   title={product.title}
                   price={product.price}
-                  originalPrice={product.discountPrice}
-                  discount={product.discountPrice ? Math.round(((product.discountPrice - product.price) / product.discountPrice) * 100) : undefined}
                   seller={{
                     name: product.seller.name,
                     avatar: product.seller.profileImage

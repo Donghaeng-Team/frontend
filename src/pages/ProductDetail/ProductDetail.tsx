@@ -46,7 +46,6 @@ const generateFallbackMockProduct = (id: string): Product => {
     title: '유기농 사과 10kg (부사) - 샘플 상품',
     description: '신선한 유기농 사과입니다. 직접 재배한 부사 품종으로 달콤하고 아삭합니다.\n\n이 상품은 API 연동 전 샘플 데이터입니다.\n실제 상품을 등록하시면 이 데이터 대신 표시됩니다.',
     price: 35000,
-    discountPrice: 45000,
     category: '식품',
     images: [],
     targetQuantity: 20,
@@ -62,7 +61,7 @@ const generateFallbackMockProduct = (id: string): Product => {
     seller: {
       id: '101',
       name: '사과조아',
-      rating: 4.8
+      rating: 0
     },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
@@ -230,14 +229,6 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
 
             <div className="price-container">
               <span className="current-price">{formatPrice(product.price)}</span>
-              {product.discountPrice && (
-                <>
-                  <span className="original-price">{formatPrice(product.discountPrice)}</span>
-                  <span className="discount-badge">
-                    {Math.round(((product.discountPrice - product.price) / product.discountPrice) * 100)}%
-                  </span>
-                </>
-              )}
             </div>
 
             <div className="recruitment-status">
@@ -314,8 +305,8 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
             </div>
             <div className="seller-info">
               <h3 className="seller-name">{product.seller.name}</h3>
-              <div className="seller-rating">
-                ⭐ {product.seller.rating.toFixed(1)} • {product.location.dong}
+              <div className="seller-location">
+                📍 {product.location.dong}
               </div>
             </div>
           </div>
