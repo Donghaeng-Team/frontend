@@ -197,12 +197,35 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
   }, [loadMorePosts, hasMore, loading]);
 
   // 카테고리 변경 시 포스트 초기화
-  const handleCategoryClick = (category: string) => {
+  const handleCategoryClick = async (category: string) => {
     setActiveCategory(category);
-    setPosts(initialPosts);
     setPage(1);
     setHasMore(true);
     onCategoryChange?.(category);
+
+    // 카테고리별 API 호출
+    try {
+      setLoading(true);
+      const tag = getCategoryTag(category);
+      const response = await communityService.getPosts({
+        divisionCode: '11650',  // 서초구 코드 (임시)
+        tag: tag
+      });
+
+      console.log(`✅ Category ${category} API Response:`, response);
+
+      if (response.success && response.data && response.data.length > 0) {
+        const convertedPosts = response.data.map(convertApiPostToPost);
+        setPosts(convertedPosts);
+      } else {
+        setPosts([]);
+      }
+    } catch (error) {
+      console.error('❌ Failed to load posts by category:', error);
+      setPosts([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSearch = (e: React.FormEvent) => {
