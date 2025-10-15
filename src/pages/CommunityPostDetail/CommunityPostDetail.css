@@ -196,7 +196,15 @@
     font-size: 16px;
     color: #666666;
   }
-  
+
+  .action-btn-delete:hover .action-text {
+    color: #ff3333;
+  }
+
+  .action-btn-delete:hover .action-icon {
+    color: #ff3333;
+  }
+
   /* 댓글 섹션 */
   .comments-section {
     background-color: #ffffff;

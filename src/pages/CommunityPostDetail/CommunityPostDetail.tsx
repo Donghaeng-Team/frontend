@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
+import { useAuthStore } from '../../stores/authStore';
 import './CommunityPostDetail.css';
 
 interface Comment {
@@ -21,6 +23,16 @@ interface RelatedPost {
 }
 
 const CommunityPostDetail: React.FC = () => {
+  const navigate = useNavigate();
+  const authUser = useAuthStore((state) => state.user);
+
+  // 샘플 게시글 데이터
+  const postId = 1;
+  const authorId = authUser?.userId || 999; // 샘플: 현재 로그인한 사용자를 작성자로 설정 (테스트용)
+
+  // 작성자 여부 확인
+  const isAuthor = authUser && authorId === authUser.userId;
+
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(24);
   const [commentText, setCommentText] = useState('');
@@ -115,7 +127,7 @@ const CommunityPostDetail: React.FC = () => {
 
   const handleEdit = () => {
     // 수정 페이지로 이동
-    console.log('Edit post');
+    navigate(`/community/${postId}/edit`);
   };
 
   const handleDelete = () => {
@@ -189,7 +201,7 @@ const CommunityPostDetail: React.FC = () => {
 
             {/* 액션 버튼 섹션 */}
             <div className="post-actions">
-                <button 
+                <button
                 className={`action-btn ${liked ? 'liked' : ''}`}
                 onClick={handleLike}
                 >
@@ -200,6 +212,18 @@ const CommunityPostDetail: React.FC = () => {
                 <span className="action-icon">🔗</span>
                 <span className="action-text">공유하기</span>
                 </button>
+                {isAuthor && (
+                  <>
+                    <button className="action-btn" onClick={handleEdit}>
+                      <span className="action-icon">✏️</span>
+                      <span className="action-text">수정</span>
+                    </button>
+                    <button className="action-btn action-btn-delete" onClick={handleDelete}>
+                      <span className="action-icon">🗑️</span>
+                      <span className="action-text">삭제</span>
+                    </button>
+                  </>
+                )}
             </div>
             </div>
         </section>
