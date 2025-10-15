@@ -8,6 +8,7 @@ import Input from '../../components/Input';
 import { canChangePassword } from '../../utils/auth';
 import { useAuthStore } from '../../stores/authStore';
 import { userService } from '../../api/services/user';
+import { productService } from '../../api/services/product';
 import './MyPage.css';
 
 interface UserProfile {
@@ -54,6 +55,68 @@ const MyPage: React.FC<MyPageProps> = () => {
       setEditName(authUser.nickName);
       setTempAvatar(authUser.avatarUrl || undefined);
     }
+  }, [authUser]);
+
+  // 통계 데이터 상태
+  const [stats, setStats] = useState({
+    hosting: 0,
+    participating: 0,
+    completed: 0,
+    liked: 0
+  });
+
+  // 통계 데이터 로드
+  useEffect(() => {
+    const loadStats = async () => {
+      if (!authUser) return;
+
+      try {
+        // 주최한 상품
+        const hostingResponse = await productService.getMyProducts();
+        const hostingCount = hostingResponse.success && hostingResponse.data
+          ? hostingResponse.data.items.filter(p => p.status === 'active').length
+          : 0;
+
+        // 참여중인 상품
+        const participatingResponse = await productService.getMyJoinedProducts();
+        const participatingCount = participatingResponse.success && participatingResponse.data
+          ? participatingResponse.data.items.filter(p => p.status === 'active').length
+          : 0;
+
+        // 완료된 상품 (주최 + 참여)
+        const myCompleted = hostingResponse.success && hostingResponse.data
+          ? hostingResponse.data.items.filter(p => p.status === 'completed').length
+          : 0;
+
+        const joinedCompleted = participatingResponse.success && participatingResponse.data
+          ? participatingResponse.data.items.filter(p => p.status === 'completed').length
+          : 0;
+
+        // 좋아요한 상품
+        const likedResponse = await productService.getWishlistedProducts();
+        const likedCount = likedResponse.success && likedResponse.data
+          ? likedResponse.data.items.length
+          : 0;
+
+        setStats({
+          hosting: hostingCount,
+          participating: participatingCount,
+          completed: myCompleted + joinedCompleted,
+          liked: likedCount
+        });
+      } catch (error) {
+        console.error('통계 데이터 로드 실패:', error);
+        // Fallback to default values
+        setStats({
+          hosting: 0,
+          participating: 0,
+          completed: 0,
+          liked: 0
+        });
+      }
+    };
+
+    loadStats();
   }, [authUser]);
 
   // 알림 설정 상태
@@ -314,27 +377,27 @@ const MyPage: React.FC<MyPageProps> = () => {
         {/* 통계 카드 섹션 */}
         <section className="stats-section">
           <div className="stats-content">
-            <StatCard 
-              label="진행중인 공동구매" 
-              value="1" 
-              unit="건" 
-              color="#3399ff" 
+            <StatCard
+              label="진행중인 공동구매"
+              value={stats.hosting.toString()}
+              unit="건"
+              color="#3399ff"
             />
-            <StatCard 
-              label="참여중인 공동구매" 
-              value="3" 
-              unit="건" 
-              color="#ff5e2f" 
+            <StatCard
+              label="참여중인 공동구매"
+              value={stats.participating.toString()}
+              unit="건"
+              color="#ff5e2f"
             />
-            <StatCard 
-              label="완료된 공동구매" 
-              value="12" 
-              unit="건" 
-              color="#6633cc" 
+            <StatCard
+              label="완료된 공동구매"
+              value={stats.completed.toString()}
+              unit="건"
+              color="#6633cc"
             />
             <StatCard
               label="좋아요한 상품"
-              value="8"
+              value={stats.liked.toString()}
               unit="개"
               color="#ff3333"
             />
