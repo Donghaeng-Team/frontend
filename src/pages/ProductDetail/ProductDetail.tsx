@@ -385,7 +385,6 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
             items={faqItems}
             activeKeys={activeAccordion}
             onChange={setActiveAccordion}
-            accordion
           />
         </section>
 
