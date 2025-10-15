@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import CategorySelector from '../../components/CategorySelector';
 import type { CategoryItem } from '../../components/CategorySelector';
@@ -152,6 +153,8 @@ const generateUniqueId = (): string => {
 };
 
 const ProductList: React.FC = () => {
+  const navigate = useNavigate();
+
   // 상태 관리
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [displayedProducts, setDisplayedProducts] = useState<Product[]>([]);
@@ -458,10 +461,10 @@ const ProductList: React.FC = () => {
             ) : displayedProducts.length > 0 ? (
               // 상품 카드 목록
               displayedProducts.map(product => (
-                <ProductCard 
+                <ProductCard
                   key={product.id}
                   {...product}
-                  onClick={() => {}}
+                  onClick={() => navigate(`/products/${product.id}`)}
                 />
               ))
             ) : (

@@ -351,6 +351,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
                 participants={item.participants}
                 location={item.location}
                 image={item.image}
+                onClick={() => navigate(`/products/${item.id}`)}
               />
             ))}
           </div>
