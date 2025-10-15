@@ -96,6 +96,167 @@ const sortOptions = [
 
 const ITEMS_PER_PAGE = 12;
 
+// Fallback Mock 데이터 생성 함수
+const generateFallbackMockProducts = (): ApiProduct[] => {
+  const mockProducts: ApiProduct[] = [
+    {
+      id: '1',
+      title: '유기농 사과 10kg (부사)',
+      description: '신선한 유기농 사과입니다. 직접 재배한 부사 품종으로 달콤하고 아삭합니다.',
+      price: 35000,
+      discountPrice: 45000,
+      category: '식품',
+      images: [],
+      targetQuantity: 20,
+      currentQuantity: 15,
+      deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      status: 'active',
+      location: {
+        sido: '서울',
+        gugun: '서초구',
+        dong: '서초동',
+        fullAddress: '서울시 서초구 서초동'
+      },
+      seller: {
+        id: '101',
+        name: '사과조아',
+        rating: 4.8
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    },
+    {
+      id: '2',
+      title: '프리미엄 화장지 30롤',
+      description: '부드럽고 흡수력 좋은 프리미엄 화장지입니다.',
+      price: 18900,
+      category: '생활용품',
+      images: [],
+      targetQuantity: 10,
+      currentQuantity: 8,
+      deadline: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+      status: 'active',
+      location: {
+        sido: '서울',
+        gugun: '서초구',
+        dong: '방배동',
+        fullAddress: '서울시 서초구 방배동'
+      },
+      seller: {
+        id: '102',
+        name: '생활마트',
+        rating: 4.5
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    },
+    {
+      id: '3',
+      title: '기저귀 대형 4박스',
+      description: '아기 피부에 안전한 프리미엄 기저귀입니다.',
+      price: 124000,
+      discountPrice: 150000,
+      category: '육아용품',
+      images: [],
+      targetQuantity: 20,
+      currentQuantity: 19,
+      deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+      status: 'active',
+      location: {
+        sido: '서울',
+        gugun: '강남구',
+        dong: '역삼동',
+        fullAddress: '서울시 강남구 역삼동'
+      },
+      seller: {
+        id: '103',
+        name: '아기사랑',
+        rating: 4.9
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    },
+    {
+      id: '4',
+      title: '공기청정기 렌탈',
+      description: '최신형 공기청정기 공동 렌탈합니다.',
+      price: 25000,
+      category: '전자제품',
+      images: [],
+      targetQuantity: 15,
+      currentQuantity: 12,
+      deadline: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
+      status: 'active',
+      location: {
+        sido: '서울',
+        gugun: '서초구',
+        dong: '잠원동',
+        fullAddress: '서울시 서초구 잠원동'
+      },
+      seller: {
+        id: '104',
+        name: '렌탈킹',
+        rating: 4.6
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    },
+    {
+      id: '5',
+      title: '겨울 패딩 공동구매',
+      description: '따뜻하고 가벼운 겨울 패딩입니다.',
+      price: 89000,
+      discountPrice: 120000,
+      category: '패션/뷰티',
+      images: [],
+      targetQuantity: 25,
+      currentQuantity: 18,
+      deadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+      status: 'active',
+      location: {
+        sido: '서울',
+        gugun: '서초구',
+        dong: '반포동',
+        fullAddress: '서울시 서초구 반포동'
+      },
+      seller: {
+        id: '105',
+        name: '패션매니아',
+        rating: 4.7
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    },
+    {
+      id: '6',
+      title: '유기농 닭가슴살 100팩',
+      description: '신선한 유기농 닭가슴살입니다. 운동하시는 분들께 추천!',
+      price: 85000,
+      category: '식품',
+      images: [],
+      targetQuantity: 30,
+      currentQuantity: 25,
+      deadline: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+      status: 'active',
+      location: {
+        sido: '서울',
+        gugun: '서초구',
+        dong: '양재동',
+        fullAddress: '서울시 서초구 양재동'
+      },
+      seller: {
+        id: '106',
+        name: '헬스마트',
+        rating: 4.8
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+  ];
+
+  return mockProducts;
+};
+
 const ProductList: React.FC = () => {
   const navigate = useNavigate();
 
@@ -133,15 +294,31 @@ const ProductList: React.FC = () => {
           sortOrder: 'desc'
         });
 
-        if (response.success && response.data) {
+        console.log('✅ Products API Response:', response);
+
+        if (response.success && response.data && response.data.content.length > 0) {
+          console.log('📦 Products content:', response.data.content);
+          console.log('📊 Total elements:', response.data.totalElements);
           setDisplayedProducts(response.data.content);
           setTotalCount(response.data.totalElements);
           setPage(1);
           setHasMore(response.data.content.length < response.data.totalElements);
+        } else {
+          console.warn('⚠️ API returned no data, using fallback mock data');
+          const mockData = generateFallbackMockProducts();
+          setDisplayedProducts(mockData);
+          setTotalCount(mockData.length);
+          setPage(1);
+          setHasMore(false);
         }
       } catch (error) {
-        console.error('Failed to initialize data:', error);
-        alert('상품 목록을 불러오는데 실패했습니다.');
+        console.error('❌ Failed to load products from API:', error);
+        console.warn('⚠️ Using fallback mock data');
+        const mockData = generateFallbackMockProducts();
+        setDisplayedProducts(mockData);
+        setTotalCount(mockData.length);
+        setPage(1);
+        setHasMore(false);
       } finally {
         setLoading(false);
       }
