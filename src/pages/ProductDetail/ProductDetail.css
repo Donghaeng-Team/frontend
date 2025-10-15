@@ -145,13 +145,23 @@
     font-weight: 600;
     height: 56px;
     background-color: #ff5e2f;
-    border-color: #ff5e2f;
+    border: none;
+    border-radius: 8px;
     color: #ffffff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .chat-button:hover {
     background-color: #e54420;
-    border-color: #e54420;
+    box-shadow: 0 2px 8px rgba(255, 94, 47, 0.3);
+  }
+
+  .chat-button:active {
+    transform: translateY(1px);
   }
 
   .edit-button {
@@ -170,14 +180,20 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid #dfdfdf;
+    border: 1px solid #dfdfdf;
+    border-radius: 8px;
     background-color: #ffffff;
+    cursor: pointer;
     transition: all 0.2s ease;
   }
 
   .wish-button:hover {
     border-color: #ff5e2f;
     background-color: #fff5f0;
+  }
+
+  .wish-button:active {
+    transform: translateY(1px);
   }
 
   .wish-button[data-variant="primary"] {
@@ -188,7 +204,7 @@
 
   .wish-button[data-variant="primary"]:hover {
     background-color: #e54420;
-    border-color: #e54420;
+    box-shadow: 0 2px 8px rgba(255, 94, 47, 0.3);
   }
   
   /* 섹션 공통 */
@@ -280,7 +296,6 @@
   /* 참여자 현황 섹션 */
   .participants-section {
     background-color: #fafffa;
-    border: 1px solid #e6e6e6;
     padding: 30px 0;
   }
   
