@@ -371,10 +371,19 @@ const CommunityPostCreate: React.FC = () => {
       if (response.success) {
         // 성공 시 임시 저장 데이터 삭제
         clearDraft();
-        alert('게시글이 성공적으로 등록되었습니다!');
 
-        // 목록으로 이동 (상세 페이지로 이동하려면 postId 필요)
-        navigate('/community');
+        // postId가 반환되면 상세 페이지로, 없으면 목록으로 이동
+        const postId = (response.data as any)?.postId;
+
+        if (postId) {
+          console.log('✅ 게시글 생성 성공, postId:', postId);
+          alert('게시글이 성공적으로 등록되었습니다!');
+          navigate(`/community/${postId}`);
+        } else {
+          console.warn('⚠️ postId가 반환되지 않음, 목록으로 이동');
+          alert('게시글이 성공적으로 등록되었습니다!');
+          navigate('/community');
+        }
       } else {
         alert('게시글 등록에 실패했습니다.');
       }
