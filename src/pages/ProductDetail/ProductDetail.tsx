@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './ProductDetail.css';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
@@ -7,6 +8,7 @@ import Button from '../../components/Button';
 import Progress from '../../components/Progress';
 import Accordion from '../../components/Accordion';
 import type { AccordionItem } from '../../components/Accordion';
+import { useAuthStore } from '../../stores/authStore';
 
 interface ProductDetailProps {
   productId?: string;
@@ -37,11 +39,14 @@ interface RelatedProduct {
 }
 
 const ProductDetail: React.FC<ProductDetailProps> = ({ productId }) => {
+  const navigate = useNavigate();
+  const authUser = useAuthStore((state) => state.user);
   const [isWished, setIsWished] = useState(false);
   const [activeAccordion, setActiveAccordion] = useState<string[]>(['1']);
 
   // 샘플 데이터
   const product = {
+    id: '1', // 샘플 ID 추가
     category: '식품',
     title: '유기농 사과 10kg (부사)',
     price: 35000,
@@ -77,6 +82,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId }) => {
       ]
     },
     seller: {
+      id: authUser?.userId?.toString() || '1', // 샘플: 현재 로그인한 사용자를 작성자로 설정 (테스트용)
       name: '김농부네 과수원',
       avatar: '김농',
       rating: 4.8,
@@ -86,6 +92,9 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId }) => {
       verified: true
     }
   };
+
+  // 작성자 여부 확인
+  const isAuthor = authUser && product.seller.id === authUser.userId?.toString();
 
   const participants: Participant[] = [
     { id: '1', name: '김민', color: '#ff8080' },
@@ -198,23 +207,47 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId }) => {
             </div>
 
             <div className="action-buttons">
-              <Button 
-                variant="outline" 
-                size="large" 
-                fullWidth 
-                onClick={handleJoinChat}
-                className="chat-button"
-              >
-                💬 채팅방 참여
-              </Button>
-              <Button 
-                variant={isWished ? "primary" : "outline"}
-                size="large"
-                onClick={handleWish}
-                className="wish-button"
-              >
-                ♥
-              </Button>
+              {isAuthor ? (
+                <>
+                  <Button
+                    variant="outline"
+                    size="large"
+                    fullWidth
+                    onClick={() => navigate(`/products/${product.id}/edit`)}
+                    className="edit-button"
+                  >
+                    ✏️ 수정
+                  </Button>
+                  <Button
+                    variant={isWished ? "primary" : "outline"}
+                    size="large"
+                    onClick={handleWish}
+                    className="wish-button"
+                  >
+                    ♥
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    variant="outline"
+                    size="large"
+                    fullWidth
+                    onClick={handleJoinChat}
+                    className="chat-button"
+                  >
+                    💬 채팅방 참여
+                  </Button>
+                  <Button
+                    variant={isWished ? "primary" : "outline"}
+                    size="large"
+                    onClick={handleWish}
+                    className="wish-button"
+                  >
+                    ♥
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </section>
