@@ -1,31 +1,35 @@
-import { useState } from 'react';
+import { useState } from "react"
+import Input from "../../components/Input"
+import Button from "../../components/Button"
+import "./ChangePassword.css"
 import { useNavigate } from 'react-router-dom';
-import Input from '../../components/Input';
-import Button from '../../components/Button';
 import { userService } from '../../api/services/user';
 import { useAuthStore } from '../../stores/authStore';
-import './ChangePassword.css';
 
 const ChangePassword = () => {
   const navigate = useNavigate();
   const authUser = useAuthStore((state) => state.user);
 
   const [passwords, setPasswords] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  });
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  })
 
   const [errors, setErrors] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  });
-
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  })
+        
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleInputChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPasswords(prev => ({
+  const PASSWORD_REGEX =
+    /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/
+
+  const handleInputChange =
+    (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      setPasswords((prev) => ({
       ...prev,
       [field]: e.target.value
     }));
@@ -34,56 +38,68 @@ const ChangePassword = () => {
     if (errors[field as keyof typeof errors]) {
       setErrors(prev => ({
         ...prev,
-        [field]: ''
-      }));
+        [field]: e.target.value,
+      }))
+      }
     }
-  };
 
   const validateForm = () => {
     const newErrors = {
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: ''
-    };
-    let isValid = true;
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    }
+    let isValid = true
 
     // 현재 비밀번호 검증
     if (!passwords.currentPassword) {
-      newErrors.currentPassword = '현재 비밀번호를 입력해주세요';
-      isValid = false;
+      newErrors.currentPassword = "현재의 비밀번호를 입력해주세요"
+      isValid = false
+    } else if (!PASSWORD_REGEX.test(passwords.currentPassword)) {
+      newErrors.currentPassword =
+        "비밀번호는 8자이상, 영문 대소문자, 특수문자 반드시 포함"
+      isValid = false
     }
-
     // 새 비밀번호 검증
     if (!passwords.newPassword) {
-      newErrors.newPassword = '새 비밀번호를 입력해주세요';
-      isValid = false;
-    } else if (passwords.newPassword.length < 8) {
-      newErrors.newPassword = '비밀번호는 8자 이상이어야 합니다';
-      isValid = false;
-    } else if (!/(?=.*[a-zA-Z])(?=.*[0-9])/.test(passwords.newPassword)) {
-      newErrors.newPassword = '비밀번호는 영문과 숫자를 포함해야 합니다';
-      isValid = false;
-    }
-
+      newErrors.newPassword = "새 비밀번호를 입력해주세요"
+      isValid = false
+    } else if (!PASSWORD_REGEX.test(passwords.newPassword)) {
+      newErrors.newPassword =
+        "비밀번호는 8자이상, 영문 대소문자, 특수문자 반드시 포함"
+      isValid = false
+    };
+   
     // 비밀번호 확인 검증
     if (!passwords.confirmPassword) {
-      newErrors.confirmPassword = '비밀번호를 다시 입력해주세요';
-      isValid = false;
+      newErrors.confirmPassword = "비밀번호를 다시 입력해주세요"
+      isValid = false
     } else if (passwords.newPassword !== passwords.confirmPassword) {
-      newErrors.confirmPassword = '비밀번호가 일치하지 않습니다';
-      isValid = false;
+      newErrors.confirmPassword = "비밀번호가 일치하지 않습니다"
+      isValid = false
     }
+    setErrors(newErrors)
+    return isValid
+  }
 
-    setErrors(newErrors);
-    return isValid;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
 
     if (!validateForm()) {
-      return;
+      return
     }
+    
+    // 비밀번호 변경 처리
+    console.log("비밀번호 변경:", passwords.newPassword)
+    alert("비밀번호가 변경되었습니다!")
+
+    // 폼 초기화
+    setPasswords({
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    })
+  }
 
     if (!authUser?.userId) {
       alert('로그인이 필요합니다.');
@@ -121,19 +137,19 @@ const ChangePassword = () => {
   const handleCancel = () => {
     // 폼 초기화
     setPasswords({
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: ''
-    });
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    })
     setErrors({
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: ''
-    });
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    })
 
-    // 마이페이지로 이동
-    navigate('/mypage');
-  };
+    // 이전 페이지로 이동 또는 마이페이지로 이동
+    window.history.back()
+  }
 
   return (
     <div className="change-password-page">
@@ -166,9 +182,9 @@ const ChangePassword = () => {
               <Input
                 type="password"
                 name="newPassword"
-                placeholder="새 비밀번호를 입력하세요 (8자 이상, 영문+숫자)"
+                placeholder="비밀번호 입력(영문대소문자, 숫자, 특수문자 포함 8자 이상)"
                 value={passwords.newPassword}
-                onChange={handleInputChange('newPassword')}
+                onChange={handleInputChange("newPassword")}
                 error={errors.newPassword}
                 fullWidth
                 variant="filled"
@@ -184,7 +200,7 @@ const ChangePassword = () => {
                 name="confirmPassword"
                 placeholder="새 비밀번호를 다시 입력하세요"
                 value={passwords.confirmPassword}
-                onChange={handleInputChange('confirmPassword')}
+                onChange={handleInputChange("confirmPassword")}
                 error={errors.confirmPassword}
                 fullWidth
                 variant="filled"
@@ -216,7 +232,7 @@ const ChangePassword = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ChangePassword;
+export default ChangePassword
