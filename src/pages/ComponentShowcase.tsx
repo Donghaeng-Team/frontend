@@ -554,7 +554,7 @@ const ComponentShowcase = () => {
             <StatCard label="진행중인 공동구매" value="3" unit="건" color="#ff5e2f" />
             <StatCard label="참여중인 공동구매" value="12" unit="건" color="#3399ff" />
             <StatCard label="완료된 공동구매" value="28" unit="건" color="#6633cc" change={{ value: 15, type: 'increase' }} />
-            <StatCard label="찜한 상품" value="8" unit="개" color="#ff3333" />
+            <StatCard label="좋아요한 상품" value="8" unit="개" color="#ff3333" />
           </div>
         </section>
 

@@ -1,10 +1,14 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import StatCard from '../../components/StatCard';
 import ToggleSwitch from '../../components/ToggleSwitch';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
+import { canChangePassword } from '../../utils/auth';
+import { useAuthStore } from '../../stores/authStore';
+import { userService } from '../../api/services/user';
+import { productService } from '../../api/services/product';
 import './MyPage.css';
 
 interface UserProfile {
@@ -18,20 +22,102 @@ interface MyPageProps {
   user?: UserProfile;
 }
 
-const MyPage: React.FC<MyPageProps> = ({ 
-  user = {
-    name: '홍길동',
-    email: 'example@email.com',
-    joinDate: '2025년 9월',
-  }
-}) => {
+const MyPage: React.FC<MyPageProps> = () => {
   const navigate = useNavigate();
-  // 프로필 상태
-  const [profile, setProfile] = useState<UserProfile>(user);
+  const authUser = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
+  const refreshProfile = useAuthStore((state) => state.refreshProfile);
+
+  // 프로필 상태 (authStore의 user를 기반으로 초기화)
+  const [profile, setProfile] = useState<UserProfile>({
+    name: authUser?.nickName || '사용자',
+    email: authUser?.email || '',
+    joinDate: '2025년 9월',
+    avatar: authUser?.avatarUrl || undefined
+  });
+
   const [isEditMode, setIsEditMode] = useState(false);
   const [editName, setEditName] = useState(profile.name);
   const [tempAvatar, setTempAvatar] = useState(profile.avatar);
+  const [uploadedImageFile, setUploadedImageFile] = useState<File | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // authUser가 변경되면 profile 업데이트
+  useEffect(() => {
+    if (authUser) {
+      setProfile({
+        name: authUser.nickName,
+        email: authUser.email,
+        joinDate: '2025년 9월',
+        avatar: authUser.avatarUrl || undefined
+      });
+      setEditName(authUser.nickName);
+      setTempAvatar(authUser.avatarUrl || undefined);
+    }
+  }, [authUser]);
+
+  // 통계 데이터 상태
+  const [stats, setStats] = useState({
+    hosting: 0,
+    participating: 0,
+    completed: 0,
+    liked: 0
+  });
+
+  // 통계 데이터 로드
+  useEffect(() => {
+    const loadStats = async () => {
+      if (!authUser) return;
+
+      try {
+        // 주최한 상품
+        const hostingResponse = await productService.getMyProducts();
+        const hostingCount = hostingResponse.success && hostingResponse.data
+          ? hostingResponse.data.items.filter(p => p.status === 'active').length
+          : 0;
+
+        // 참여중인 상품
+        const participatingResponse = await productService.getMyJoinedProducts();
+        const participatingCount = participatingResponse.success && participatingResponse.data
+          ? participatingResponse.data.items.filter(p => p.status === 'active').length
+          : 0;
+
+        // 완료된 상품 (주최 + 참여)
+        const myCompleted = hostingResponse.success && hostingResponse.data
+          ? hostingResponse.data.items.filter(p => p.status === 'completed').length
+          : 0;
+
+        const joinedCompleted = participatingResponse.success && participatingResponse.data
+          ? participatingResponse.data.items.filter(p => p.status === 'completed').length
+          : 0;
+
+        // 좋아요한 상품
+        const likedResponse = await productService.getWishlistedProducts();
+        const likedCount = likedResponse.success && likedResponse.data
+          ? likedResponse.data.items.length
+          : 0;
+
+        setStats({
+          hosting: hostingCount,
+          participating: participatingCount,
+          completed: myCompleted + joinedCompleted,
+          liked: likedCount
+        });
+      } catch (error) {
+        console.error('통계 데이터 로드 실패:', error);
+        // Fallback to default values
+        setStats({
+          hosting: 0,
+          participating: 0,
+          completed: 0,
+          liked: 0
+        });
+      }
+    };
+
+    loadStats();
+  }, [authUser]);
 
   // 알림 설정 상태
   const [notificationSettings, setNotificationSettings] = useState({
@@ -47,19 +133,65 @@ const MyPage: React.FC<MyPageProps> = ({
     setExpandedSection(expandedSection === section ? null : section);
   };
 
-  const handleProfileEdit = () => {
+  const handleProfileEdit = async () => {
     if (isEditMode) {
-      // 저장 모드
-      setProfile({
-        ...profile,
-        name: editName,
-        avatar: tempAvatar
-      });
-      setIsEditMode(false);
+      // 저장 모드 - 닉네임/이미지 변경 API 호출
+      if (!authUser?.userId) {
+        alert('사용자 정보를 찾을 수 없습니다.');
+        return;
+      }
+
+      const hasNicknameChange = editName !== profile.name;
+      const hasImageChange = uploadedImageFile !== null;
+
+      if (!hasNicknameChange && !hasImageChange) {
+        // 변경사항 없으면 그냥 편집 모드 종료
+        setIsEditMode(false);
+        return;
+      }
+
+      setIsSaving(true);
+      try {
+        // 닉네임 변경
+        if (hasNicknameChange) {
+          await userService.changeNickname(authUser.userId, {
+            nickName: editName
+          });
+        }
+
+        // 이미지 변경
+        if (hasImageChange && uploadedImageFile) {
+          await userService.changeProfileImage(authUser.userId, uploadedImageFile);
+        }
+
+        // 성공 시 프로필 업데이트
+        setProfile({
+          ...profile,
+          name: editName,
+          avatar: tempAvatar
+        });
+
+        // authStore 프로필도 새로고침
+        await refreshProfile();
+
+        const changeMessages = [];
+        if (hasNicknameChange) changeMessages.push('닉네임');
+        if (hasImageChange) changeMessages.push('프로필 이미지');
+
+        alert(`${changeMessages.join('과 ')}이(가) 변경되었습니다.`);
+        setIsEditMode(false);
+        setUploadedImageFile(null);
+      } catch (error: any) {
+        console.error('프로필 변경 실패:', error);
+        alert(error.message || '프로필 변경에 실패했습니다.');
+      } finally {
+        setIsSaving(false);
+      }
     } else {
       // 편집 모드
       setEditName(profile.name);
       setTempAvatar(profile.avatar);
+      setUploadedImageFile(null);
       setIsEditMode(true);
     }
   };
@@ -67,6 +199,7 @@ const MyPage: React.FC<MyPageProps> = ({
   const handleCancelEdit = () => {
     setEditName(profile.name);
     setTempAvatar(profile.avatar);
+    setUploadedImageFile(null);
     setIsEditMode(false);
   };
 
@@ -79,11 +212,27 @@ const MyPage: React.FC<MyPageProps> = ({
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // 파일 크기 체크 (예: 5MB 제한)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('이미지 크기는 5MB 이하여야 합니다.');
+        return;
+      }
+
+      // 파일 타입 체크
+      if (!file.type.startsWith('image/')) {
+        alert('이미지 파일만 업로드 가능합니다.');
+        return;
+      }
+
+      // 미리보기를 위해 FileReader 사용
       const reader = new FileReader();
       reader.onloadend = () => {
         setTempAvatar(reader.result as string);
       };
       reader.readAsDataURL(file);
+
+      // 실제 업로드할 파일 객체 저장
+      setUploadedImageFile(file);
     }
   };
 
@@ -93,15 +242,9 @@ const MyPage: React.FC<MyPageProps> = ({
   };
 
   const handleLogout = () => {
-    // 실제 프로젝트에서는 여기서 서버에 로그아웃 요청을 보내고
-    // 로컬 스토리지나 쿠키에서 토큰을 제거해야 합니다
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userInfo');
-    
-    console.log('로그아웃 완료');
-    
-    // 로그인 페이지로 이동
-    navigate('/login');
+    console.log('로그아웃 시도');
+    // AuthContext의 logout 함수 호출 (자동으로 메인 페이지로 리다이렉트됨)
+    logout();
   };
 
   const handleWithdrawal = () => {
@@ -210,13 +353,16 @@ const MyPage: React.FC<MyPageProps> = ({
                   >
                     프로필 편집
                   </button>
-                  <button 
-                    className="profile-action-btn"
-                    onClick={handlePasswordChange}
-                  >
-                    비밀번호 변경
-                  </button>
-                  <button 
+                  {/* 로컬 계정 사용자만 비밀번호 변경 가능 (소셜 로그인 사용자 제외) */}
+                  {canChangePassword() && (
+                    <button
+                      className="profile-action-btn"
+                      onClick={handlePasswordChange}
+                    >
+                      비밀번호 변경
+                    </button>
+                  )}
+                  <button
                     className="profile-action-btn"
                     onClick={handleLogout}
                   >
@@ -231,29 +377,29 @@ const MyPage: React.FC<MyPageProps> = ({
         {/* 통계 카드 섹션 */}
         <section className="stats-section">
           <div className="stats-content">
-            <StatCard 
-              label="진행중인 공동구매" 
-              value="1" 
-              unit="건" 
-              color="#3399ff" 
+            <StatCard
+              label="진행중인 공동구매"
+              value={stats.hosting.toString()}
+              unit="건"
+              color="#3399ff"
             />
-            <StatCard 
-              label="참여중인 공동구매" 
-              value="3" 
-              unit="건" 
-              color="#ff5e2f" 
+            <StatCard
+              label="참여중인 공동구매"
+              value={stats.participating.toString()}
+              unit="건"
+              color="#ff5e2f"
             />
-            <StatCard 
-              label="완료된 공동구매" 
-              value="12" 
-              unit="건" 
-              color="#6633cc" 
+            <StatCard
+              label="완료된 공동구매"
+              value={stats.completed.toString()}
+              unit="건"
+              color="#6633cc"
             />
-            <StatCard 
-              label="찜한 상품" 
-              value="8" 
-              unit="개" 
-              color="#ff3333" 
+            <StatCard
+              label="좋아요한 상품"
+              value={stats.liked.toString()}
+              unit="개"
+              color="#ff3333"
             />
           </div>
         </section>

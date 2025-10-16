@@ -1,31 +1,30 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../../stores/authStore';
+import { useLocationStore } from '../../stores/locationStore';
+import { divisionApi } from '../../api/divisionApi';
 import './Header.css';
 import NotificationModal from '../NotificationModal/NotificationModal';
 import ChatRoomListModal from '../ChatRoomListModal/ChatRoomListModal';
-import LocationModal, { type SelectedLocation, type LocationItem } from '../LocationModal/LocationModal';
+import LocationModalWrapper from '../LocationModal/LocationModalWrapper';
 
 interface HeaderProps {
-  currentLocation?: string;
   onLocationChange?: () => void;
   onNotificationClick?: () => void;
   onFavoriteClick?: () => void;
   onChatClick?: () => void;
   onProfileClick?: () => void;
   notificationCount?: number;
-  isLoggedIn?: boolean;
   notificationButtonRef?: React.RefObject<HTMLButtonElement | null>;
 }
 
 const Header: React.FC<HeaderProps> = ({
-  currentLocation = '문래동 5가',
   onLocationChange,
   onNotificationClick,
   onFavoriteClick,
   onChatClick,
   onProfileClick,
   notificationCount = 0,
-  isLoggedIn = false,
   notificationButtonRef
 }) => {
   const [activeMenu, setActiveMenu] = useState<string>('');
@@ -33,71 +32,26 @@ const Header: React.FC<HeaderProps> = ({
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const navigate = useNavigate();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
   const internalNotificationButtonRef = useRef<HTMLButtonElement>(null);
   const chatButtonRef = useRef<HTMLButtonElement>(null);
 
-  // addresses.json 데이터를 사용하는 함수들
-  const fetchSidoList = async (): Promise<LocationItem[]> => {
-    try {
-      const response = await import('../../data/addresses.json');
-      const addressData = response.default;
+  // Zustand store에서 현재 위치 가져오기
+  const currentDivision = useLocationStore((state) => state.currentDivision);
+  const isLoadingLocation = useLocationStore((state) => state.isLoading);
 
-      return addressData.map(sido => ({
-        code: sido.code,
-        name: sido.name
-      }));
-    } catch (error) {
-      console.error('Failed to load sido data:', error);
-      return [];
-    }
+  // 위치 표시 텍스트 생성
+  const getLocationText = (): string => {
+    if (isLoadingLocation) return '위치 확인 중...';
+    if (!currentDivision) return '위치 설정';
+    return divisionApi.formatDivisionShortName(currentDivision);
   };
 
-  const fetchGugunList = async (sidoCode: string): Promise<LocationItem[]> => {
-    try {
-      const response = await import('../../data/addresses.json');
-      const addressData = response.default;
-
-      const sido = addressData.find(s => s.code === sidoCode);
-      if (!sido || !sido.sgg) return [];
-
-      return sido.sgg.map(gugun => ({
-        code: sidoCode + gugun.code,
-        name: gugun.name
-      }));
-    } catch (error) {
-      console.error('Failed to load gugun data:', error);
-      return [];
-    }
-  };
-
-  const fetchDongList = async (gugunCode: string): Promise<LocationItem[]> => {
-    try {
-      const response = await import('../../data/addresses.json');
-      const addressData = response.default;
-
-      // gugunCode는 sidoCode + gugunCode 형태로 되어 있음
-      const sidoCode = gugunCode.substring(0, 2);
-      const gugunCodeOnly = gugunCode.substring(2);
-
-      const sido = addressData.find(s => s.code === sidoCode);
-      if (!sido || !sido.sgg) return [];
-
-      const gugun = sido.sgg.find(g => g.code === gugunCodeOnly);
-      if (!gugun || !gugun.emd) return [];
-
-      return gugun.emd.map(dong => ({
-        code: gugunCode + dong.code,
-        name: dong.name
-      }));
-    } catch (error) {
-      console.error('Failed to load dong data:', error);
-      return [];
-    }
-  };
-
-  const handleLocationConfirm = (location: SelectedLocation) => {
-    const locationString = `${location.dong?.name || ''}`;
-    // 여기에서 location 상태를 업데이트하거나 상위 컴포넌트로 전달
+  const handleLocationModalClose = () => {
+    setIsLocationModalOpen(false);
+    onLocationChange?.();
   };
 
   return (
@@ -115,7 +69,7 @@ const Header: React.FC<HeaderProps> = ({
         <nav className="header-nav">
           <button className="location-selector" onClick={() => setIsLocationModalOpen(true)}>
             <span className="location-icon">📍</span>
-            <span className="location-text">{currentLocation}</span>
+            <span className="location-text">{getLocationText()}</span>
             <span className="location-arrow">▽</span>
           </button>
           
@@ -138,7 +92,7 @@ const Header: React.FC<HeaderProps> = ({
 
         {/* Right Icons */}
         <div className="header-actions">
-          {isLoggedIn ? (
+          {isAuthenticated ? (
             <>
               <button
                 ref={internalNotificationButtonRef}
@@ -153,7 +107,7 @@ const Header: React.FC<HeaderProps> = ({
                   <span className="notification-badge">{notificationCount}</span>
                 )}
               </button>
-              
+
               <button
                 className="header-icon-btn"
                 onClick={() => {
@@ -174,15 +128,23 @@ const Header: React.FC<HeaderProps> = ({
               >
                 <span className="icon">💬</span>
               </button>
-              
-              <button 
-                className="header-icon-btn" 
+
+              <button
+                className="header-icon-btn"
                 onClick={() => {
                   navigate('/mypage');
                   onProfileClick?.();
                 }}
               >
                 <span className="icon">👤</span>
+              </button>
+
+              <button
+                className="header-logout-btn"
+                onClick={logout}
+                title="로그아웃"
+              >
+                로그아웃
               </button>
             </>
           ) : (
@@ -246,13 +208,9 @@ const Header: React.FC<HeaderProps> = ({
       />
 
       {/* LocationModal */}
-      <LocationModal
+      <LocationModalWrapper
         isOpen={isLocationModalOpen}
-        onClose={() => setIsLocationModalOpen(false)}
-        onConfirm={handleLocationConfirm}
-        fetchSidoList={fetchSidoList}
-        fetchGugunList={fetchGugunList}
-        fetchDongList={fetchDongList}
+        onClose={handleLocationModalClose}
       />
     </header>
   );

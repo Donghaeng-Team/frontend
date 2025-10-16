@@ -1,15 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import Layout from '../../components/Layout';
+import { useAuthStore } from '../../stores/authStore';
+import { communityService } from '../../api/services/community';
+import { commentService } from '../../api/services/comment';
+import type { PostDetailResponse } from '../../types/community';
+import type { CommentResponse } from '../../types/comment';
 import './CommunityPostDetail.css';
-
-interface Comment {
-  id: number;
-  author: string;
-  location: string;
-  time: string;
-  content: string;
-  profileColor?: string;
-}
 
 interface RelatedPost {
   id: number;
@@ -21,35 +18,113 @@ interface RelatedPost {
 }
 
 const CommunityPostDetail: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const authUser = useAuthStore((state) => state.user);
+
+  const [loading, setLoading] = useState(true);
+  const [post, setPost] = useState<PostDetailResponse | null>(null);
   const [liked, setLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(24);
+  const [likeCount, setLikeCount] = useState(0);
   const [commentText, setCommentText] = useState('');
-  const [comments, setComments] = useState<Comment[]>([
-    {
-      id: 1,
-      author: '과일러버',
-      location: '문래동',
-      time: '2시간 전',
-      content: '저도 이번 공구 참여했는데 정말 만족스러웠어요! 다음에도 또 참여하고 싶네요 😊',
-      profileColor: '#ff5e2f'
-    },
-    {
-      id: 2,
-      author: '서초맘',
-      location: '문래동',
-      time: '1시간 전',
-      content: '김농부네 과수원 사과는 항상 믿고 사요~ 농약도 적게 쓰시고 당도도 보장되어 있어요',
-      profileColor: '#6d2fff'
-    },
-    {
-      id: 3,
-      author: '공구매니아',
-      location: '문래동',
-      time: '5분 전',
-      content: '다음주에 배 공동구매도 있던데 그것도 참여해보려고요! 정보 공유 감사합니다 👍',
-      profileColor: '#6d2fff'
+  const [comments, setComments] = useState<CommentResponse[]>([]);
+  const [allComments, setAllComments] = useState<CommentResponse[]>([]);
+  const [displayedCommentsCount, setDisplayedCommentsCount] = useState(10);
+  const [commentsLoading, setCommentsLoading] = useState(false);
+
+  // 게시글 데이터 로드
+  useEffect(() => {
+    const loadPost = async () => {
+      if (!id) {
+        alert('게시글 ID가 없습니다.');
+        navigate('/community');
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const response = await communityService.getPost(parseInt(id, 10));
+
+        console.log('✅ Community Post Detail API Response:', response);
+
+        if (!response.success || !response.data) {
+          throw new Error('게시글을 찾을 수 없습니다.');
+        }
+
+        setPost(response.data);
+        setLikeCount(response.data.likeCount);
+      } catch (error: any) {
+        console.error('❌ 게시글 로드 실패:', error);
+        console.warn('⚠️ Using fallback mock post data');
+
+        // Fallback: mock 데이터 사용 (현재 로그인한 사용자 작성으로 설정)
+        const mockPost: PostDetailResponse = {
+          postId: parseInt(id || '1', 10),
+          title: '김농부 유기농 사과 10kg 공동구매 후기 - 샘플 게시글 (내가 작성)',
+          content: '이번에 참여한 유기농 사과 공동구매 정말 만족스러웠어요!\n\n이 게시글은 API 연동 전 샘플 데이터입니다.\n현재 로그인한 사용자가 작성한 것으로 설정되어 수정/삭제 버튼이 표시됩니다.\n실제 게시글을 등록하시면 이 데이터 대신 표시됩니다.',
+          region: '서초구',
+          tag: 'review',
+          authorId: authUser?.userId || 999,
+          imageUrls: [],
+          thumbnailUrl: null,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          likeCount: 24,
+          commentCount: 3,
+          viewCount: 128
+        };
+        setPost(mockPost);
+        setLikeCount(mockPost.likeCount);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPost();
+  }, [id, navigate]);
+
+  // 작성자 여부 확인
+  const isAuthor = authUser && post && post.authorId === authUser.userId;
+
+  // 디버깅: 작성자 여부 확인
+  useEffect(() => {
+    if (post && authUser) {
+      console.log('🔍 작성자 확인:', {
+        postAuthorId: post.authorId,
+        currentUserId: authUser.userId,
+        isAuthor: post.authorId === authUser.userId
+      });
     }
-  ]);
+  }, [post, authUser]);
+
+  // 댓글 데이터 로드
+  useEffect(() => {
+    const loadComments = async () => {
+      if (!id) return;
+
+      try {
+        setCommentsLoading(true);
+        const response = await commentService.getComments(parseInt(id, 10));
+
+        console.log('✅ Comments API Response:', response);
+
+        if (response.success && response.data) {
+          setAllComments(response.data);
+          setComments(response.data.slice(0, 10));
+        }
+      } catch (error) {
+        console.error('❌ 댓글 로드 실패:', error);
+        setAllComments([]);
+        setComments([]);
+      } finally {
+        setCommentsLoading(false);
+      }
+    };
+
+    if (post) {
+      loadComments();
+    }
+  }, [id, post]);
 
   const relatedPosts: RelatedPost[] = [
     {
@@ -83,20 +158,60 @@ const CommunityPostDetail: React.FC = () => {
     setLikeCount(liked ? likeCount - 1 : likeCount + 1);
   };
 
-  const handleCommentSubmit = () => {
-    if (!commentText.trim()) return;
+  const handleCommentSubmit = async () => {
+    if (!commentText.trim() || !authUser || !post) return;
 
-    const newComment: Comment = {
-      id: comments.length + 1,
-      author: '나',
-      location: '문래동',
-      time: '방금',
-      content: commentText,
-      profileColor: '#ff5e2f'
-    };
+    try {
+      const response = await commentService.createComment(post.postId, {
+        postId: post.postId,
+        userId: authUser.userId,
+        content: commentText,
+      });
 
-    setComments([...comments, newComment]);
-    setCommentText('');
+      if (response.success && response.data) {
+        // 댓글 목록 새로고침
+        const updatedComments = await commentService.getComments(post.postId);
+        if (updatedComments.success && updatedComments.data) {
+          setAllComments(updatedComments.data);
+          setComments(updatedComments.data.slice(0, displayedCommentsCount));
+        }
+        setCommentText('');
+      }
+    } catch (error) {
+      console.error('❌ 댓글 작성 실패:', error);
+      alert('댓글 작성에 실패했습니다.');
+    }
+  };
+
+  const handleCommentDelete = async (commentId: number) => {
+    if (!authUser) return;
+
+    if (!window.confirm('댓글을 삭제하시겠습니까?')) return;
+
+    try {
+      await commentService.deleteComment({
+        commentId,
+        authorId: authUser.userId,
+      });
+
+      // 댓글 목록 새로고침
+      if (post) {
+        const updatedComments = await commentService.getComments(post.postId);
+        if (updatedComments.success && updatedComments.data) {
+          setAllComments(updatedComments.data);
+          setComments(updatedComments.data.slice(0, displayedCommentsCount));
+        }
+      }
+    } catch (error) {
+      console.error('❌ 댓글 삭제 실패:', error);
+      alert('댓글 삭제에 실패했습니다.');
+    }
+  };
+
+  const handleLoadMoreComments = () => {
+    const newCount = displayedCommentsCount + 10;
+    setDisplayedCommentsCount(newCount);
+    setComments(allComments.slice(0, newCount));
   };
 
   const handleShare = () => {
@@ -115,7 +230,9 @@ const CommunityPostDetail: React.FC = () => {
 
   const handleEdit = () => {
     // 수정 페이지로 이동
-    console.log('Edit post');
+    if (post) {
+      navigate(`/community/${post.postId}/edit`);
+    }
   };
 
   const handleDelete = () => {
@@ -134,62 +251,199 @@ const CommunityPostDetail: React.FC = () => {
     return name.slice(0, 2);
   };
 
+  const getTimeAgo = (dateString: string) => {
+    const diff = Date.now() - new Date(dateString).getTime();
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+
+    if (minutes < 1) return '방금 전';
+    if (minutes < 60) return `${minutes}분 전`;
+    if (hours < 24) return `${hours}시간 전`;
+    return `${days}일 전`;
+  };
+
+  const getCategoryName = (tag: string) => {
+    switch (tag) {
+      case 'general': return '동네 소식';
+      case 'review': return '공구 후기';
+      case 'question': return '질문 답변';
+      default: return '기타';
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
+  };
+
+  // 로딩 중
+  if (loading) {
+    return (
+      <Layout isLoggedIn={true} notificationCount={3}>
+        <div className="community-post-detail">
+          <div style={{ textAlign: 'center', padding: '100px 20px', fontSize: '18px', color: '#666' }}>
+            게시글을 불러오는 중...
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // 게시글 없음
+  if (!post) {
+    return (
+      <Layout isLoggedIn={true} notificationCount={3}>
+        <div className="community-post-detail">
+          <div style={{ textAlign: 'center', padding: '100px 20px', fontSize: '18px', color: '#666' }}>
+            게시글을 찾을 수 없습니다.
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout isLoggedIn={true} notificationCount={3}>
         <div className="community-post-detail">
         {/* 게시글 본문 섹션 */}
         <section className="post-section">
             <div className="post-container">
+            {/* 상단 액션 바 */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              {/* 뒤로가기 버튼 */}
+              <button
+                onClick={() => navigate('/community')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px 16px',
+                  border: '1px solid #e6e6e6',
+                  borderRadius: '8px',
+                  backgroundColor: '#ffffff',
+                  color: '#666666',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#f5f5f5';
+                  e.currentTarget.style.borderColor = '#cccccc';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#ffffff';
+                  e.currentTarget.style.borderColor = '#e6e6e6';
+                }}
+              >
+                ← 목록으로
+              </button>
+
+              {/* 수정/삭제 버튼 */}
+              {isAuthor && (
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    onClick={handleEdit}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '8px 16px',
+                      border: '1px solid #e6e6e6',
+                      borderRadius: '8px',
+                      backgroundColor: '#ffffff',
+                      color: '#666666',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#f5f5f5';
+                      e.currentTarget.style.borderColor = '#cccccc';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#ffffff';
+                      e.currentTarget.style.borderColor = '#e6e6e6';
+                    }}
+                  >
+                    ✏️ 수정
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '8px 16px',
+                      border: '1px solid #ffcccc',
+                      borderRadius: '8px',
+                      backgroundColor: '#ffffff',
+                      color: '#ff5e2f',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#fff5f0';
+                      e.currentTarget.style.borderColor = '#ff5e2f';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#ffffff';
+                      e.currentTarget.style.borderColor = '#ffcccc';
+                    }}
+                  >
+                    🗑️ 삭제
+                  </button>
+                </div>
+              )}
+            </div>
+
             {/* 카테고리 태그 */}
-            <div className="post-category-tag">공구 후기</div>
+            <div className="post-category-tag">{getCategoryName(post.tag)}</div>
 
             {/* 제목 */}
-            <h1 className="post-title">지난주 사과 공동구매 정말 만족합니다!</h1>
+            <h1 className="post-title">{post.title}</h1>
 
             {/* 작성자 정보 */}
             <div className="post-author-info">
                 <div className="author-profile" style={{ backgroundColor: '#ff5e2f' }}>
-                <span className="author-initial">사과</span>
+                <span className="author-initial">익명</span>
                 </div>
                 <div className="author-details">
-                <div className="author-name">사과조아</div>
+                <div className="author-name">익명</div>
                 <div className="author-meta">
-                    2025년 9월 25일 • 서초동 • 조회 342
+                    {formatDate(post.createdAt)} • {post.region} • 조회 {post.viewCount}
                 </div>
                 </div>
             </div>
 
             {/* 이미지 갤러리 */}
-            <div className="post-images">
-                <div className="post-image-item"></div>
-                <div className="post-image-item"></div>
-            </div>
+            {post.imageUrls && post.imageUrls.length > 0 && (
+              <div className="post-images">
+                {post.imageUrls.map((url, index) => (
+                  <div key={index} className="post-image-item">
+                    <img src={url} alt={`게시글 이미지 ${index + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* 본문 내용 */}
             <div className="post-content">
-                안녕하세요, 서초동 주민입니다!<br/><br/>
-
-                지난주 김농부네 과수원 사과 공동구매에 참여했는데요,<br/>
-                정말 만족스러워서 후기 남깁니다 😊<br/><br/>
-
-                우선 사과 품질이 정말 최고였어요!<br/>
-                한 박스에 10kg인데 크기도 균일하고 당도도 15브릭스 이상이라<br/>
-                아이들이 너무 좋아했어요.<br/><br/>
-
-                무엇보다 개별 구매할 때보다 30% 정도 저렴하게 구매할 수 있어서<br/>
-                경제적으로도 큰 도움이 되었습니다.<br/><br/>
-
-                판매자님도 친절하시고, 약속 장소에서 수령할 때도<br/>
-                시간 맞춰 오셔서 편하게 받을 수 있었어요.<br/><br/>
-
-                다음에도 과일 공동구매 있으면 꼭 참여하고 싶습니다!<br/>
-                함께 사요 서비스 덕분에 이웃들과 좋은 물건을 저렴하게<br/>
-                구매할 수 있어서 감사해요 👍
+              {post.content.split('\n').map((line, index) => (
+                <React.Fragment key={index}>
+                  {line}
+                  {index < post.content.split('\n').length - 1 && <br />}
+                </React.Fragment>
+              ))}
             </div>
 
             {/* 액션 버튼 섹션 */}
             <div className="post-actions">
-                <button 
+                <button
                 className={`action-btn ${liked ? 'liked' : ''}`}
                 onClick={handleLike}
                 >
@@ -207,32 +461,98 @@ const CommunityPostDetail: React.FC = () => {
         {/* 댓글 섹션 */}
         <section className="comments-section">
             <div className="comments-container">
-            <h2 className="comments-title">댓글 {comments.length}개</h2>
+            <h2 className="comments-title">댓글 {allComments.length}개</h2>
 
             {/* 댓글 목록 */}
-            <div className="comments-list">
-                {comments.map((comment) => (
-                <div key={comment.id} className="comment-item">
-                    <div className="comment-author-info">
-                    <div 
-                        className="comment-profile" 
-                        style={{ backgroundColor: comment.profileColor || '#ff5e2f' }}
-                    >
-                        <span className="comment-initial">
-                        {getInitials(comment.author)}
-                        </span>
-                    </div>
-                    <div className="comment-meta">
-                        <div className="comment-author">{comment.author}</div>
-                        <div className="comment-time">
-                        {comment.location} · {comment.time}
+            {commentsLoading ? (
+              <div style={{ textAlign: 'center', padding: '40px 0', color: '#999' }}>
+                댓글을 불러오는 중...
+              </div>
+            ) : comments.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '40px 0', color: '#999' }}>
+                첫 댓글을 작성해보세요!
+              </div>
+            ) : (
+              <>
+                <div className="comments-list">
+                  {comments.map((comment) => (
+                    <div key={comment.commentId} className="comment-item">
+                      <div className="comment-author-info">
+                        <div
+                          className="comment-profile"
+                          style={{ backgroundColor: '#ff5e2f' }}
+                        >
+                          <span className="comment-initial">
+                            {getInitials(comment.userName)}
+                          </span>
                         </div>
+                        <div className="comment-meta">
+                          <div className="comment-author">{comment.userName}</div>
+                          <div className="comment-time">
+                            {getTimeAgo(comment.createdAt)}
+                          </div>
+                        </div>
+                        {authUser && comment.userId === authUser.userId && (
+                          <button
+                            onClick={() => handleCommentDelete(comment.commentId)}
+                            style={{
+                              marginLeft: 'auto',
+                              padding: '4px 12px',
+                              fontSize: '12px',
+                              color: '#ff5e2f',
+                              backgroundColor: 'transparent',
+                              border: '1px solid #ff5e2f',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = '#fff5f0';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = 'transparent';
+                            }}
+                          >
+                            삭제
+                          </button>
+                        )}
+                      </div>
+                      <div className="comment-content">{comment.content}</div>
                     </div>
-                    </div>
-                    <div className="comment-content">{comment.content}</div>
+                  ))}
                 </div>
-                ))}
-            </div>
+
+                {/* 더보기 버튼 */}
+                {allComments.length > comments.length && (
+                  <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                    <button
+                      onClick={handleLoadMoreComments}
+                      style={{
+                        padding: '12px 24px',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        color: '#666',
+                        backgroundColor: '#f5f5f5',
+                        border: '1px solid #e6e6e6',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = '#eeeeee';
+                        e.currentTarget.style.borderColor = '#cccccc';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = '#f5f5f5';
+                        e.currentTarget.style.borderColor = '#e6e6e6';
+                      }}
+                    >
+                      댓글 더보기 ({allComments.length - comments.length}개 남음)
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
 
             {/* 댓글 입력 폼 */}
             <div className="comment-form">

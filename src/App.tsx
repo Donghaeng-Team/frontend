@@ -19,6 +19,10 @@ import Callback from "./pages/Auth/Callback"
 import EMailVerification from "./pages/EmailVerification/EmailVerification"
 import PasswordVerification from "./pages/PasswordVerification/PasswordVerification"
 
+
+// Components
+import ProtectedRoute from './components/ProtectedRoute';
+
 function App() {
   return (
     <Router>
@@ -28,25 +32,29 @@ function App() {
 
         {/* 인증 관련 */}
         <Route path="/login" element={<Login />} />
+        <Route path="/login-form" element={<LoginForm />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/change-password" element={<ChangePassword />} />
         <Route path="/auth/callback" element={<Callback />} />
         <Route path="/verify/email" element={<EMailVerification />} />
         <Route path="/verify/password" element={<PasswordVerification />} />
+        <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
 
         {/* 마이페이지 */}
-        <Route path="/mypage" element={<MyPage />} />
-        <Route path="/purchase-history" element={<PurchaseHistory />} />
+        <Route path="/mypage" element={<ProtectedRoute><MyPage /></ProtectedRoute>} />
+        <Route path="/purchase-history" element={<ProtectedRoute><PurchaseHistory /></ProtectedRoute>} />
 
         {/* 상품 관련 */}
         <Route path="/products" element={<ProductList />} />
         <Route path="/products/:id" element={<ProductDetail />} />
-        <Route path="/products/register" element={<ProductRegister />} />
+        <Route path="/products/register" element={<ProtectedRoute><ProductRegister /></ProtectedRoute>} />
+        <Route path="/products/:id/edit" element={<ProtectedRoute><ProductEdit /></ProtectedRoute>} />
 
         {/* 커뮤니티 */}
         <Route path="/community" element={<CommunityBoard />} />
-        <Route path="/community/create" element={<CommunityPostCreate />} />
+        <Route path="/community/create" element={<ProtectedRoute><CommunityPostCreate /></ProtectedRoute>} />
         <Route path="/community/:id" element={<CommunityPostDetail />} />
+        <Route path="/community/:id/edit" element={<ProtectedRoute><CommunityPostEdit /></ProtectedRoute>} />
 
         {/* 개발용 컴포넌트 쇼케이스 */}
         <Route path="/showcase" element={<ComponentShowcase />} />

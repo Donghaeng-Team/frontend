@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
+import { communityService } from '../../api/services/community';
+import type { PostListResponse } from '../../types/community';
 import './CommunityBoard.css';
 
 export interface Post {
@@ -30,7 +33,7 @@ interface CommunityBoardProps {
 }
 
 const CommunityBoard: React.FC<CommunityBoardProps> = ({
-  posts: initialPosts = defaultPosts,
+  posts: initialPosts,
   onSearch,
   onWriteClick,
   onCategoryChange,
@@ -40,17 +43,97 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
   isLoggedIn = true,
   notificationCount = 3
 }) => {
+  const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState('전체');
   const [searchQuery, setSearchQuery] = useState('');
-  const [posts, setPosts] = useState<Post[]>(initialPosts);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(initialHasMore);
-  
+
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   const categories = ['전체', '동네 소식', '공구 후기', '질문 답변'];
+
+  // 태그 매핑
+  const getCategoryTag = (category: string): string => {
+    switch (category) {
+      case '동네 소식': return 'general';
+      case '공구 후기': return 'review';
+      case '질문 답변': return 'question';
+      default: return 'all';
+    }
+  };
+
+  // API 응답을 Post 형식으로 변환
+  const convertApiPostToPost = (apiPost: PostListResponse): Post => {
+    const getTimeAgo = (dateString: string) => {
+      const diff = Date.now() - new Date(dateString).getTime();
+      const minutes = Math.floor(diff / 60000);
+      const hours = Math.floor(diff / 3600000);
+      const days = Math.floor(diff / 86400000);
+
+      if (minutes < 1) return '방금 전';
+      if (minutes < 60) return `${minutes}분 전`;
+      if (hours < 24) return `${hours}시간 전`;
+      return `${days}일 전`;
+    };
+
+    return {
+      id: apiPost.postId.toString(),
+      category: apiPost.tag === 'general' ? '동네 소식' :
+                apiPost.tag === 'review' ? '공구 후기' :
+                apiPost.tag === 'question' ? '질문 답변' : '기타',
+      title: apiPost.title,
+      content: apiPost.previewContent,
+      author: '익명',  // API에 작성자 정보가 없으므로
+      timeAgo: getTimeAgo(apiPost.createdAt),
+      location: apiPost.region,
+      viewCount: apiPost.viewCount,
+      commentCount: apiPost.commentCount,
+      likeCount: apiPost.likeCount,
+      thumbnail: apiPost.thumbnailUrl || undefined
+    };
+  };
+
+  // 초기 데이터 로드
+  useEffect(() => {
+    const loadInitialPosts = async () => {
+      // initialPosts가 제공된 경우 API 호출하지 않음
+      if (initialPosts && initialPosts.length > 0) {
+        setPosts(initialPosts);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const response = await communityService.getPosts({
+          divisionCode: '11650',  // 서초구 코드 (임시)
+          tag: 'all'
+        });
+
+        console.log('✅ Community API Response:', response);
+
+        if (response.success && response.data && response.data.length > 0) {
+          const convertedPosts = response.data.map(convertApiPostToPost);
+          setPosts(convertedPosts);
+        } else {
+          console.warn('⚠️ API returned no data, using fallback mock data');
+          setPosts(defaultPosts);
+        }
+      } catch (error) {
+        console.error('❌ Failed to load posts from API:', error);
+        console.warn('⚠️ Using fallback mock data');
+        setPosts(defaultPosts);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadInitialPosts();
+  }, [initialPosts]);
 
   // 더 많은 게시글 로드
   const loadMorePosts = useCallback(async () => {
@@ -114,17 +197,62 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
   }, [loadMorePosts, hasMore, loading]);
 
   // 카테고리 변경 시 포스트 초기화
-  const handleCategoryClick = (category: string) => {
+  const handleCategoryClick = async (category: string) => {
     setActiveCategory(category);
-    setPosts(initialPosts);
     setPage(1);
     setHasMore(true);
     onCategoryChange?.(category);
+
+    // 카테고리별 API 호출
+    try {
+      setLoading(true);
+      const tag = getCategoryTag(category);
+      const response = await communityService.getPosts({
+        divisionCode: '11650',  // 서초구 코드 (임시)
+        tag: tag
+      });
+
+      console.log(`✅ Category ${category} API Response:`, response);
+
+      if (response.success && response.data && response.data.length > 0) {
+        const convertedPosts = response.data.map(convertApiPostToPost);
+        setPosts(convertedPosts);
+      } else {
+        console.warn('⚠️ No API data, using filtered fallback mock data');
+        // Fallback: 카테고리별로 필터링된 mock 데이터 사용
+        if (category === '전체') {
+          setPosts(defaultPosts);
+        } else {
+          const filteredPosts = defaultPosts.filter(post => post.category === category);
+          setPosts(filteredPosts);
+        }
+      }
+    } catch (error) {
+      console.error('❌ Failed to load posts by category:', error);
+      console.warn('⚠️ Using filtered fallback mock data');
+      // 에러 시에도 fallback 데이터 사용
+      if (category === '전체') {
+        setPosts(defaultPosts);
+      } else {
+        const filteredPosts = defaultPosts.filter(post => post.category === category);
+        setPosts(filteredPosts);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     onSearch?.(searchQuery);
+  };
+
+  const handleWriteClick = () => {
+    if (onWriteClick) {
+      onWriteClick();
+    } else {
+      navigate('/community/create');
+    }
   };
 
   const getCategoryStyle = (category: string) => {
@@ -178,7 +306,7 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </form>
-              <button className="write-button" onClick={onWriteClick}>
+              <button className="write-button" onClick={handleWriteClick}>
                 ✏️ 글쓰기
               </button>
             </div>
@@ -188,11 +316,21 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
         {/* 게시글 목록 */}
         <section className="posts-section">
           <div className="posts-container">
-            {posts.map(post => (
+            {loading && posts.length === 0 ? (
+              <div className="loading-message">게시글을 불러오는 중...</div>
+            ) : posts.length === 0 ? (
+              <div className="no-posts-message">게시글이 없습니다.</div>
+            ) : posts.map(post => (
               <article
                 key={post.id}
                 className="post-item"
-                onClick={() => onPostClick?.(post.id)}
+                onClick={() => {
+                  if (onPostClick) {
+                    onPostClick(post.id);
+                  } else {
+                    navigate(`/community/${post.id}`);
+                  }
+                }}
               >
                 <div className="post-content">
                   <div className="post-header">

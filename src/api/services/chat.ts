@@ -1,4 +1,5 @@
-import apiClient, { ApiResponse, PaginatedResponse } from '../config';
+import apiClient from '../client';
+import type { ApiResponse, PaginationResponse } from '../../types';
 
 // 채팅 관련 타입 정의
 export interface ChatRoom {
@@ -42,7 +43,7 @@ export interface SendMessageRequest {
 // 채팅 API 서비스
 export const chatService = {
   // 채팅방 목록 조회
-  getChatRooms: async (params: { page?: number; size?: number } = {}): Promise<ApiResponse<PaginatedResponse<ChatRoom>>> => {
+  getChatRooms: async (params: { page?: number; size?: number } = {}): Promise<ApiResponse<PaginationResponse<ChatRoom>>> => {
     const response = await apiClient.get('/chat/rooms', { params });
     return response.data;
   },
@@ -63,7 +64,7 @@ export const chatService = {
   getMessages: async (
     roomId: string,
     params: { page?: number; size?: number; before?: string } = {}
-  ): Promise<ApiResponse<PaginatedResponse<ChatMessage>>> => {
+  ): Promise<ApiResponse<PaginationResponse<ChatMessage>>> => {
     const response = await apiClient.get(`/chat/rooms/${roomId}/messages`, { params });
     return response.data;
   },

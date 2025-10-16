@@ -1,11 +1,21 @@
-import apiClient, { ApiResponse } from '../config';
+import apiClient from '../client';
+import type { ApiResponse } from '../../types';
+import type {
+  LoginRequest,
+  LoginResponse,
+  SignUpRequest,
+  RefreshTokenResponse,
+  User
+} from '../../types/auth';
+import {
+  setAccessToken,
+  setRefreshToken,
+  setUser,
+  clearAuth,
+  getRefreshToken
+} from '../../utils/token';
 
-// 인증 관련 타입 정의
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
-
+// 기존 타입 (하위 호환성 유지)
 export interface RegisterRequest {
   email: string;
   password: string;
@@ -24,40 +34,58 @@ export interface AuthResponse {
   };
 }
 
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  phoneNumber?: string;
-  profileImage?: string;
-  role: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
 // 인증 API 서비스
 export const authService = {
   // 로그인
-  login: async (data: LoginRequest): Promise<ApiResponse<AuthResponse>> => {
-    const response = await apiClient.post('/auth/login', data);
+  login: async (data: LoginRequest): Promise<ApiResponse<LoginResponse>> => {
+    const response = await apiClient.post<ApiResponse<LoginResponse>>('/auth/login', data);
+    const { accessToken, refreshToken, user } = response.data.data;
+
+    // 토큰과 사용자 정보 저장
+    setAccessToken(accessToken);
+    setRefreshToken(refreshToken);
+    setUser(user);
+
     return response.data;
   },
 
   // 회원가입
-  register: async (data: RegisterRequest): Promise<ApiResponse<AuthResponse>> => {
-    const response = await apiClient.post('/auth/register', data);
+  register: async (data: SignUpRequest): Promise<ApiResponse<LoginResponse>> => {
+    const response = await apiClient.post<ApiResponse<LoginResponse>>('/auth/register', data);
+    const { accessToken, refreshToken, user } = response.data.data;
+
+    // 회원가입 후 자동 로그인 처리
+    setAccessToken(accessToken);
+    setRefreshToken(refreshToken);
+    setUser(user);
+
     return response.data;
   },
 
   // 로그아웃
   logout: async (): Promise<ApiResponse<null>> => {
     const response = await apiClient.post('/auth/logout');
+
+    // 로컬 스토리지에서 인증 정보 제거
+    clearAuth();
+
     return response.data;
   },
 
   // 토큰 갱신
-  refreshToken: async (refreshToken: string): Promise<ApiResponse<{ accessToken: string }>> => {
-    const response = await apiClient.post('/auth/refresh', { refreshToken });
+  refreshToken: async (): Promise<ApiResponse<RefreshTokenResponse>> => {
+    const refreshToken = getRefreshToken();
+
+    if (!refreshToken) {
+      throw new Error('Refresh token not found');
+    }
+
+    const response = await apiClient.post<ApiResponse<RefreshTokenResponse>>('/auth/refresh', { refreshToken });
+    const { accessToken } = response.data.data;
+
+    // 새로운 AccessToken 저장
+    setAccessToken(accessToken);
+
     return response.data;
   },
 
