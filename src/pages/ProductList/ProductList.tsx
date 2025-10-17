@@ -150,7 +150,7 @@ const ProductList: React.FC = () => {
         setDivisionId(currentDivisionId);
         console.log('📍 Using divisionId:', currentDivisionId);
 
-        // 상품 데이터 로드
+        // 상품 데이터 로드 (Public API 사용)
         const response = await marketService.getMarketPosts({
           divisionId: currentDivisionId,
           depth: 1,

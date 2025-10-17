@@ -25,7 +25,9 @@ export const marketService = {
   getMarketPosts: async (
     params: MarketListRequest
   ): Promise<ApiResponse<MarketListResponse>> => {
+    console.log('🔍 getMarketPosts params:', params);
     const response = await apiClient.get('/api/v1/market/public', { params });
+    console.log('✅ getMarketPosts response:', response.data);
     return response.data;
   },
 
