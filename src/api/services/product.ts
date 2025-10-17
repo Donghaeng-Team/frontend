@@ -1,5 +1,6 @@
 import apiClient from '../client';
 import type { ApiResponse, PaginationResponse } from '../../types';
+import { getUser } from '../../utils/token';
 
 // 상품 관련 타입 정의
 export interface Product {
@@ -140,27 +141,75 @@ export const productService = {
     return response.data;
   },
 
-  // 내가 참여한 상품 목록
+  // 내가 참여한 상품 목록 (TODO: 백엔드 API 구현 대기)
   getMyJoinedProducts: async (params: { page?: number; size?: number } = {}): Promise<ApiResponse<PaginationResponse<Product>>> => {
-    const response = await apiClient.get('/products/my/joined', { params });
-    return response.data;
+    // 백엔드 API가 아직 없으므로 빈 응답 반환
+    return {
+      success: true,
+      message: '조회 성공',
+      data: {
+        items: [],
+        totalElements: 0,
+        totalPages: 0,
+        currentPage: 0,
+        pageSize: params.size || 10,
+        hasNext: false,
+        hasPrevious: false
+      }
+    };
   },
 
   // 내가 등록한 상품 목록
-  getMyProducts: async (params: { page?: number; size?: number } = {}): Promise<ApiResponse<PaginationResponse<Product>>> => {
-    const response = await apiClient.get('/products/my', { params });
+  getMyProducts: async (params: { pageNum?: number; pageSize?: number } = {}): Promise<ApiResponse<PaginationResponse<Product>>> => {
+    const user = getUser();
+    if (!user?.userId) {
+      throw new Error('로그인이 필요합니다.');
+    }
+
+    // /api/v1/market/public/user/{userId} 사용
+    const response = await apiClient.get(`/api/v1/market/public/user/${user.userId}`, {
+      params: {
+        pageNum: params.pageNum || 0,
+        pageSize: params.pageSize || 10
+      }
+    });
     return response.data;
   },
 
-  // 좋아요/좋아요 취소
-  toggleWishlist: async (productId: string): Promise<ApiResponse<{ isWishlisted: boolean }>> => {
-    const response = await apiClient.post(`/products/${productId}/wishlist`);
+  // 좋아요 추가
+  addWishlist: async (marketId: number): Promise<ApiResponse<null>> => {
+    const response = await apiClient.post(`/api/v1/market/private/cart/${marketId}`);
     return response.data;
+  },
+
+  // 좋아요 취소
+  removeWishlist: async (marketId: number): Promise<ApiResponse<null>> => {
+    const response = await apiClient.delete(`/api/v1/market/private/cart/${marketId}`);
+    return response.data;
+  },
+
+  // 좋아요 토글 (기존 호환성 유지)
+  toggleWishlist: async (productId: string): Promise<ApiResponse<{ isWishlisted: boolean }>> => {
+    // TODO: 현재 좋아요 상태를 확인한 후 추가/삭제 결정
+    // 임시로 추가만 수행
+    const marketId = parseInt(productId);
+    await productService.addWishlist(marketId);
+    return {
+      success: true,
+      message: '좋아요 추가',
+      data: { isWishlisted: true }
+    };
   },
 
   // 좋아요한 상품 목록
-  getWishlistedProducts: async (params: { page?: number; size?: number } = {}): Promise<ApiResponse<PaginationResponse<Product>>> => {
-    const response = await apiClient.get('/products/wishlist', { params });
+  getWishlistedProducts: async (params: { pageNum?: number; pageSize?: number } = {}): Promise<ApiResponse<PaginationResponse<Product>>> => {
+    // /api/v1/market/private/cart/my 사용
+    const response = await apiClient.get('/api/v1/market/private/cart/my', {
+      params: {
+        pageNum: params.pageNum || 0,
+        pageSize: params.pageSize || 10
+      }
+    });
     return response.data;
   },
 
