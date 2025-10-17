@@ -75,14 +75,31 @@ const ProductCard: React.FC<ProductCardProps> = ({
         <h4 className="product-title">{title}</h4>
         
         <div className="product-price-container">
-          <span className="product-price">{formatPrice(price)}</span>
-          {originalPrice && (
-            <span className="product-original-price">
-              {formatPrice(originalPrice)}
-            </span>
+          {participants ? (
+            <div className="product-price-range">
+              <div className="price-current-info">
+                <span className="price-current">
+                  {formatPrice(typeof price === 'number' ? Math.ceil(price / participants.current) : price)}
+                </span>
+              </div>
+              <div className="price-max-info">
+                <span className="price-max-label">
+                  최대 {participants.max}명 모집 시 {formatPrice(typeof price === 'number' ? Math.ceil(price / participants.max) : price)}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <>
+              <span className="product-price">{formatPrice(price)}</span>
+              {originalPrice && (
+                <span className="product-original-price">
+                  {formatPrice(originalPrice)}
+                </span>
+              )}
+            </>
           )}
         </div>
-        
+
         <div className="product-info">
           <div className="product-seller">
             {seller.avatar ? (

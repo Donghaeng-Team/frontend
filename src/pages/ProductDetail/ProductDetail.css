@@ -79,15 +79,21 @@
   
   .price-container {
     display: flex;
-    align-items: center;
-    gap: 15px;
+    flex-direction: column;
+    gap: 8px;
     margin-top: 20px;
   }
-  
-  .current-price {
+
+  .price-current {
     font-size: 36px;
     font-weight: 700;
     color: #ff5e2f;
+  }
+
+  .price-max-info {
+    font-size: 14px;
+    font-weight: 500;
+    color: #808080;
   }
   
   .original-price {
@@ -443,7 +449,7 @@
       font-size: 24px;
     }
     
-    .current-price {
+    .price-current {
       font-size: 28px;
     }
     

@@ -539,8 +539,8 @@ const ProductList: React.FC = () => {
                     max: product.recruitMax
                   }}
                   location={product.emdName}
-                  status={product.status === 'RECRUITING' ? 'active' : 
-                         product.status === 'ENDED' ? 'completed' : 
+                  status={product.status === 'RECRUITING' ? 'active' :
+                         product.status === 'ENDED' ? 'completed' :
                          product.status === 'CANCELLED' ? 'cancelled' : 'expired'}
                   onClick={() => navigate(`/products/${product.marketId}`)}
                 />
