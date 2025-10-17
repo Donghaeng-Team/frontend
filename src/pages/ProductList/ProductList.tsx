@@ -304,11 +304,11 @@ const ProductList: React.FC = () => {
       setIsFilterChanged(false);
       setLoadingMore(true);
 
-      const response = await productService.getProducts({
-        page: 1,
-        size: ITEMS_PER_PAGE,
-        sortBy: 'createdAt',
-        sortOrder: 'desc'
+      const response = await marketService.getMarketPosts({
+        divisionId: divisionId,
+        depth: 1,
+        pageNum: 0,
+        pageSize: ITEMS_PER_PAGE
       });
 
       if (response.success && response.data) {
@@ -331,13 +331,12 @@ const ProductList: React.FC = () => {
       setSearchKeyword(keyword);
       setLoadingMore(true);
 
-      const response = await productService.getProducts({
-        page: 1,
-        size: ITEMS_PER_PAGE,
-        query: keyword || undefined,
-        category: selectedCategories.length > 0 ? selectedCategories[selectedCategories.length - 1] : undefined,
-        sortBy: 'createdAt',
-        sortOrder: 'desc'
+      const response = await marketService.getMarketPosts({
+        divisionId: divisionId,
+        depth: 1,
+        pageNum: 0,
+        pageSize: ITEMS_PER_PAGE,
+        keyword: keyword || undefined
       });
 
       if (response.success && response.data) {
