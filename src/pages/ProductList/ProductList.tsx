@@ -109,6 +109,7 @@ const ProductList: React.FC = () => {
   const [displayedProducts, setDisplayedProducts] = useState<ApiProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [tempCategories, setTempCategories] = useState<string[]>([]);
   const [distanceRange, setDistanceRange] = useState(2);
@@ -174,8 +175,10 @@ const ProductList: React.FC = () => {
           setPage(0);
           setHasMore(false);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('❌ Failed to load markets from API:', error);
+        const errorMessage = error.response?.data?.message || error.message || '상품 목록을 불러오는 데 실패했습니다.';
+        setError(errorMessage);
         setDisplayedProducts([]);
         setTotalCount(0);
         setPage(0);
@@ -511,10 +514,27 @@ const ProductList: React.FC = () => {
 
           {/* 상품 그리드 */}
           <div className="products-grid" onWheel={handleWheel}>
-            {loading ? (
+            {error ? (
+              // 에러 표시
+              <div className="error-container">
+                <div className="error-icon">⚠️</div>
+                <h3>상품 목록을 불러올 수 없습니다</h3>
+                <p className="error-message-text">{error}</p>
+                <p className="error-hint">백엔드 서버 연결을 확인해주세요.</p>
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    setError(null);
+                    window.location.reload();
+                  }}
+                >
+                  다시 시도
+                </Button>
+              </div>
+            ) : loading ? (
               // 초기 로딩 스켈레톤
               Array.from({ length: ITEMS_PER_PAGE }).map((_, index) => (
-                <Skeleton 
+                <Skeleton
                   key={index}
                   variant="rounded"
                   height={369}
