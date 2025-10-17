@@ -131,8 +131,10 @@ const ProductList: React.FC = () => {
 
         // 상품 데이터 로드
         const response = await marketService.getMarketPosts({
-          page: 0,  // 백엔드는 0-based pagination
-          size: ITEMS_PER_PAGE
+          divisionId: '11650',  // TODO: 실제 사용자 위치 기반으로 변경
+          depth: 1,
+          pageNum: 0,
+          pageSize: ITEMS_PER_PAGE
         });
 
         console.log('✅ Market API Response:', response);
@@ -200,9 +202,10 @@ const ProductList: React.FC = () => {
       }
 
       const response = await marketService.getMarketPosts({
-        page: nextPage,
-        size: ITEMS_PER_PAGE,
-        divisionCode: '11650'  // TODO: 실제 지역 코드로 교체 필요
+        divisionId: '11650',
+        depth: 1,
+        pageNum: nextPage,
+        pageSize: ITEMS_PER_PAGE
       });
 
       if (response.success && response.data) {
@@ -251,9 +254,10 @@ const ProductList: React.FC = () => {
       setLoadingMore(true);
 
       const response = await marketService.getMarketPosts({
-        page: 0,
-        size: ITEMS_PER_PAGE,
-        divisionCode: '11650'  // TODO: 실제 지역 코드로 교체 필요
+        divisionId: '11650',
+        depth: 1,
+        pageNum: 0,
+        pageSize: ITEMS_PER_PAGE
       });
 
       if (response.success && response.data) {
@@ -355,9 +359,10 @@ const ProductList: React.FC = () => {
       }
 
       const response = await marketService.getMarketPosts({
-        page: 0,
-        size: ITEMS_PER_PAGE,
-        divisionCode: '11650'  // TODO: 실제 지역 코드로 교체 필요
+        divisionId: '11650',
+        depth: 1,
+        pageNum: 0,
+        pageSize: ITEMS_PER_PAGE
       });
 
       if (response.success && response.data) {
