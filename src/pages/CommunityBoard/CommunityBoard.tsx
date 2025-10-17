@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import { communityService } from '../../api/services/community';
 import type { PostListResponse } from '../../types/community';
+import { APP_CONSTANTS } from '../../utils/constants';
 import './CommunityBoard.css';
 
 export interface Post {
@@ -50,6 +51,7 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(initialHasMore);
+  const [divisionCode, setDivisionCode] = useState<string>('11650'); // 기본값: 서초구
 
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -109,8 +111,28 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
 
       try {
         setLoading(true);
+        
+        // 로컬스토리지에서 선택된 위치 정보 가져오기
+        const selectedLocationStr = localStorage.getItem(APP_CONSTANTS.STORAGE_KEYS.SELECTED_LOCATION);
+        let currentDivisionCode = '11650'; // 기본값: 서초구
+        
+        if (selectedLocationStr) {
+          try {
+            const selectedLocation = JSON.parse(selectedLocationStr);
+            if (selectedLocation && selectedLocation.sggCode) {
+              // divisionCode는 시군구 코드 (5자리)
+              currentDivisionCode = selectedLocation.sidoCode + selectedLocation.sggCode;
+            }
+          } catch (error) {
+            console.error('Failed to parse selected location:', error);
+          }
+        }
+        
+        setDivisionCode(currentDivisionCode);
+        console.log('📍 Using divisionCode:', currentDivisionCode);
+        
         const response = await communityService.getPosts({
-          divisionCode: '11650',  // 서초구 코드 (임시)
+          divisionCode: currentDivisionCode,
           tag: 'all'
         });
 
@@ -120,13 +142,12 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
           const convertedPosts = response.data.map(convertApiPostToPost);
           setPosts(convertedPosts);
         } else {
-          console.warn('⚠️ API returned no data, using fallback mock data');
-          setPosts(defaultPosts);
+          console.warn('⚠️ API returned no data');
+          setPosts([]);
         }
       } catch (error) {
         console.error('❌ Failed to load posts from API:', error);
-        console.warn('⚠️ Using fallback mock data');
-        setPosts(defaultPosts);
+        setPosts([]);
       } finally {
         setLoading(false);
       }
@@ -151,17 +172,8 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
           setPage(prev => prev + 1);
         }
       } else {
-        // 기본 더미 데이터 생성 (onLoadMore가 없을 때)
-        setTimeout(() => {
-          const newPosts = generateDummyPosts(page + 1);
-          setPosts(prev => [...prev, ...newPosts]);
-          setPage(prev => prev + 1);
-          
-          // 5페이지까지만 로드
-          if (page >= 4) {
-            setHasMore(false);
-          }
-        }, 1000);
+        // onLoadMore가 없을 때는 더 이상 로드하지 않음
+        setHasMore(false);
       }
     } catch (error) {
       console.error('Failed to load more posts:', error);
@@ -208,7 +220,7 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
       setLoading(true);
       const tag = getCategoryTag(category);
       const response = await communityService.getPosts({
-        divisionCode: '11650',  // 서초구 코드 (임시)
+        divisionCode: divisionCode,
         tag: tag
       });
 
@@ -218,25 +230,12 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
         const convertedPosts = response.data.map(convertApiPostToPost);
         setPosts(convertedPosts);
       } else {
-        console.warn('⚠️ No API data, using filtered fallback mock data');
-        // Fallback: 카테고리별로 필터링된 mock 데이터 사용
-        if (category === '전체') {
-          setPosts(defaultPosts);
-        } else {
-          const filteredPosts = defaultPosts.filter(post => post.category === category);
-          setPosts(filteredPosts);
-        }
+        console.warn('⚠️ No API data for category:', category);
+        setPosts([]);
       }
     } catch (error) {
       console.error('❌ Failed to load posts by category:', error);
-      console.warn('⚠️ Using filtered fallback mock data');
-      // 에러 시에도 fallback 데이터 사용
-      if (category === '전체') {
-        setPosts(defaultPosts);
-      } else {
-        const filteredPosts = defaultPosts.filter(post => post.category === category);
-        setPosts(filteredPosts);
-      }
+      setPosts([]);
     } finally {
       setLoading(false);
     }
@@ -385,94 +384,5 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
     </Layout>
   );
 };
-
-// 더미 데이터 생성 함수
-const generateDummyPosts = (page: number): Post[] => {
-  const categories = ['동네 소식', '공구 후기', '질문 답변'];
-  const locations = ['서초동', '방배동', '반포동', '양재동', '잠원동'];
-  const authors = ['동네주민', '공구왕', '절약러', '알뜰이', '이웃사람'];
-  
-  return Array.from({ length: 5 }, (_, index) => {
-    const id = `page${page}_post${index + 1}`;
-    const category = categories[Math.floor(Math.random() * categories.length)];
-    
-    return {
-      id,
-      category,
-      title: `[${page}페이지] ${category} 관련 게시글입니다 #${index + 1}`,
-      content: '안양의 거리와 무대가 춤으로 물드는 특별한 시간, 2025 안양춤축제에 여러분을 초대합니다. 청춘과 열정이...',
-      author: authors[Math.floor(Math.random() * authors.length)],
-      timeAgo: `${Math.floor(Math.random() * 24) + 1}시간 전`,
-      location: locations[Math.floor(Math.random() * locations.length)],
-      viewCount: Math.floor(Math.random() * 300) + 10,
-      commentCount: Math.floor(Math.random() * 30),
-      likeCount: Math.random() > 0.5 ? Math.floor(Math.random() * 50) : undefined,
-      thumbnail: Math.random() > 0.7 ? '/placeholder-image.jpg' : undefined
-    };
-  });
-};
-
-// 기본 더미 데이터
-const defaultPosts: Post[] = [
-  {
-    id: '1',
-    category: '동네 소식',
-    title: '서초동 맛집 추천해주세요!',
-    content: '안양의 거리와 무대가 춤으로 물드는 특별한 시간, 2025 안양춤축제에 여러분을 초대합니다. 청춘과 열정이...',
-    author: '맛집탐험가',
-    timeAgo: '5시간 전',
-    location: '서초4동',
-    viewCount: 58,
-    commentCount: 12
-  },
-  {
-    id: '2',
-    category: '공구 후기',
-    title: '화장지 공동구매 완료! 정말 저렴하게 샀어요 😊',
-    content: '안양의 거리와 무대가 춤으로 물드는 특별한 시간, 2025 안양춤축제에 여러분을 초대합니다. 청춘과 열정이...',
-    author: '절약왕',
-    timeAgo: '1일 전',
-    location: '방배동',
-    viewCount: 124,
-    commentCount: 8,
-    likeCount: 23
-  },
-  {
-    id: '3',
-    category: '질문 답변',
-    title: '공동구매 참여 방법이 어떻게 되나요? 처음이라서요 ㅠㅠ',
-    content: '안양의 거리와 무대가 춤으로 물드는 특별한 시간, 2025 안양춤축제에 여러분을 초대합니다. 청춘과 열정이...',
-    author: '초보자',
-    timeAgo: '3일 전',
-    location: '서초동',
-    viewCount: 89,
-    commentCount: 15
-  },
-  {
-    id: '4',
-    category: '동네 소식',
-    title: '우리 아파트에서도 공동구매 모임 만들어요!',
-    content: '안양의 거리와 무대가 춤으로 물드는 특별한 시간, 2025 안양춤축제에 여러분을 초대합니다. 청춘과 열정이...',
-    author: '동네대표',
-    timeAgo: '2일 전',
-    location: '반포동',
-    viewCount: 156,
-    commentCount: 22,
-    likeCount: 31
-  },
-  {
-    id: '5',
-    category: '공구 후기',
-    title: '기저귀 공동구매 덕분에 30만원 절약했어요!',
-    content: '안양의 거리와 무대가 춤으로 물드는 특별한 시간, 2025 안양춤축제에 여러분을 초대합니다. 청춘과 열정이...',
-    author: '육아맘',
-    timeAgo: '4일 전',
-    location: '양재동',
-    viewCount: 267,
-    commentCount: 34,
-    likeCount: 89,
-    thumbnail: '/placeholder-image.jpg'
-  }
-];
 
 export default CommunityBoard;
