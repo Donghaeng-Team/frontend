@@ -66,18 +66,47 @@
   .product-price-container {
     margin-bottom: 16px;
   }
-  
+
   .product-price {
     font-size: 20px;
     font-weight: 700;
     color: #333333;
   }
-  
+
   .product-original-price {
     font-size: 14px;
     color: #999999;
     text-decoration: line-through;
     margin-left: 8px;
+  }
+
+  /* Price Range */
+  .product-price-range {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .price-current-info {
+    display: flex;
+    align-items: baseline;
+  }
+
+  .price-current {
+    font-size: 24px;
+    font-weight: 700;
+    color: #ff5e2f;
+  }
+
+  .price-max-info {
+    display: flex;
+    align-items: center;
+  }
+
+  .price-max-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #808080;
   }
   
   /* Info */
