@@ -84,25 +84,28 @@
   }
   
   /* 선택 영역 컨테이너 */
-  .location-select-container {
-    flex: 1;
-    margin: 0 40px;
-    display: grid;
-    grid-template-columns: 230px 245px 1fr;
-    gap: 0;
-    background-color: #ffffff;
-    border: 1px solid #e6e6e6;
-    border-radius: 8px;
-    overflow: hidden;
-  }
+.location-select-container {
+  flex: 1;
+  margin: 0 40px 20px 40px;
+  display: grid;
+  grid-template-columns: 230px 245px 1fr;
+  gap: 0;
+  background-color: #ffffff;
+  border: 1px solid #e6e6e6;
+  border-radius: 8px;
+  overflow: hidden;
+  min-height: 0;
+}
   
   /* 컬럼 */
-  .location-column {
-    display: flex;
-    flex-direction: column;
-    border-right: 1px solid #e6e6e6;
-    background-color: #fafafa;
-  }
+.location-column {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #e6e6e6;
+  background-color: #fafafa;
+  min-height: 0;
+  overflow: hidden;
+}
   
   .location-column:last-child {
     border-right: none;
@@ -129,7 +132,6 @@
   .location-column-content {
     flex: 1;
     overflow-y: auto;
-    max-height: 300px;
     scrollbar-width: thin;
     scrollbar-color: #cccccc transparent;
   }

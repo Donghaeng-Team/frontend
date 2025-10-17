@@ -17,7 +17,7 @@ export const imageService = {
    */
   getPresignedUrl: async (request: { fileName: string; fileType: string }): Promise<{ success: boolean; data?: { presignedUrl: string; imageUrl: string } }> => {
     try {
-      const response = await apiClient.post('/images/presigned-url', request);
+      const response = await apiClient.post('/api/v1/market/private/images/presigned-url', request);
       return {
         success: true,
         data: {

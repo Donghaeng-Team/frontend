@@ -79,7 +79,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             <div className="product-price-range">
               <div className="price-current-info">
                 <span className="price-current">
-                  {formatPrice(typeof price === 'number' ? Math.ceil(price / participants.current) : price)}
+                  {formatPrice(typeof price === 'number' ? Math.ceil(price / (participants.current || 1)) : price)}
                 </span>
               </div>
               <div className="price-max-info">

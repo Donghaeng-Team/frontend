@@ -80,20 +80,33 @@
   .price-container {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    margin-top: 20px;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  .price-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #ff5e2f;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: -4px;
   }
 
   .price-current {
-    font-size: 36px;
-    font-weight: 700;
+    font-size: 40px;
+    font-weight: 800;
     color: #ff5e2f;
+    line-height: 1;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
   }
 
   .price-max-info {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
-    color: #808080;
+    color: #999999;
   }
   
   .original-price {

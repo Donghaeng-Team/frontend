@@ -12,6 +12,7 @@ import Skeleton from '../../components/Skeleton';
 import { marketService } from '../../api/services/market';
 import type { MarketSimpleResponse } from '../../types/market';
 import { APP_CONSTANTS } from '../../utils/constants';
+import { getCategoryNameWithDepth } from '../../utils/categoryMapping';
 // 임시로 작은 샘플 데이터를 사용하여 테스트
 const sampleFoodCategoriesData = [
   {
@@ -108,6 +109,7 @@ const ProductList: React.FC = () => {
   const [displayedProducts, setDisplayedProducts] = useState<ApiProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [tempCategories, setTempCategories] = useState<string[]>([]);
   const [distanceRange, setDistanceRange] = useState(2);
@@ -149,7 +151,7 @@ const ProductList: React.FC = () => {
         setDivisionId(currentDivisionId);
         console.log('📍 Using divisionId:', currentDivisionId);
 
-        // 상품 데이터 로드
+        // 상품 데이터 로드 (Public API 사용)
         const response = await marketService.getMarketPosts({
           divisionId: currentDivisionId,
           depth: 1,
@@ -173,12 +175,25 @@ const ProductList: React.FC = () => {
           setPage(0);
           setHasMore(false);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('❌ Failed to load markets from API:', error);
-        setDisplayedProducts([]);
-        setTotalCount(0);
-        setPage(0);
-        setHasMore(false);
+        
+        // 500 에러는 데이터가 없는 것으로 처리 (에러 표시 안 함)
+        if (error.response?.status === 500) {
+          console.warn('⚠️ 500 error - treating as no data available');
+          setDisplayedProducts([]);
+          setTotalCount(0);
+          setPage(0);
+          setHasMore(false);
+        } else {
+          // 다른 에러는 에러 메시지 표시
+          const errorMessage = error.response?.data?.message || error.message || '상품 목록을 불러오는 데 실패했습니다.';
+          setError(errorMessage);
+          setDisplayedProducts([]);
+          setTotalCount(0);
+          setPage(0);
+          setHasMore(false);
+        }
       } finally {
         setLoading(false);
       }
@@ -197,7 +212,7 @@ const ProductList: React.FC = () => {
 
   // 무한 스크롤 - 더보기 버튼 클릭
   const handleLoadMore = useCallback(async () => {
-    if (!hasMore || loadingMore) return;
+    if (!hasMore || loadingMore || loading) return;
 
     try {
       setLoadingMore(true);
@@ -221,9 +236,14 @@ const ProductList: React.FC = () => {
         sortOrderApi = 'asc';
       }
 
+      // 현재 필터 적용
+      const categoryId = selectedCategories.length > 0 ? selectedCategories.join('') : undefined;
+
       const response = await marketService.getMarketPosts({
         divisionId: divisionId,
-        depth: 1,
+        depth: distanceRange,
+        categoryId: categoryId,
+        keyword: searchKeyword || undefined,
         pageNum: nextPage,
         pageSize: ITEMS_PER_PAGE
       });
@@ -273,9 +293,21 @@ const ProductList: React.FC = () => {
       setIsFilterChanged(false);
       setLoadingMore(true);
 
+      // 카테고리 ID: 선택된 카테고리의 마지막 값 사용 (8자리 전체)
+      const categoryId = tempCategories.length > 0 ? tempCategories.join('') : undefined;
+
+      console.log('🔍 Applying filters:', {
+        divisionId,
+        depth: tempDistanceRange,
+        categoryId,
+        pageNum: 0,
+        pageSize: ITEMS_PER_PAGE
+      });
+
       const response = await marketService.getMarketPosts({
         divisionId: divisionId,
-        depth: 1,
+        depth: tempDistanceRange,
+        categoryId: categoryId,
         pageNum: 0,
         pageSize: ITEMS_PER_PAGE
       });
@@ -304,11 +336,11 @@ const ProductList: React.FC = () => {
       setIsFilterChanged(false);
       setLoadingMore(true);
 
-      const response = await productService.getProducts({
-        page: 1,
-        size: ITEMS_PER_PAGE,
-        sortBy: 'createdAt',
-        sortOrder: 'desc'
+      const response = await marketService.getMarketPosts({
+        divisionId: divisionId,
+        depth: 1,
+        pageNum: 0,
+        pageSize: ITEMS_PER_PAGE
       });
 
       if (response.success && response.data) {
@@ -331,13 +363,16 @@ const ProductList: React.FC = () => {
       setSearchKeyword(keyword);
       setLoadingMore(true);
 
-      const response = await productService.getProducts({
-        page: 1,
-        size: ITEMS_PER_PAGE,
-        query: keyword || undefined,
-        category: selectedCategories.length > 0 ? selectedCategories[selectedCategories.length - 1] : undefined,
-        sortBy: 'createdAt',
-        sortOrder: 'desc'
+      // 현재 필터 적용
+      const categoryId = selectedCategories.length > 0 ? selectedCategories.join('') : undefined;
+
+      const response = await marketService.getMarketPosts({
+        divisionId: divisionId,
+        depth: distanceRange,
+        categoryId: categoryId,
+        keyword: keyword || undefined,
+        pageNum: 0,
+        pageSize: ITEMS_PER_PAGE
       });
 
       if (response.success && response.data) {
@@ -378,9 +413,14 @@ const ProductList: React.FC = () => {
         sortOrderApi = 'asc';
       }
 
+      // 현재 필터 적용
+      const categoryId = selectedCategories.length > 0 ? selectedCategories.join('') : undefined;
+
       const response = await marketService.getMarketPosts({
         divisionId: divisionId,
-        depth: 1,
+        depth: distanceRange,
+        categoryId: categoryId,
+        keyword: searchKeyword || undefined,
         pageNum: 0,
         pageSize: ITEMS_PER_PAGE
       });
@@ -511,10 +551,27 @@ const ProductList: React.FC = () => {
 
           {/* 상품 그리드 */}
           <div className="products-grid" onWheel={handleWheel}>
-            {loading ? (
+            {error ? (
+              // 에러 표시
+              <div className="error-container">
+                <div className="error-icon">⚠️</div>
+                <h3>상품 목록을 불러올 수 없습니다</h3>
+                <p className="error-message-text">{error}</p>
+                <p className="error-hint">백엔드 서버 연결을 확인해주세요.</p>
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    setError(null);
+                    window.location.reload();
+                  }}
+                >
+                  다시 시도
+                </Button>
+              </div>
+            ) : loading ? (
               // 초기 로딩 스켈레톤
               Array.from({ length: ITEMS_PER_PAGE }).map((_, index) => (
-                <Skeleton 
+                <Skeleton
                   key={index}
                   variant="rounded"
                   height={369}
@@ -527,7 +584,7 @@ const ProductList: React.FC = () => {
                 <ProductCard
                   key={product.marketId}
                   image={product.thumbnailImageUrl || undefined}
-                  category={product.categoryId}
+                  category={getCategoryNameWithDepth(product.categoryId, 4)}
                   title={product.title}
                   price={product.price}
                   seller={{
