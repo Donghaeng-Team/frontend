@@ -39,30 +39,28 @@ export interface AuthResponse {
 export const authService = {
   // 로그인
   login: async (data: LoginRequest): Promise<ApiResponse<LoginResponse>> => {
-    const response = await apiClient.post<ApiResponse<null>>('/api/v1/user/public/login', data);
+    const response = await apiClient.post<ApiResponse<User>>('/api/v1/user/public/login', data);
     
     console.log('로그인 응답:', response.data);
     console.log('응답 헤더:', response.headers);
     
-    // 백엔드가 토큰을 헤더로 전달함
-    const accessToken = response.headers['authorization']?.replace('Bearer ', '');
+    // 백엔드가 토큰을 헤더로 전달 (Axios는 헤더를 소문자로 정규화)
+    const accessToken = (response.headers['authorization'] || response.headers['Authorization'])?.replace('Bearer ', '');
     // refreshToken은 쿠키로 전달되므로 브라우저가 자동 관리
     
     if (!accessToken) {
       throw new Error('로그인 응답에 토큰이 없습니다.');
     }
     
-    // AccessToken 저장
-    setAccessToken(accessToken);
-    
-    // 사용자 정보는 별도 API로 조회
-    const userResponse = await apiClient.get<ApiResponse<User>>('/api/v1/user/private/me');
-    const user = userResponse.data.data;
+    // 사용자 정보는 응답 body에 포함됨
+    const user = response.data.data;
     
     if (!user) {
       throw new Error('사용자 정보를 가져올 수 없습니다.');
     }
     
+    // AccessToken과 사용자 정보 저장
+    setAccessToken(accessToken);
     setUser(user);
     
     // LoginResponse 형태로 반환 (호환성 유지)
