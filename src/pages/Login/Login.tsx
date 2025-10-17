@@ -20,42 +20,6 @@ const Login: React.FC<LoginProps> = ({
 }) => {
   const navigate = useNavigate();
 
-  const handleTestLogin = (provider: 'LOCAL' | 'KAKAO' | 'GOOGLE') => {
-    // Provider에 따른 테스트 사용자 데이터
-    const testUsers: Record<'LOCAL' | 'KAKAO' | 'GOOGLE', User> = {
-      LOCAL: {
-        email: 'local@example.com',
-        nickName: '로컬 테스트 사용자',
-        avatarUrl: null,
-        provider: 'LOCAL'
-      },
-      KAKAO: {
-        email: 'kakao@example.com',
-        nickName: '카카오 테스트 사용자',
-        avatarUrl: 'https://via.placeholder.com/150',
-        provider: 'KAKAO'
-      },
-      GOOGLE: {
-        email: 'google@example.com',
-        nickName: '구글 테스트 사용자',
-        avatarUrl: 'https://via.placeholder.com/150',
-        provider: 'GOOGLE'
-      }
-    };
-
-    const testUser = testUsers[provider];
-
-    // 테스트용 토큰 저장
-    setAccessToken(`fake-access-token-${provider.toLowerCase()}`);
-    setRefreshToken(`fake-refresh-token-${provider.toLowerCase()}`);
-
-    // 사용자 정보 저장
-    setUser(testUser);
-
-    // 홈으로 이동 (새로고침하여 AuthContext가 업데이트되도록)
-    window.location.href = '/';
-  };
-
   return (
     <div className="login-page">
       <div className="login-container">
@@ -110,40 +74,6 @@ const Login: React.FC<LoginProps> = ({
               이메일로 로그인
             </Button>
 
-            <div className="login-divider">
-              <span className="login-divider-line"></span>
-              <span className="login-divider-text">개발용 테스트</span>
-              <span className="login-divider-line"></span>
-            </div>
-
-            <div className="test-login-buttons">
-              <Button
-                variant="secondary"
-                size="large"
-                fullWidth
-                onClick={() => handleTestLogin('LOCAL')}
-              >
-                🧪 LOCAL 테스트
-              </Button>
-
-              <Button
-                variant="secondary"
-                size="large"
-                fullWidth
-                onClick={() => handleTestLogin('KAKAO')}
-              >
-                💬 KAKAO 테스트
-              </Button>
-
-              <Button
-                variant="secondary"
-                size="large"
-                fullWidth
-                onClick={() => handleTestLogin('GOOGLE')}
-              >
-                🔍 GOOGLE 테스트
-              </Button>
-            </div>
           </div>
 
           <div className="login-footer">
