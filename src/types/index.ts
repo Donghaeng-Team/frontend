@@ -10,7 +10,7 @@ export * from './user';
 export * from './market';
 
 // 지역/위치 관련 (Coordinate는 api.ts에서 이미 export됨)
-export type { Division } from './location';
+export type { Division } from './division';
 export type {
   DivisionByCoordRequest,
   DivisionListByCoordRequest,

@@ -69,8 +69,10 @@ class DivisionApi {
         async (position) => {
           try {
             const division = await this.getDivisionByCoord({
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude
+              coordinate: {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude
+              }
             });
             resolve(division);
           } catch (error) {
@@ -101,8 +103,10 @@ class DivisionApi {
         async (position) => {
           try {
             const divisions = await this.getNearbyDivisionsByCoord({
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
+              coordinate: {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude
+              },
               depth
             });
             resolve(divisions);

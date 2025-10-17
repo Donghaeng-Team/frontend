@@ -1,22 +1,12 @@
 // 지역/위치 관련 타입 정의
 import type { Coordinate } from './api';
+import type { Division } from './division';
 
-export interface Division {
-  id: string;
-  sidoCode: string;
-  sidoName: string;
-  sggCode: string;
-  sggName: string;
-  emdCode: string;
-  emdName: string;
-  centroidLat: number;
-  centroidLng: number;
-}
+export type { Division };
 
 // API 요청 관련
 export interface DivisionByCoordRequest {
-  latitude: number;
-  longitude: number;
+  coordinate: Coordinate;
 }
 
 export interface DivisionListByCoordRequest {
@@ -37,8 +27,7 @@ export interface NearbyDivisionByCodeRequest {
 }
 
 export interface NearbyDivisionByCoordRequest {
-  latitude: number;
-  longitude: number;
+  coordinate: Coordinate;
   depth: number;
 }
 
