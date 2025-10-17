@@ -3,7 +3,7 @@ name: Deploy Frontend to S3 & CloudFront (Staging)
 on:
   push:
     branches:
-      - staging
+      - main
 
 env:
   AWS_REGION: ap-northeast-2
