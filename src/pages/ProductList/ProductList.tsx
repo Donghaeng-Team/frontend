@@ -12,6 +12,7 @@ import Skeleton from '../../components/Skeleton';
 import { marketService } from '../../api/services/market';
 import type { MarketSimpleResponse } from '../../types/market';
 import { APP_CONSTANTS } from '../../utils/constants';
+import { getMajorCategoryName } from '../../utils/categoryMapping';
 // 임시로 작은 샘플 데이터를 사용하여 테스트
 const sampleFoodCategoriesData = [
   {
@@ -526,7 +527,7 @@ const ProductList: React.FC = () => {
                 <ProductCard
                   key={product.marketId}
                   image={product.thumbnailImageUrl || undefined}
-                  category={product.categoryId}
+                  category={getMajorCategoryName(product.categoryId)}
                   title={product.title}
                   price={product.price}
                   seller={{
