@@ -13,7 +13,13 @@ import type {
 class DivisionApi {
   // 읍면동 검색 (좌표로) - 공개 API
   async getDivisionByCoord(data: DivisionByCoordRequest): Promise<Division> {
-    const response = await apiClient.post('/api/v1/division/public/by-coord', data);
+    // GET 요청이므로 쿼리 파라미터로 평탄화하여 전달
+    const response = await apiClient.get('/api/v1/division/public/by-coord', {
+      params: {
+        latitude: data.coordinate.latitude,
+        longitude: data.coordinate.longitude
+      }
+    });
     return response.data;
   }
 
