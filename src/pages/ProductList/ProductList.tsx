@@ -11,6 +11,7 @@ import Button from '../../components/Button';
 import Skeleton from '../../components/Skeleton';
 import { marketService } from '../../api/services/market';
 import type { MarketSimpleResponse } from '../../types/market';
+import { APP_CONSTANTS } from '../../utils/constants';
 // 임시로 작은 샘플 데이터를 사용하여 테스트
 const sampleFoodCategoriesData = [
   {
@@ -118,6 +119,7 @@ const ProductList: React.FC = () => {
   const [hasMore, setHasMore] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
   const [categoryData, setCategoryData] = useState<CategoryItem[]>([]);
+  const [divisionId, setDivisionId] = useState<string>('11650510'); // 기본값: 서초구 서초동
   
   // 초기 데이터 로드
   useEffect(() => {
@@ -129,9 +131,27 @@ const ProductList: React.FC = () => {
         const categories = await loadCategoryData();
         setCategoryData(categories);
 
+        // 로컬스토리지에서 선택된 위치 정보 가져오기
+        const selectedLocationStr = localStorage.getItem(APP_CONSTANTS.STORAGE_KEYS.SELECTED_LOCATION);
+        let currentDivisionId = '11650510'; // 기본값: 서초구 서초동
+        
+        if (selectedLocationStr) {
+          try {
+            const selectedLocation = JSON.parse(selectedLocationStr);
+            if (selectedLocation && selectedLocation.id) {
+              currentDivisionId = selectedLocation.id;
+            }
+          } catch (error) {
+            console.error('Failed to parse selected location:', error);
+          }
+        }
+
+        setDivisionId(currentDivisionId);
+        console.log('📍 Using divisionId:', currentDivisionId);
+
         // 상품 데이터 로드
         const response = await marketService.getMarketPosts({
-          divisionId: '11650510',  // 서초구 서초동 (8자리 읍면동 코드)
+          divisionId: currentDivisionId,
           depth: 1,
           pageNum: 0,
           pageSize: ITEMS_PER_PAGE
@@ -202,7 +222,7 @@ const ProductList: React.FC = () => {
       }
 
       const response = await marketService.getMarketPosts({
-        divisionId: '11650510',
+        divisionId: divisionId,
         depth: 1,
         pageNum: nextPage,
         pageSize: ITEMS_PER_PAGE
@@ -219,7 +239,7 @@ const ProductList: React.FC = () => {
     } finally {
       setLoadingMore(false);
     }
-  }, [page, hasMore, loadingMore, sortBy, searchKeyword, selectedCategories, displayedProducts.length]);
+  }, [page, hasMore, loadingMore, sortBy, searchKeyword, selectedCategories, displayedProducts.length, divisionId]);
 
   // 스크롤 이벤트 처리 (자동 로드)
   useEffect(() => {
@@ -254,7 +274,7 @@ const ProductList: React.FC = () => {
       setLoadingMore(true);
 
       const response = await marketService.getMarketPosts({
-        divisionId: '11650510',
+        divisionId: divisionId,
         depth: 1,
         pageNum: 0,
         pageSize: ITEMS_PER_PAGE
@@ -359,7 +379,7 @@ const ProductList: React.FC = () => {
       }
 
       const response = await marketService.getMarketPosts({
-        divisionId: '11650510',
+        divisionId: divisionId,
         depth: 1,
         pageNum: 0,
         pageSize: ITEMS_PER_PAGE
