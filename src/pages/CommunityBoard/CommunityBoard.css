@@ -303,7 +303,7 @@
   font-family: 'Inter', -apple-system, sans-serif;
 }
 
-.no-more-posts {
+\.no-more-posts {
   font-size: 14px;
   color: #999999;
   font-family: 'Inter', -apple-system, sans-serif;
@@ -311,6 +311,63 @@
   text-align: center;
   background-color: #f8f8f8;
   border-radius: 8px;
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 80px;
+  margin-bottom: 20px;
+  opacity: 0.8;
+}
+
+.empty-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #222222;
+  margin: 0 0 12px 0;
+  font-family: 'Inter', -apple-system, sans-serif;
+}
+
+.empty-description {
+  font-size: 16px;
+  color: #666666;
+  margin: 0 0 30px 0;
+  font-family: 'Inter', -apple-system, sans-serif;
+  line-height: 1.5;
+}
+
+.empty-action-button {
+  height: 48px;
+  padding: 0 32px;
+  background-color: #ff5e2f;
+  border: none;
+  border-radius: 24px;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Inter', -apple-system, sans-serif;
+  box-shadow: 0 4px 12px rgba(255, 94, 47, 0.2);
+}
+
+.empty-action-button:hover {
+  background-color: #e54420;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 94, 47, 0.3);
+}
+
+.empty-action-button:active {
+  transform: translateY(0);
 }
 
 /* 반응형 */
