@@ -73,7 +73,7 @@ export const productService = {
 
   // 상품 상세 조회
   getProduct: async (id: string): Promise<ApiResponse<Product>> => {
-    const response = await apiClient.get(`/api/v1/market/public/products/${id}`);
+    const response = await apiClient.get(`/api/v1/market/public/${id}`);
     return response.data;
   },
 
