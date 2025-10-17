@@ -7,75 +7,77 @@ interface CategoryInfo {
   parent?: string;
 }
 
-// 대분류 카테고리
-const majorCategories: Record<string, string> = {
-  '01': '식품',
-  '02': '생활용품',
-  '03': '육아용품',
-  '04': '가전제품',
-  '05': '패션·의류',
-  '06': '뷰티·화장품',
-  '07': '스포츠·레저',
-  '08': '도서·문구',
-  '09': '반려동물용품',
-  '10': '기타'
+// foodCategories.json 구조
+interface FoodCategory {
+  code: string;
+  name: string;
+  sub?: FoodCategory[];
+}
+
+// foodCategories.json 데이터를 캐시
+let categoriesCache: FoodCategory[] | null = null;
+
+// foodCategories.json 로드
+const loadCategories = async (): Promise<FoodCategory[]> => {
+  if (categoriesCache) return categoriesCache;
+  
+  try {
+    const response = await fetch('/foodCategories.json');
+    const data = await response.json();
+    categoriesCache = data;
+    return data;
+  } catch (error) {
+    console.error('Failed to load categories:', error);
+    return [];
+  }
 };
 
-// 중분류 카테고리 (식품 예시)
-const subCategories: Record<string, string> = {
-  '0101': '과일',
-  '0102': '채소',
-  '0103': '정육·계란',
-  '0104': '수산물',
-  '0105': '쌀·잡곡',
-  '0106': '간편식',
-  '0107': '음료·생수',
-  '0108': '유제품',
-  '0109': '베이커리',
-  '0110': '기타 식품',
-
-  '0201': '화장지·휴지',
-  '0202': '세제·청소용품',
-  '0203': '욕실용품',
-  '0204': '주방용품',
-  '0205': '생활잡화',
-
-  '0301': '기저귀',
-  '0302': '분유·이유식',
-  '0303': '아기용품',
-  '0304': '장난감',
+// 카테고리 ID로 이름 경로 찾기
+const findCategoryPath = (categories: FoodCategory[], codes: string[], depth: number = 0): string[] => {
+  if (depth >= codes.length || !categories) return [];
+  
+  const targetCode = codes[depth];
+  const category = categories.find(cat => cat.code === targetCode);
+  
+  if (!category) return [];
+  
+  const path = [category.name];
+  
+  if (depth < codes.length - 1 && category.sub) {
+    const subPath = findCategoryPath(category.sub, codes, depth + 1);
+    return [...path, ...subPath];
+  }
+  
+  return path;
 };
 
 /**
  * 카테고리 ID를 읽기 쉬운 이름으로 변환
  * @param categoryId - 8자리 카테고리 코드 (예: "01010101")
- * @returns 카테고리 이름 (예: "식품 > 과일")
+ * @returns 카테고리 이름 (예: "가공식품 > 조미료 > 종합조미료 > 천연/발효조미료")
  */
 export const getCategoryName = (categoryId: string): string => {
   if (!categoryId || categoryId.length !== 8) {
     return '카테고리 미분류';
   }
 
-  // 대분류 코드 추출 (첫 2자리)
-  const majorCode = categoryId.substring(0, 2);
-  const majorName = majorCategories[majorCode];
-
-  // 중분류 코드 추출 (첫 4자리)
-  const subCode = categoryId.substring(0, 4);
-  const subName = subCategories[subCode];
-
-  // 중분류가 있으면 "대분류 > 중분류" 형식으로 반환
-  if (majorName && subName) {
-    return `${majorName} > ${subName}`;
+  // 동기적으로 캐시된 데이터 사용 (비동기 로딩은 컴포넌트 레벨에서 처리)
+  if (!categoriesCache) {
+    // 캐시가 없으면 ID 그대로 반환 (초기 로딩 중)
+    return categoryId;
   }
 
-  // 중분류가 없으면 대분류만 반환
-  if (majorName) {
-    return majorName;
-  }
+  // 8자리 코드를 2자리씩 분할
+  const codes = [
+    categoryId.substring(0, 2),
+    categoryId.substring(2, 4),
+    categoryId.substring(4, 6),
+    categoryId.substring(6, 8)
+  ].filter(code => code !== '00'); // '00'은 무시
 
-  // 매핑되지 않은 경우 ID 그대로 반환
-  return categoryId;
+  const path = findCategoryPath(categoriesCache, codes);
+  
+  return path.length > 0 ? path.join(' > ') : categoryId;
 };
 
 /**
@@ -88,8 +90,14 @@ export const getMajorCategoryName = (categoryId: string): string => {
     return '미분류';
   }
 
+  if (!categoriesCache) {
+    return '로딩 중';
+  }
+
   const majorCode = categoryId.substring(0, 2);
-  return majorCategories[majorCode] || '미분류';
+  const category = categoriesCache.find(cat => cat.code === majorCode);
+  
+  return category ? category.name : '미분류';
 };
 
 /**
@@ -102,31 +110,51 @@ export const getSubCategoryName = (categoryId: string): string => {
     return '';
   }
 
-  const subCode = categoryId.substring(0, 4);
-  return subCategories[subCode] || '';
+  if (!categoriesCache) {
+    return '';
+  }
+
+  const majorCode = categoryId.substring(0, 2);
+  const subCode = categoryId.substring(2, 4);
+  
+  const major = categoriesCache.find(cat => cat.code === majorCode);
+  if (!major || !major.sub) return '';
+  
+  const sub = major.sub.find(cat => cat.code === subCode);
+  return sub ? sub.name : '';
 };
 
 /**
- * 카테고리 선택 옵션 목록 생성 (상품 등록 시 사용)
+ * 카테고리 경로를 제한된 깊이로 반환 (리스트용)
+ * @param categoryId - 8자리 카테고리 코드
+ * @param maxDepth - 최대 표시 깊이 (기본값: 2)
+ * @returns 제한된 깊이의 카테고리 이름
  */
-export const getCategoryOptions = () => {
-  const options: Array<{ value: string; label: string; parent?: string }> = [];
+export const getCategoryNameWithDepth = (categoryId: string, maxDepth: number = 2): string => {
+  if (!categoryId || categoryId.length !== 8) {
+    return '카테고리 미분류';
+  }
 
-  // 대분류 옵션
-  Object.entries(majorCategories).forEach(([code, name]) => {
-    options.push({ value: `${code}000000`, label: name });
-  });
+  if (!categoriesCache) {
+    return categoryId;
+  }
 
-  // 중분류 옵션
-  Object.entries(subCategories).forEach(([code, name]) => {
-    const majorCode = code.substring(0, 2);
-    const majorName = majorCategories[majorCode];
-    options.push({
-      value: `${code}0000`,
-      label: `${majorName} > ${name}`,
-      parent: majorCode
-    });
-  });
+  // 8자리 코드를 2자리씩 분할
+  const codes = [
+    categoryId.substring(0, 2),
+    categoryId.substring(2, 4),
+    categoryId.substring(4, 6),
+    categoryId.substring(6, 8)
+  ].filter(code => code !== '00'); // '00'은 무시
 
-  return options;
+  // maxDepth만큼만 사용
+  const limitedCodes = codes.slice(0, maxDepth);
+  const path = findCategoryPath(categoriesCache, limitedCodes);
+  
+  return path.length > 0 ? path.join(' > ') : categoryId;
 };
+
+// 초기화: 앱 시작 시 카테고리 데이터 로드
+loadCategories();
+
+

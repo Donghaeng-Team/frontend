@@ -12,7 +12,7 @@ import Skeleton from '../../components/Skeleton';
 import { marketService } from '../../api/services/market';
 import type { MarketSimpleResponse } from '../../types/market';
 import { APP_CONSTANTS } from '../../utils/constants';
-import { getMajorCategoryName } from '../../utils/categoryMapping';
+import { getCategoryNameWithDepth } from '../../utils/categoryMapping';
 // 임시로 작은 샘플 데이터를 사용하여 테스트
 const sampleFoodCategoriesData = [
   {
@@ -177,12 +177,23 @@ const ProductList: React.FC = () => {
         }
       } catch (error: any) {
         console.error('❌ Failed to load markets from API:', error);
-        const errorMessage = error.response?.data?.message || error.message || '상품 목록을 불러오는 데 실패했습니다.';
-        setError(errorMessage);
-        setDisplayedProducts([]);
-        setTotalCount(0);
-        setPage(0);
-        setHasMore(false);
+        
+        // 500 에러는 데이터가 없는 것으로 처리 (에러 표시 안 함)
+        if (error.response?.status === 500) {
+          console.warn('⚠️ 500 error - treating as no data available');
+          setDisplayedProducts([]);
+          setTotalCount(0);
+          setPage(0);
+          setHasMore(false);
+        } else {
+          // 다른 에러는 에러 메시지 표시
+          const errorMessage = error.response?.data?.message || error.message || '상품 목록을 불러오는 데 실패했습니다.';
+          setError(errorMessage);
+          setDisplayedProducts([]);
+          setTotalCount(0);
+          setPage(0);
+          setHasMore(false);
+        }
       } finally {
         setLoading(false);
       }
@@ -201,7 +212,7 @@ const ProductList: React.FC = () => {
 
   // 무한 스크롤 - 더보기 버튼 클릭
   const handleLoadMore = useCallback(async () => {
-    if (!hasMore || loadingMore) return;
+    if (!hasMore || loadingMore || loading) return;
 
     try {
       setLoadingMore(true);
@@ -225,9 +236,14 @@ const ProductList: React.FC = () => {
         sortOrderApi = 'asc';
       }
 
+      // 현재 필터 적용
+      const categoryId = selectedCategories.length > 0 ? selectedCategories.join('') : undefined;
+
       const response = await marketService.getMarketPosts({
         divisionId: divisionId,
-        depth: 1,
+        depth: distanceRange,
+        categoryId: categoryId,
+        keyword: searchKeyword || undefined,
         pageNum: nextPage,
         pageSize: ITEMS_PER_PAGE
       });
@@ -277,9 +293,21 @@ const ProductList: React.FC = () => {
       setIsFilterChanged(false);
       setLoadingMore(true);
 
+      // 카테고리 ID: 선택된 카테고리의 마지막 값 사용 (8자리 전체)
+      const categoryId = tempCategories.length > 0 ? tempCategories.join('') : undefined;
+
+      console.log('🔍 Applying filters:', {
+        divisionId,
+        depth: tempDistanceRange,
+        categoryId,
+        pageNum: 0,
+        pageSize: ITEMS_PER_PAGE
+      });
+
       const response = await marketService.getMarketPosts({
         divisionId: divisionId,
-        depth: 1,
+        depth: tempDistanceRange,
+        categoryId: categoryId,
         pageNum: 0,
         pageSize: ITEMS_PER_PAGE
       });
@@ -335,12 +363,16 @@ const ProductList: React.FC = () => {
       setSearchKeyword(keyword);
       setLoadingMore(true);
 
+      // 현재 필터 적용
+      const categoryId = selectedCategories.length > 0 ? selectedCategories.join('') : undefined;
+
       const response = await marketService.getMarketPosts({
         divisionId: divisionId,
-        depth: 1,
+        depth: distanceRange,
+        categoryId: categoryId,
+        keyword: keyword || undefined,
         pageNum: 0,
-        pageSize: ITEMS_PER_PAGE,
-        keyword: keyword || undefined
+        pageSize: ITEMS_PER_PAGE
       });
 
       if (response.success && response.data) {
@@ -381,9 +413,14 @@ const ProductList: React.FC = () => {
         sortOrderApi = 'asc';
       }
 
+      // 현재 필터 적용
+      const categoryId = selectedCategories.length > 0 ? selectedCategories.join('') : undefined;
+
       const response = await marketService.getMarketPosts({
         divisionId: divisionId,
-        depth: 1,
+        depth: distanceRange,
+        categoryId: categoryId,
+        keyword: searchKeyword || undefined,
         pageNum: 0,
         pageSize: ITEMS_PER_PAGE
       });
@@ -547,7 +584,7 @@ const ProductList: React.FC = () => {
                 <ProductCard
                   key={product.marketId}
                   image={product.thumbnailImageUrl || undefined}
-                  category={getMajorCategoryName(product.categoryId)}
+                  category={getCategoryNameWithDepth(product.categoryId, 4)}
                   title={product.title}
                   price={product.price}
                   seller={{
