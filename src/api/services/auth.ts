@@ -52,6 +52,14 @@ export const authService = {
   // 회원가입
   register: async (data: RegisterRequest): Promise<ApiResponse<LoginResponse>> => {
     const response = await apiClient.post<ApiResponse<LoginResponse>>('/api/v1/user/public/register', data);
+    
+    console.log('회원가입 응답:', response.data);
+    
+    // response.data.data가 null일 수 있으므로 안전하게 처리
+    if (!response.data.data) {
+      throw new Error('회원가입 응답 데이터가 없습니다.');
+    }
+    
     const { accessToken, refreshToken, user } = response.data.data;
 
     // 회원가입 후 자동 로그인 처리
