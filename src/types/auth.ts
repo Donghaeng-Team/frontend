@@ -42,6 +42,11 @@ export interface RegisterRequest {
   nickname: string;
 }
 
+// 회원가입 응답 (이메일 인증 필요)
+export interface RegisterResponse {
+  message: string;
+}
+
 // Token 갱신 응답
 export interface RefreshTokenResponse {
   accessToken: string;

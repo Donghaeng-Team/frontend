@@ -171,7 +171,7 @@ const SignUp = () => {
 
     setCheckingNickname(true);
     try {
-      const response = await userService.checkNickname({ nickName: nickname });
+      const response = await userService.checkNickname({ nickname: nickname });
       // API 응답에 따라 에러 설정
       // 응답 형식에 따라 조정 필요
       if (!(response as any).success) {
@@ -230,12 +230,12 @@ const SignUp = () => {
     setIsLoading(true);
 
     try {
-      // authStore의 register 사용 (자동 로그인 포함)
+      // 회원가입 요청 (이메일 인증 필요)
       await register(formData.email, formData.password, formData.nickname);
 
-      alert('회원가입이 완료되었습니다!');
-      // 회원가입 후 자동 로그인되어 메인 페이지로 이동
-      navigate('/');
+      alert('회원가입이 완료되었습니다!\n등록하신 이메일로 인증 메일이 발송되었습니다.\n이메일 인증 후 로그인해주세요.');
+      // 이메일 인증이 필요하므로 로그인 페이지로 이동
+      navigate('/login');
     } catch (error: any) {
       console.error('회원가입 실패:', error);
       alert(error.message || '회원가입에 실패했습니다. 다시 시도해주세요.');

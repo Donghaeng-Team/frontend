@@ -78,10 +78,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       });
 
       if (response.success) {
-        // 토큰과 사용자 정보는 authService에서 자동으로 저장됨
+        // 회원가입 성공 - 이메일 인증이 필요하므로 자동 로그인하지 않음
         set({
-          isAuthenticated: true,
-          user: response.data.user,
+          isAuthenticated: false,
+          user: null,
           loading: false,
           error: null,
         });
