@@ -49,8 +49,19 @@ const LocationModalWrapper: React.FC<LocationModalWrapperProps> = ({ isOpen, onC
         emdCode
       });
 
-      // API를 통해 Division 정보 가져오기
-      const division = await divisionApi.getDivisionByCode({ emdCode });
+      // 선택한 정보로 Division 객체 직접 구성 (API 호출 없이)
+      // 비로그인 사용자도 위치 변경 가능하도록 수정
+      const division: Division = {
+        id: emdCode,
+        sidoCode: location.sido.code,
+        sidoName: location.sido.name,
+        sggCode: location.gugun.code,
+        sggName: location.gugun.name,
+        emdCode: location.dong.code,
+        emdName: location.dong.name,
+        centroidLat: '0', // 좌표는 알 수 없으므로 기본값
+        centroidLng: '0'
+      };
 
       // Zustand store에 저장
       setCurrentDivision(division);
@@ -59,12 +70,6 @@ const LocationModalWrapper: React.FC<LocationModalWrapperProps> = ({ isOpen, onC
       onClose();
     } catch (error) {
       console.error('위치 설정 실패:', error);
-      console.error('실패한 emdCode:', buildDivisionCode(
-        location.sido.code,
-        location.gugun.code,
-        location.dong.code
-      ));
-      // 에러 처리 - 토스트 메시지 등으로 사용자에게 알림
       alert('위치 설정에 실패했습니다. 다시 시도해주세요.');
     }
   };
