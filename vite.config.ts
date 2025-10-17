@@ -14,77 +14,18 @@ export default defineConfig(({ mode }) => {
         usePolling: true  // WSL이나 Docker 사용 시
       },
       proxy: {
-        // Division API (Port 8081)
-        '/api/v1/division': {
-          target: env.VITE_DIVISION_API_URL || 'http://localhost:8081',
+        // API Gateway로 모든 API 요청 프록시
+        '/': {
+          target: env.VITE_API_BASE_URL || 'http://localhost:8080',
           changeOrigin: true,
-          secure: false
-        },
-        '/internal/v1/division': {
-          target: env.VITE_DIVISION_API_URL || 'http://localhost:8081',
-          changeOrigin: true,
-          secure: false
-        },
-        // Market API (Port 8082)
-        '/api/v1/market': {
-          target: env.VITE_MARKET_API_URL || 'http://localhost:8082',
-          changeOrigin: true,
-          secure: false
-        },
-        '/internal/v1/market': {
-          target: env.VITE_MARKET_API_URL || 'http://localhost:8082',
-          changeOrigin: true,
-          secure: false
-        },
-        '/api/v1/cart': {
-          target: env.VITE_MARKET_API_URL || 'http://localhost:8082',
-          changeOrigin: true,
-          secure: false
-        },
-        // User API (Port 8083)
-        '/api/v1/user': {
-          target: env.VITE_USER_API_URL || 'http://localhost:8083',
-          changeOrigin: true,
-          secure: false
-        },
-        '/internal/v1/user': {
-          target: env.VITE_USER_API_URL || 'http://localhost:8083',
-          changeOrigin: true,
-          secure: false
-        },
-        // Community API (Port 8085)
-        '/api/v1/post': {
-          target: env.VITE_COMMUNITY_API_URL || 'http://localhost:8085',
-          changeOrigin: true,
-          secure: false
-        },
-        '/api/v1/comment': {
-          target: env.VITE_COMMUNITY_API_URL || 'http://localhost:8085',
-          changeOrigin: true,
-          secure: false
-        },
-        '/api/v1/image': {
-          target: env.VITE_COMMUNITY_API_URL || 'http://localhost:8085',
-          changeOrigin: true,
-          secure: false
-        },
-        // Chat API (Port 8086)
-        '/api/v1/chat': {
-          target: env.VITE_CHAT_API_URL || 'http://localhost:8086',
-          changeOrigin: true,
-          secure: false
-        },
-        '/internal/v1/chat': {
-          target: env.VITE_CHAT_API_URL || 'http://localhost:8086',
-          changeOrigin: true,
-          secure: false
+          secure: false,
+          // API 요청만 프록시 (정적 파일은 제외)
+          bypass(req) {
+            if (req.headers.accept?.includes('html')) {
+              return req.url;
+            }
+          }
         }
-        // Notification API - 포트 미정
-        // '/api/v1/notification': {
-        //   target: env.VITE_NOTIFICATION_API_URL || 'http://localhost:8087',
-        //   changeOrigin: true,
-        //   secure: false
-        // }
       }
     }
   }
