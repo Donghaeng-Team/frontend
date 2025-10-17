@@ -82,24 +82,12 @@ const ChangePassword = () => {
     return isValid
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!validateForm()) {
       return
     }
-    
-    // 비밀번호 변경 처리
-    console.log("비밀번호 변경:", passwords.newPassword)
-    alert("비밀번호가 변경되었습니다!")
-
-    // 폼 초기화
-    setPasswords({
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    })
-  }
 
     if (!authUser?.userId) {
       alert('로그인이 필요합니다.');
