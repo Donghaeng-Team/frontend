@@ -318,7 +318,16 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
             {loading && posts.length === 0 ? (
               <div className="loading-message">게시글을 불러오는 중...</div>
             ) : posts.length === 0 ? (
-              <div className="no-posts-message">게시글이 없습니다.</div>
+              <div className="empty-state">
+                <div className="empty-icon">📭</div>
+                <h3 className="empty-title">아직 게시글이 없어요</h3>
+                <p className="empty-description">
+                  우리 동네의 첫 번째 이야기를 남겨보세요!
+                </p>
+                <button className="empty-action-button" onClick={handleWriteClick}>
+                  ✏️ 첫 글 작성하기
+                </button>
+              </div>
             ) : posts.map(post => (
               <article
                 key={post.id}
