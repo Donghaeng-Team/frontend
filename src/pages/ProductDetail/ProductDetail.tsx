@@ -9,7 +9,9 @@ import Progress from '../../components/Progress';
 import Accordion from '../../components/Accordion';
 import type { AccordionItem } from '../../components/Accordion';
 import { useAuthStore } from '../../stores/authStore';
-import { productService, type Product } from '../../api/services/product';
+import { getCategoryName } from '../../utils/categoryMapping';
+import { productService } from '../../api/services/product';
+import type { MarketDetailResponse } from '../../types/market';
 
 interface ProductDetailProps {
   productId?: string;
@@ -40,31 +42,33 @@ interface RelatedProduct {
 }
 
 // Fallback Mock 상품 데이터 생성 함수
-const generateFallbackMockProduct = (id: string): Product => {
+const generateFallbackMockProduct = (id: string): MarketDetailResponse => {
   return {
-    id: id,
-    title: '유기농 사과 10kg (부사) - 샘플 상품',
-    description: '신선한 유기농 사과입니다. 직접 재배한 부사 품종으로 달콤하고 아삭합니다.\n\n이 상품은 API 연동 전 샘플 데이터입니다.\n실제 상품을 등록하시면 이 데이터 대신 표시됩니다.',
+    marketId: parseInt(id, 10),
+    categoryId: '01010101',
+    endTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     price: 35000,
-    category: '식품',
-    images: [],
-    targetQuantity: 20,
-    currentQuantity: 15,
-    deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-    status: 'active',
-    location: {
-      sido: '서울',
-      gugun: '서초구',
-      dong: '서초동',
-      fullAddress: '서울시 서초구 서초동'
-    },
-    seller: {
-      id: '101',
-      name: '사과조아',
-      rating: 0
-    },
+    recruitMin: 10,
+    recruitMax: 20,
+    recruitNow: 15,
+    status: 'RECRUITING' as const,
+    title: '유기농 사과 10kg (부사) - 샘플 상품',
+    content: `신선한 유기농 사과입니다. 직접 재배한 부사 품종으로 달콤하고 아삭합니다.
+
+이 상품은 API 연동 전 샘플 데이터입니다.
+실제 상품을 등록하시면 이 데이터 대신 표시됩니다.`,
+    authorId: 101,
+    authorNickname: '사과조아',
+    authorProfileImageUrl: null,
+    locationText: '서울시 서초구 서초동 인근',
+    divisionId: '11650510',
+    emdName: '서초동',
+    latitude: 37.5665,
+    longitude: 126.9780,
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
+    views: 0,
+    images: []
   };
 };
 
@@ -74,9 +78,9 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
   const authUser = useAuthStore((state) => state.user);
 
   const [loading, setLoading] = useState(true);
-  const [product, setProduct] = useState<Product | null>(null);
+  const [product, setProduct] = useState<MarketDetailResponse | null>(null);
   const [isWished, setIsWished] = useState(false);
-  const [activeAccordion, setActiveAccordion] = useState<string[]>(['1']);
+  const [activeAccordion, setActiveAccordion] = useState<string[]>([]);
 
   // 상품 데이터 로드
   useEffect(() => {
@@ -95,6 +99,8 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
           throw new Error('상품을 찾을 수 없습니다.');
         }
 
+        console.log('✅ 상품 데이터:', response.data);
+        console.log('📸 이미지 정보:', response.data.images);
         setProduct(response.data);
       } catch (error: any) {
         console.error('❌ 상품 로드 실패:', error);
@@ -112,15 +118,10 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
   }, [id, navigate]);
 
   // 작성자 여부 확인
-  const isAuthor = authUser && product && product.seller.id === authUser.userId?.toString();
+  const isAuthor = authUser && product && product.authorId === authUser.userId;
 
-  const participants: Participant[] = [
-    { id: '1', name: '김민', color: '#ff8080' },
-    { id: '2', name: '이수', color: '#4dcc4d' },
-    { id: '3', name: '박진', color: '#ff994d' },
-    { id: '4', name: '최은', color: '#4dccff' },
-    { id: '5', name: '정호', color: '#cc4dcc' },
-  ];
+  // TODO: 백엔드 참여자 목록 API 구현 후 실제 데이터로 대체
+  const participants: Participant[] = [];
 
   const faqItems: AccordionItem[] = [
     {
@@ -204,7 +205,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
     );
   }
 
-  const progressPercent = (product.currentQuantity / product.targetQuantity) * 100;
+  const progressPercent = (product.recruitNow / product.recruitMax) * 100;
 
   return (
     <div className="product-detail-page">
@@ -215,24 +216,38 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
         <section className="product-main-section">
           <div className="product-image-container">
             {product.images && product.images.length > 0 ? (
-              <img src={product.images[0]} alt={product.title} className="product-image" />
+              <img
+                src={product.images[0].imageUrl}
+                alt={product.title}
+                className="product-image"
+                onError={(e) => {
+                  console.error('❌ 이미지 로드 실패:', product.images[0].imageUrl);
+                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.parentElement!.innerHTML = '<div class="product-image-placeholder">📦 이미지를 불러올 수 없습니다</div>';
+                }}
+                onLoad={() => console.log('✅ 이미지 로드 성공:', product.images[0].imageUrl)}
+              />
             ) : (
               <div className="product-image-placeholder">
-                📦 상품 이미지
+                📦 상품 이미지 없음
               </div>
             )}
           </div>
 
           <div className="product-info-section">
             <div className="product-header-info">
-              <div className="product-category">{product.category}</div>
+              <div className="product-category">{getCategoryName(product.categoryId)}</div>
               <h1 className="product-title">{product.title}</h1>
               <div className="price-container">
+                <div className="price-label">현재 가격</div>
                 <div className="price-current">
-                  {formatPrice(Math.ceil(product.price / product.currentQuantity))}
+                  {product.recruitNow > 0
+                    ? formatPrice(Math.ceil(product.price / product.recruitNow))
+                    : formatPrice(product.price)
+                  }
                 </div>
                 <div className="price-max-info">
-                  최대 {product.targetQuantity}명 모집 시 {formatPrice(Math.ceil(product.price / product.targetQuantity))}
+                  최대 {product.recruitMax}명 모집 시 {formatPrice(Math.ceil(product.price / product.recruitMax))}
                 </div>
               </div>
             </div>
@@ -241,10 +256,10 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
               <div className="recruitment-status">
                 <div className="recruitment-header">
                   <span className="participants-count">
-                    🔥 {product.currentQuantity}/{product.targetQuantity}명 참여중
+                    🔥 {product.recruitNow}/{product.recruitMax}명 참여중
                   </span>
                   <span className="time-badge">
-                    ⏰ {new Date(product.deadline) > new Date() ? '모집중' : '마감'}
+                    ⏰ {new Date(product.endTime) > new Date() ? '모집중' : '마감'}
                   </span>
                 </div>
 
@@ -255,7 +270,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
                 />
 
                 <div className="progress-text">
-                  목표 인원 {product.targetQuantity}명 • {Math.round(progressPercent)}% 진행
+                  목표 인원 {product.recruitMax}명 • {Math.round(progressPercent)}% 진행
                 </div>
               </div>
 
@@ -265,7 +280,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
                     <Button
                       variant="outline"
                       size="large"
-                      onClick={() => navigate(`/products/${product.id}/edit`)}
+                      onClick={() => navigate(`/products/${product.marketId}/edit`)}
                       className="edit-button"
                     >
                       ✏️ 수정
@@ -305,16 +320,16 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
           <h2 className="section-title">👤 판매자 정보</h2>
           <div className="seller-card">
             <div className="seller-avatar">
-              {product.seller.profileImage ? (
-                <img src={product.seller.profileImage} alt={product.seller.name} />
+              {product.authorProfileImageUrl ? (
+                <img src={product.authorProfileImageUrl} alt={product.authorNickname} />
               ) : (
-                <span>{product.seller.name.slice(0, 2)}</span>
+                <span>{product.authorNickname.slice(0, 2)}</span>
               )}
             </div>
             <div className="seller-info">
-              <h3 className="seller-name">{product.seller.name}</h3>
+              <h3 className="seller-name">{product.authorNickname}</h3>
               <div className="seller-location">
-                📍 {product.location.dong}
+                📍 {product.emdName}
               </div>
             </div>
           </div>
@@ -325,17 +340,17 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
           <h2 className="section-title">📝 상품 상세 설명</h2>
           <div className="description-content">
             <div className="description-text">
-              {product.description.split('\n').map((line, index) => (
+              {product.content.split('\n').map((line, index) => (
                 <p key={index}>{line}</p>
               ))}
             </div>
 
             <h4>⏰ 공동구매 진행 안내</h4>
             <div className="description-group">
-              <p>• 목표 수량: {product.targetQuantity}개</p>
-              <p>• 현재 수량: {product.currentQuantity}개</p>
-              <p>• 모집 마감: {new Date(product.deadline).toLocaleDateString('ko-KR')}</p>
-              <p>• 거래 장소: {product.location.fullAddress}</p>
+              <p>• 목표 수량: {product.recruitMax}개</p>
+              <p>• 현재 수량: {product.recruitNow}개</p>
+              <p>• 모집 마감: {new Date(product.endTime).toLocaleDateString('ko-KR')}</p>
+              <p>• 거래 장소: {product.locationText}</p>
             </div>
           </div>
         </section>
@@ -343,28 +358,36 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
         {/* 참여자 현황 섹션 */}
         <section className="participants-section">
           <h2 className="section-title">
-            👥 참여자 현황 ({product.currentQuantity}/{product.targetQuantity}개)
+            👥 참여자 현황 ({product.recruitNow}/{product.recruitMax}개)
           </h2>
           <div className="participants-list">
-            {participants.map((participant) => (
-              <div
-                key={participant.id}
-                className="participant-avatar"
-                style={{ backgroundColor: participant.color }}
-              >
-                {participant.name}
-              </div>
-            ))}
-            {product.currentQuantity > 5 && (
-              <div className="participant-more">
-                +{product.currentQuantity - 5}
-              </div>
+            {participants.length > 0 ? (
+              <>
+                {participants.map((participant) => (
+                  <div
+                    key={participant.id}
+                    className="participant-avatar"
+                    style={{ backgroundColor: participant.color }}
+                  >
+                    {participant.name}
+                  </div>
+                ))}
+                {product.recruitNow > 5 && (
+                  <div className="participant-more">
+                    +{product.recruitNow - 5}
+                  </div>
+                )}
+              </>
+            ) : (
+              <p style={{ color: '#999', padding: '20px 0' }}>
+                참여자 정보를 불러올 수 없습니다. (API 준비 중)
+              </p>
             )}
           </div>
         </section>
 
-        {/* 관련 상품 섹션 */}
-        <section className="related-section">
+        {/* 관련 상품 섹션 - 숨김 처리 */}
+        {/* <section className="related-section">
           <h2 className="section-title">🔥 이런 상품도 함께 보세요</h2>
           <div className="related-products">
             {relatedProducts.map((item) => (
@@ -381,7 +404,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
               />
             ))}
           </div>
-        </section>
+        </section> */}
 
         {/* FAQ 섹션 */}
         <section className="faq-section">
