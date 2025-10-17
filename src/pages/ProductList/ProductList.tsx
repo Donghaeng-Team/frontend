@@ -131,7 +131,7 @@ const ProductList: React.FC = () => {
 
         // 상품 데이터 로드
         const response = await marketService.getMarketPosts({
-          divisionId: '11650',  // TODO: 실제 사용자 위치 기반으로 변경
+          divisionId: '11650510',  // 서초구 서초동 (8자리 읍면동 코드)
           depth: 1,
           pageNum: 0,
           pageSize: ITEMS_PER_PAGE
@@ -202,7 +202,7 @@ const ProductList: React.FC = () => {
       }
 
       const response = await marketService.getMarketPosts({
-        divisionId: '11650',
+        divisionId: '11650510',
         depth: 1,
         pageNum: nextPage,
         pageSize: ITEMS_PER_PAGE
@@ -254,7 +254,7 @@ const ProductList: React.FC = () => {
       setLoadingMore(true);
 
       const response = await marketService.getMarketPosts({
-        divisionId: '11650',
+        divisionId: '11650510',
         depth: 1,
         pageNum: 0,
         pageSize: ITEMS_PER_PAGE
@@ -359,7 +359,7 @@ const ProductList: React.FC = () => {
       }
 
       const response = await marketService.getMarketPosts({
-        divisionId: '11650',
+        divisionId: '11650510',
         depth: 1,
         pageNum: 0,
         pageSize: ITEMS_PER_PAGE
