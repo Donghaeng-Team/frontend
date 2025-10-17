@@ -170,6 +170,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             error: null,
           });
         } else {
+          // API 호출 실패 시 토큰 삭제
           clearAuth();
           set({
             isAuthenticated: false,
@@ -179,6 +180,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           });
         }
       } catch (error) {
+        // 401 등 인증 오류 발생 시 토큰 삭제 (조용히 처리)
+        console.warn('인증 초기화 실패 (토큰 만료 또는 유효하지 않음)');
         clearAuth();
         set({
           isAuthenticated: false,
@@ -188,6 +191,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         });
       }
     } else {
+      // 토큰이 없으면 로그인되지 않은 상태로 설정
       set({
         isAuthenticated: false,
         user: null,

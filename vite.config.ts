@@ -14,17 +14,21 @@ export default defineConfig(({ mode }) => {
         usePolling: true  // WSL이나 Docker 사용 시
       },
       proxy: {
-        // API Gateway로 모든 API 요청 프록시
-        '/': {
+        // API 요청만 프록시 (API Gateway로 전달)
+        '/api': {
           target: env.VITE_API_BASE_URL || 'http://localhost:8080',
           changeOrigin: true,
           secure: false,
-          // API 요청만 프록시 (정적 파일은 제외)
-          bypass(req) {
-            if (req.headers.accept?.includes('html')) {
-              return req.url;
-            }
-          }
+        },
+        '/internal': {
+          target: env.VITE_API_BASE_URL || 'http://localhost:8080',
+          changeOrigin: true,
+          secure: false,
+        },
+        '/auth': {
+          target: env.VITE_API_BASE_URL || 'http://localhost:8080',
+          changeOrigin: true,
+          secure: false,
         }
       }
     }
