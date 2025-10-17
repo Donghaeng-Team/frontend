@@ -46,18 +46,27 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         throw new Error(response.message || '로그인에 실패했습니다.');
       }
     } catch (error: any) {
+      // 401 Unauthorized인 경우 사용자 친화적인 메시지로 변환
+      let errorMessage = '로그인 중 오류가 발생했습니다.';
+      
+      if (error.response?.status === 401) {
+        errorMessage = '이메일 또는 비밀번호가 올바르지 않습니다.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       set({
         isAuthenticated: false,
         user: null,
         loading: false,
-        error: error.message || '로그인 중 오류가 발생했습니다.',
+        error: errorMessage,
       });
       throw error;
     }
   },
 
   // 회원가입
-  register: async (email: string, password: string, nickName: string) => {
+  register: async (email: string, password: string, nickname: string) => {
     try {
       set({ loading: true, error: null });
 
@@ -65,14 +74,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         email,
         password,
         passwordConfirm: password,
-        nickName,
+        nickname,
       });
 
       if (response.success) {
-        // 토큰과 사용자 정보는 authService에서 자동으로 저장됨
+        // 회원가입 성공 - 이메일 인증이 필요하므로 자동 로그인하지 않음
         set({
-          isAuthenticated: true,
-          user: response.data.user,
+          isAuthenticated: false,
+          user: null,
           loading: false,
           error: null,
         });

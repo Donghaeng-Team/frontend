@@ -12,9 +12,13 @@ import type {
 
 class DivisionApi {
   // 읍면동 검색 (좌표로) - 공개 API
-  async getDivisionByCoord(params: DivisionByCoordRequest): Promise<Division> {
+  async getDivisionByCoord(data: DivisionByCoordRequest): Promise<Division> {
+    // GET 요청이므로 쿼리 파라미터로 평탄화하여 전달
     const response = await apiClient.get('/api/v1/division/public/by-coord', {
-      params
+      params: {
+        latitude: data.coordinate.latitude,
+        longitude: data.coordinate.longitude
+      }
     });
     return response.data;
   }
@@ -48,10 +52,8 @@ class DivisionApi {
   }
 
   // 인접동 검색 (좌표로) - 내부 API (인증 필요)
-  async getNearbyDivisionsByCoord(params: NearbyDivisionByCoordRequest): Promise<Division[]> {
-    const response = await apiClient.get('/internal/v1/division/near/by-coord', {
-      params
-    });
+  async getNearbyDivisionsByCoord(data: NearbyDivisionByCoordRequest): Promise<Division[]> {
+    const response = await apiClient.post('/internal/v1/division/near/by-coord', data);
     return response.data;
   }
 
@@ -69,8 +71,10 @@ class DivisionApi {
         async (position) => {
           try {
             const division = await this.getDivisionByCoord({
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude
+              coordinate: {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude
+              }
             });
             resolve(division);
           } catch (error) {
@@ -101,8 +105,10 @@ class DivisionApi {
         async (position) => {
           try {
             const divisions = await this.getNearbyDivisionsByCoord({
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
+              coordinate: {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude
+              },
               depth
             });
             resolve(divisions);

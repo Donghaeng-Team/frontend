@@ -28,6 +28,7 @@ const apiClient: AxiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // 쿠키 전송 활성화 (refresh token용)
 });
 
 // 디버그 모드에서 요청/응답 로깅
@@ -71,7 +72,11 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // 로그인/회원가입 API는 401 인터셉터에서 제외
+    const isAuthEndpoint = originalRequest.url?.includes('/api/v1/user/public/login') || 
+                          originalRequest.url?.includes('/api/v1/user/public/register');
+
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
       if (isRefreshing) {
         // 이미 토큰 재발급 중이면 대기열에 추가
         return new Promise((resolve, reject) => {
@@ -87,7 +92,6 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const refreshToken = getRefreshToken();
       const accessToken = getAccessToken();
 
       // 테스트 토큰인 경우 재발급 시도하지 않음
@@ -96,44 +100,40 @@ apiClient.interceptors.response.use(
         return Promise.reject(error);
       }
 
-      if (refreshToken) {
-        try {
-          // 토큰 재발급 요청
-          const response = await axios.post(
-            `${import.meta.env.VITE_API_BASE_URL || ''}/auth/refresh`,
-            { refreshToken }
-          );
+      try {
+        // 토큰 재발급 요청 (백엔드가 쿠키에서 refresh token을 읽음)
+        const response = await axios.post(
+          `${import.meta.env.VITE_API_BASE_URL || ''}/api/v1/user/public/refresh`,
+          {},
+          { withCredentials: true } // 쿠키 전송 활성화
+        );
 
-          if (response.data.success && response.data.data) {
-            const { accessToken } = response.data.data;
+        // 백엔드가 헤더로 새 accessToken을 전달
+        const newAccessToken = response.headers['authorization']?.replace('Bearer ', '');
 
-            // 새 토큰 저장
-            setAccessToken(accessToken);
+        if (newAccessToken) {
+          // 새 토큰 저장
+          setAccessToken(newAccessToken);
 
-            // 헤더 업데이트
-            originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+          // 헤더 업데이트
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
-            // 대기 중인 요청들 처리
-            processQueue(null, accessToken);
+          // 대기 중인 요청들 처리
+          processQueue(null, newAccessToken);
 
-            return apiClient(originalRequest);
-          }
-        } catch (refreshError) {
-          // 토큰 재발급 실패
-          processQueue(refreshError, null);
-
-          // 모든 토큰 삭제 및 로그인 페이지로 리다이렉트
-          clearAuth();
-          window.location.href = '/login';
-
-          return Promise.reject(refreshError);
-        } finally {
-          isRefreshing = false;
+          return apiClient(originalRequest);
         }
-      } else {
-        // 리프레시 토큰이 없으면 바로 로그인 페이지로
+      } catch (refreshError) {
+        // 토큰 재발급 실패
+        processQueue(refreshError, null);
+
+        // 모든 토큰 삭제 및 로그인 페이지로 리다이렉트
         clearAuth();
         window.location.href = '/login';
+
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
       }
     }
 
