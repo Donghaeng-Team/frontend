@@ -323,6 +323,35 @@
     font-weight: 500;
   }
 
+  .form-hint {
+    color: #666666;
+    font-size: 12px;
+    margin-top: 6px;
+  }
+
+  /* 가격 미리보기 */
+  .price-preview {
+    margin-top: 20px;
+    padding: 16px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .preview-label {
+    font-size: 14px;
+    color: #666666;
+    font-weight: 500;
+  }
+
+  .preview-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #ff5e2f;
+  }
+
   /* 카테고리 섹션 */
   .info-section .category-selector {
     margin-top: 10px;

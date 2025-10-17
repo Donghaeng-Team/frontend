@@ -22,7 +22,8 @@ interface FoodCategoryData {
 // 임시 저장 데이터 타입
 interface DraftData {
   title: string;
-  price: string;
+  minPrice: string;
+  maxPrice: string;
   minParticipants: string;
   maxParticipants: string;
   deadline: string;
@@ -63,7 +64,8 @@ const ProductRegister: React.FC = () => {
   const authUser = useAuthStore((state) => state.user);
 
   const [title, setTitle] = useState('');
-  const [price, setPrice] = useState('');
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
   const [minParticipants, setMinParticipants] = useState('');
   const [maxParticipants, setMaxParticipants] = useState('');
   const [deadline, setDeadline] = useState('');
@@ -83,7 +85,8 @@ const ProductRegister: React.FC = () => {
   const [errors, setErrors] = useState<{
     images?: string;
     title?: string;
-    price?: string;
+    minPrice?: string;
+    maxPrice?: string;
     minParticipants?: string;
     maxParticipants?: string;
     deadline?: string;
@@ -114,12 +117,23 @@ const ProductRegister: React.FC = () => {
           return '제목을 입력해주세요.';
         }
         break;
-      case 'price':
+      case 'minPrice':
         if (!value || value.trim() === '') {
-          return '가격을 입력해주세요.';
+          return '최소 인원 가격을 입력해주세요.';
         }
         if (isNaN(Number(value)) || Number(value) <= 0) {
           return '올바른 가격을 입력해주세요.';
+        }
+        break;
+      case 'maxPrice':
+        if (!value || value.trim() === '') {
+          return '최대 인원 가격을 입력해주세요.';
+        }
+        if (isNaN(Number(value)) || Number(value) <= 0) {
+          return '올바른 가격을 입력해주세요.';
+        }
+        if (minPrice && Number(value) > Number(minPrice)) {
+          return '최대 인원 가격은 최소 인원 가격보다 작거나 같아야 합니다.';
         }
         break;
       case 'minParticipants':
@@ -174,7 +188,8 @@ const ProductRegister: React.FC = () => {
 
     newErrors.images = validateField('images', images);
     newErrors.title = validateField('title', title);
-    newErrors.price = validateField('price', price);
+    newErrors.minPrice = validateField('minPrice', minPrice);
+    newErrors.maxPrice = validateField('maxPrice', maxPrice);
     newErrors.minParticipants = validateField('minParticipants', minParticipants);
     newErrors.maxParticipants = validateField('maxParticipants', maxParticipants);
     newErrors.deadline = validateField('deadline', deadline);
@@ -191,7 +206,8 @@ const ProductRegister: React.FC = () => {
   const saveDraft = () => {
     const draft: DraftData = {
       title,
-      price,
+      minPrice,
+      maxPrice,
       minParticipants,
       maxParticipants,
       deadline,
@@ -251,7 +267,8 @@ const ProductRegister: React.FC = () => {
       );
       if (confirm) {
         setTitle(draft.title);
-        setPrice(draft.price);
+        setMinPrice(draft.minPrice);
+        setMaxPrice(draft.maxPrice);
         setMinParticipants(draft.minParticipants);
         setMaxParticipants(draft.maxParticipants);
         setDeadline(draft.deadline);
@@ -284,7 +301,7 @@ const ProductRegister: React.FC = () => {
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [title, price, minParticipants, maxParticipants, deadline, description, selectedCategories, selectedLocation]);
+  }, [title, minPrice, maxPrice, minParticipants, maxParticipants, deadline, description, selectedCategories, selectedLocation]);
 
   // 이미지 파일 검증
   const validateImageFile = (file: File): string | null => {
@@ -440,10 +457,13 @@ const ProductRegister: React.FC = () => {
       }
 
       // 2. 상품 등록
+      // 총 가격 = 최소 인원 가격 * 최소 인원
+      const totalPrice = parseInt(minPrice, 10) * parseInt(minParticipants, 10);
+
       const response = await productService.createProduct({
         title,
         description,
-        price: parseInt(price, 10),
+        price: totalPrice,
         category: selectedCategories.join(' > '),
         images: imageUrls,
         targetQuantity: parseInt(maxParticipants, 10),
@@ -646,18 +666,44 @@ const ProductRegister: React.FC = () => {
             />
           </div>
 
-          <div className="form-group">
-            <label className="form-label">가격 *</label>
-            <input
-              type="text"
-              className={`form-input price-input ${errors.price ? 'error' : ''}`}
-              placeholder="₩ 가격을 입력해주세요"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              onBlur={() => handleBlur('price', price)}
-            />
-            {errors.price && <div className="error-message">{errors.price}</div>}
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label">최소 인원 가격 (1인당) *</label>
+              <input
+                type="text"
+                className={`form-input price-input ${errors.minPrice ? 'error' : ''}`}
+                placeholder="₩ 최소 인원 기준 가격"
+                value={minPrice}
+                onChange={(e) => setMinPrice(e.target.value)}
+                onBlur={() => handleBlur('minPrice', minPrice)}
+              />
+              {errors.minPrice && <div className="error-message">{errors.minPrice}</div>}
+              <p className="form-hint">최소 인원일 때 1인당 가격입니다.</p>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">최대 인원 가격 (1인당) *</label>
+              <input
+                type="text"
+                className={`form-input price-input ${errors.maxPrice ? 'error' : ''}`}
+                placeholder="₩ 최대 인원 기준 가격"
+                value={maxPrice}
+                onChange={(e) => setMaxPrice(e.target.value)}
+                onBlur={() => handleBlur('maxPrice', maxPrice)}
+              />
+              {errors.maxPrice && <div className="error-message">{errors.maxPrice}</div>}
+              <p className="form-hint">최대 인원 모집 시 1인당 가격입니다.</p>
+            </div>
           </div>
+
+          {minPrice && minParticipants && (
+            <div className="price-preview">
+              <span className="preview-label">예상 총 금액:</span>
+              <span className="preview-value">
+                ₩{(parseInt(minPrice, 10) * parseInt(minParticipants, 10) || 0).toLocaleString()}
+              </span>
+            </div>
+          )}
         </section>
 
         {/* 모집 정보 섹션 */}

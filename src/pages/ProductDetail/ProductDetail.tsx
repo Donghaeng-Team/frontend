@@ -228,7 +228,12 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
               <div className="product-category">{product.category}</div>
               <h1 className="product-title">{product.title}</h1>
               <div className="price-container">
-                <span className="current-price">{formatPrice(product.price)}</span>
+                <div className="price-current">
+                  {formatPrice(Math.ceil(product.price / product.currentQuantity))}
+                </div>
+                <div className="price-max-info">
+                  최대 {product.targetQuantity}명 모집 시 {formatPrice(Math.ceil(product.price / product.targetQuantity))}
+                </div>
               </div>
             </div>
 
