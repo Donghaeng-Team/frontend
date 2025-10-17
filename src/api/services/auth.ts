@@ -52,15 +52,56 @@ export const authService = {
       throw new Error('로그인 응답에 토큰이 없습니다.');
     }
     
-    // 사용자 정보는 응답 body에 포함됨
-    const user = response.data.data;
+    // AccessToken 먼저 저장
+    setAccessToken(accessToken);
+    
+    // 사용자 정보는 응답 body에 포함되지만, userId가 없을 수 있으므로
+    // /api/v1/user/private/me를 호출하여 완전한 사용자 정보 가져오기
+    let user = response.data.data;
     
     if (!user) {
       throw new Error('사용자 정보를 가져올 수 없습니다.');
     }
     
-    // AccessToken과 사용자 정보 저장
-    setAccessToken(accessToken);
+    // userId가 없으면 JWT 토큰에서 추출 시도
+    if (!user.userId && accessToken) {
+      try {
+        // JWT 토큰 디코딩 (payload 부분)
+        const tokenPayload = JSON.parse(atob(accessToken.split('.')[1]));
+        console.log('🔍 JWT payload:', tokenPayload);
+        
+        // JWT에서 userId 찾기 (sub 필드에 있을 가능성이 높음)
+        if (tokenPayload.sub) {
+          user.userId = parseInt(tokenPayload.sub, 10);
+          console.log('✅ JWT sub에서 userId 추출:', user.userId);
+        } else if (tokenPayload.userId) {
+          user.userId = tokenPayload.userId;
+          console.log('✅ JWT에서 userId 추출:', user.userId);
+        } else if (tokenPayload.id) {
+          user.userId = tokenPayload.id;
+          console.log('✅ JWT id에서 userId 추출:', user.userId);
+        }
+      } catch (jwtError) {
+        console.error('❌ JWT 디코딩 실패:', jwtError);
+      }
+    }
+    
+    // 여전히 userId가 없으면 getProfile API 호출
+    if (!user.userId) {
+      console.log('⚠️ JWT에도 userId 없음, getProfile API 호출');
+      try {
+        const profileResponse = await apiClient.get<ApiResponse<User>>('/api/v1/user/private/me');
+        if (profileResponse.data.success && profileResponse.data.data) {
+          const profileUser = profileResponse.data.data;
+          user = { ...user, ...profileUser };
+          console.log('✅ 완전한 사용자 정보:', user);
+        }
+      } catch (profileError) {
+        console.error('❌ 프로필 정보 조회 실패:', profileError);
+      }
+    }
+    
+    // 사용자 정보 저장
     setUser(user);
     
     // LoginResponse 형태로 반환 (호환성 유지)

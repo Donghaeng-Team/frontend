@@ -31,30 +31,19 @@ export interface Product {
   updatedAt: string;
 }
 
+// Swagger 기반 CreateMarketRequest
 export interface ProductCreateRequest {
+  images?: File[]; // multipart/form-data로 전송
   title: string;
-  description: string;
+  categoryId: string;
   price: number;
-  discountPrice?: number;
-  category: string;
-  images: string[];
-  targetQuantity: number;
-  currentQuantity: number;
-  deadline: string;
-  status: string;
-  location: {
-    sido: string;
-    gugun: string;
-    dong: string;
-    fullAddress: string;
-    latitude?: number;
-    longitude?: number;
-  };
-  seller: {
-    id: string;
-    name: string;
-    rating: number;
-  };
+  recruitMin: number;
+  recruitMax: number;
+  endTime: string; // ISO 8601 datetime
+  content: string;
+  latitude: number;
+  longitude: number;
+  locationText: string;
 }
 
 export interface ProductUpdateRequest extends Partial<ProductCreateRequest> {
@@ -78,19 +67,47 @@ export interface ProductSearchParams {
 export const productService = {
   // 상품 목록 조회
   getProducts: async (params: ProductSearchParams = {}): Promise<ApiResponse<PaginationResponse<Product>>> => {
-    const response = await apiClient.get('/products', { params });
+    const response = await apiClient.get('/api/v1/market/public/products', { params });
     return response.data;
   },
 
   // 상품 상세 조회
   getProduct: async (id: string): Promise<ApiResponse<Product>> => {
-    const response = await apiClient.get(`/products/${id}`);
+    const response = await apiClient.get(`/api/v1/market/public/products/${id}`);
     return response.data;
   },
 
-  // 상품 생성
-  createProduct: async (data: ProductCreateRequest): Promise<ApiResponse<Product>> => {
-    const response = await apiClient.post('/products', data);
+  // 상품 생성 (multipart/form-data)
+  createProduct: async (data: ProductCreateRequest, userId: number): Promise<ApiResponse<{ marketId: number }>> => {
+
+    const formData = new FormData();
+    
+    // 이미지 파일 추가
+    if (data.images && data.images.length > 0) {
+      data.images.forEach((image) => {
+        formData.append('images', image);
+      });
+    }
+    
+    // 나머지 필드 추가
+    formData.append('title', data.title);
+    formData.append('categoryId', data.categoryId);
+    formData.append('price', data.price.toString());
+    formData.append('recruitMin', data.recruitMin.toString());
+    formData.append('recruitMax', data.recruitMax.toString());
+    formData.append('endTime', data.endTime);
+    formData.append('content', data.content);
+    formData.append('latitude', data.latitude.toString());
+    formData.append('longitude', data.longitude.toString());
+    formData.append('locationText', data.locationText);
+
+    const response = await apiClient.post('/api/v1/market/private', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'X-User-Id': userId.toString()
+      }
+    });
+    
     return response.data;
   },
 

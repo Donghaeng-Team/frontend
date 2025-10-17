@@ -29,7 +29,7 @@ interface DraftData {
   deadline: string;
   description: string;
   selectedCategories: string[];
-  selectedLocation: string;
+  detailLocation: string;
   savedAt: number;
 }
 
@@ -73,7 +73,8 @@ const ProductRegister: React.FC = () => {
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedLocation, setSelectedLocation] = useState('');
+  const [mapAddress, setMapAddress] = useState(''); // 지도에서 선택한 주소 (참고용)
+  const [detailLocation, setDetailLocation] = useState(''); // 사용자가 입력하는 상세 거래 위치
   const [locationCoords, setLocationCoords] = useState<{ lat: number; lng: number }>({ lat: 37.5665, lng: 126.9780 });
   const [categoryData, setCategoryData] = useState<CategoryItem[]>([]);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
@@ -91,7 +92,7 @@ const ProductRegister: React.FC = () => {
     maxParticipants?: string;
     deadline?: string;
     description?: string;
-    selectedLocation?: string;
+    detailLocation?: string;
   }>({});
 
   const saveTimeoutRef = useRef<number | null>(null);
@@ -173,9 +174,9 @@ const ProductRegister: React.FC = () => {
           return '상품 설명은 최소 50자 이상 입력해주세요.';
         }
         break;
-      case 'selectedLocation':
+      case 'detailLocation':
         if (!value || value.trim() === '') {
-          return '거래 희망 장소를 입력해주세요.';
+          return '상세 거래 위치를 입력해주세요.';
         }
         break;
     }
@@ -194,7 +195,7 @@ const ProductRegister: React.FC = () => {
     newErrors.maxParticipants = validateField('maxParticipants', maxParticipants);
     newErrors.deadline = validateField('deadline', deadline);
     newErrors.description = validateField('description', description);
-    newErrors.selectedLocation = validateField('selectedLocation', selectedLocation);
+    newErrors.detailLocation = validateField('detailLocation', detailLocation);
 
     setErrors(newErrors);
 
@@ -213,7 +214,7 @@ const ProductRegister: React.FC = () => {
       deadline,
       description,
       selectedCategories,
-      selectedLocation,
+      detailLocation,
       savedAt: Date.now()
     };
     localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
@@ -274,7 +275,7 @@ const ProductRegister: React.FC = () => {
         setDeadline(draft.deadline);
         setDescription(draft.description);
         setSelectedCategories(draft.selectedCategories);
-        setSelectedLocation(draft.selectedLocation);
+        setDetailLocation(draft.detailLocation);
         setLastSaved(new Date(draft.savedAt));
       } else {
         clearDraft();
@@ -301,7 +302,7 @@ const ProductRegister: React.FC = () => {
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [title, minPrice, maxPrice, minParticipants, maxParticipants, deadline, description, selectedCategories, selectedLocation]);
+  }, [title, minPrice, maxPrice, minParticipants, maxParticipants, deadline, description, selectedCategories, detailLocation]);
 
   // 이미지 파일 검증
   const validateImageFile = (file: File): string | null => {
@@ -412,13 +413,19 @@ const ProductRegister: React.FC = () => {
   // 지도 위치 변경 핸들러
   const handleLocationChange = (location: { lat: number; lng: number; address: string }) => {
     setLocationCoords({ lat: location.lat, lng: location.lng });
-    setSelectedLocation(location.address);
+    setMapAddress(location.address);
   };
 
   const handleSubmit = async () => {
     // 로그인 확인
-    if (!authUser) {
+    console.log('🔍 authUser:', authUser);
+    console.log('🔍 authUser.userId:', authUser?.userId);
+    console.log('🔍 localStorage user:', localStorage.getItem('user'));
+    
+    if (!authUser || !authUser.userId) {
+      console.error('❌ 로그인 정보 없음 - authUser:', authUser);
       alert('로그인이 필요합니다.');
+      navigate('/login');
       return;
     }
 
@@ -431,73 +438,33 @@ const ProductRegister: React.FC = () => {
     try {
       setIsSubmitting(true);
 
-      // 1. 이미지 업로드 (있는 경우)
-      let imageUrls: string[] = [];
-      if (images.length > 0) {
-        console.log('📤 이미지 업로드 중...');
-
-        for (const image of images) {
-          try {
-            const presignedResponse = await imageService.getPresignedUrl({
-              fileName: image.name,
-              fileType: image.type
-            });
-
-            if (presignedResponse.success && presignedResponse.data) {
-              const { presignedUrl, imageUrl } = presignedResponse.data;
-
-              // S3에 이미지 업로드
-              await imageService.uploadToS3(presignedUrl, image);
-              imageUrls.push(imageUrl);
-            }
-          } catch (error) {
-            console.error('이미지 업로드 실패:', error);
-          }
-        }
-      }
-
-      // 2. 상품 등록
-      // 총 가격 = 최소 인원 가격 * 최소 인원
-      const totalPrice = parseInt(minPrice, 10) * parseInt(minParticipants, 10);
-
+      // Swagger 기반 CreateMarketRequest 생성
       const response = await productService.createProduct({
+        images: images, // File[] 직접 전달
         title,
-        description,
-        price: totalPrice,
-        category: selectedCategories.join(' > '),
-        images: imageUrls,
-        targetQuantity: parseInt(maxParticipants, 10),
-        currentQuantity: parseInt(minParticipants, 10),
-        deadline,
-        status: 'active',
-        location: {
-          sido: '서울',
-          gugun: '서초구',
-          dong: selectedLocation,
-          fullAddress: selectedLocation,
-          latitude: locationCoords.lat,
-          longitude: locationCoords.lng
-        },
-        seller: {
-          id: authUser.userId?.toString() || '',
-          name: authUser.nickName,
-          rating: 0
-        }
-      });
+        categoryId: selectedCategories.join(''),  // 카테고리 ID (예: "01010101")
+        price: parseInt(minPrice, 10),
+        recruitMin: parseInt(minParticipants, 10),
+        recruitMax: parseInt(maxParticipants, 10),
+        endTime: new Date(deadline).toISOString(),
+        content: description,
+        latitude: locationCoords.lat,
+        longitude: locationCoords.lng,
+        locationText: detailLocation
+      }, authUser.userId!);
 
       if (response.success) {
         // 성공 시 임시 저장 데이터 삭제
         clearDraft();
 
-        // productId가 반환되면 상세 페이지로, 없으면 목록으로 이동
-        const productId = (response.data as any)?.id;
+        const marketId = response.data?.marketId;
 
-        if (productId) {
-          console.log('✅ 상품 생성 성공, productId:', productId);
+        if (marketId) {
+          console.log('✅ 상품 생성 성공, marketId:', marketId);
           alert('상품이 성공적으로 등록되었습니다!');
-          navigate(`/products/${productId}`);
+          navigate(`/products/${marketId}`);
         } else {
-          console.warn('⚠️ productId가 반환되지 않음, 목록으로 이동');
+          console.warn('⚠️ marketId가 반환되지 않음, 목록으로 이동');
           alert('상품이 성공적으로 등록되었습니다!');
           navigate('/products');
         }
@@ -780,22 +747,24 @@ const ProductRegister: React.FC = () => {
         <section className="register-section location-section">
           <h2 className="section-title">🚩 거래 희망 장소</h2>
           <p className="section-description">
-            공동구매를 진행할 동네를 설정해주세요. 설정한 동네 주변 사용자에게만 노출됩니다.
+            지도에서 대략적인 위치를 선택하고, 정확한 거래 장소를 입력해주세요.
           </p>
           <GoogleMap
             onLocationChange={handleLocationChange}
             initialCenter={locationCoords}
           />
           <div className="form-group" style={{ marginTop: '20px' }}>
-            <label className="form-label">선택된 위치</label>
+            <label className="form-label">상세 거래 위치 *</label>
             <input
               type="text"
-              className={`form-input ${errors.selectedLocation ? 'error' : ''}`}
-              placeholder="지도에서 위치를 선택하면 자동으로 입력됩니다"
-              value={selectedLocation}
-              readOnly
+              className={`form-input ${errors.detailLocation ? 'error' : ''}`}
+              placeholder="예: 서초역 3번 출구 앞 스타벅스"
+              value={detailLocation}
+              onChange={(e) => setDetailLocation(e.target.value)}
+              onBlur={() => handleBlur('detailLocation', detailLocation)}
             />
-            {errors.selectedLocation && <div className="error-message">{errors.selectedLocation}</div>}
+            {errors.detailLocation && <div className="error-message">{errors.detailLocation}</div>}
+            <p className="form-hint">정확한 만남 장소를 입력해주세요. (예: 역 출구, 카페 이름 등)</p>
           </div>
         </section>
 
