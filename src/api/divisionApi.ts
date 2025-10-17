@@ -12,10 +12,8 @@ import type {
 
 class DivisionApi {
   // 읍면동 검색 (좌표로) - 공개 API
-  async getDivisionByCoord(params: DivisionByCoordRequest): Promise<Division> {
-    const response = await apiClient.get('/api/v1/division/public/by-coord', {
-      params
-    });
+  async getDivisionByCoord(data: DivisionByCoordRequest): Promise<Division> {
+    const response = await apiClient.post('/api/v1/division/public/by-coord', data);
     return response.data;
   }
 
@@ -48,10 +46,8 @@ class DivisionApi {
   }
 
   // 인접동 검색 (좌표로) - 내부 API (인증 필요)
-  async getNearbyDivisionsByCoord(params: NearbyDivisionByCoordRequest): Promise<Division[]> {
-    const response = await apiClient.get('/internal/v1/division/near/by-coord', {
-      params
-    });
+  async getNearbyDivisionsByCoord(data: NearbyDivisionByCoordRequest): Promise<Division[]> {
+    const response = await apiClient.post('/internal/v1/division/near/by-coord', data);
     return response.data;
   }
 
