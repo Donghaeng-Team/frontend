@@ -66,7 +66,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   // 회원가입
-  register: async (email: string, password: string, nickName: string) => {
+  register: async (email: string, password: string, nickname: string) => {
     try {
       set({ loading: true, error: null });
 
@@ -74,7 +74,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         email,
         password,
         passwordConfirm: password,
-        nickName,
+        nickname,
       });
 
       if (response.success) {

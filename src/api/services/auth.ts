@@ -3,7 +3,7 @@ import type { ApiResponse } from '../../types';
 import type {
   LoginRequest,
   LoginResponse,
-  SignUpRequest,
+  RegisterRequest,
   RefreshTokenResponse,
   User
 } from '../../types/auth';
@@ -50,7 +50,7 @@ export const authService = {
   },
 
   // 회원가입
-  register: async (data: SignUpRequest): Promise<ApiResponse<LoginResponse>> => {
+  register: async (data: RegisterRequest): Promise<ApiResponse<LoginResponse>> => {
     const response = await apiClient.post<ApiResponse<LoginResponse>>('/api/v1/user/public/register', data);
     const { accessToken, refreshToken, user } = response.data.data;
 
