@@ -72,8 +72,8 @@ apiClient.interceptors.response.use(
     const originalRequest = error.config;
 
     // 로그인/회원가입 API는 401 인터셉터에서 제외
-    const isAuthEndpoint = originalRequest.url?.includes('/auth/login') || 
-                          originalRequest.url?.includes('/auth/register');
+    const isAuthEndpoint = originalRequest.url?.includes('/api/v1/user/public/login') || 
+                          originalRequest.url?.includes('/api/v1/user/public/register');
 
     if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
       if (isRefreshing) {
@@ -104,7 +104,7 @@ apiClient.interceptors.response.use(
         try {
           // 토큰 재발급 요청
           const response = await axios.post(
-            `${import.meta.env.VITE_API_BASE_URL || ''}/auth/refresh`,
+            `${import.meta.env.VITE_API_BASE_URL || ''}/api/v1/user/public/refresh`,
             { refreshToken }
           );
 

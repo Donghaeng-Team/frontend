@@ -38,7 +38,7 @@ export interface AuthResponse {
 export const authService = {
   // 로그인
   login: async (data: LoginRequest): Promise<ApiResponse<LoginResponse>> => {
-    const response = await apiClient.post<ApiResponse<LoginResponse>>('/auth/login', data);
+    const response = await apiClient.post<ApiResponse<LoginResponse>>('/api/v1/user/public/login', data);
     const { accessToken, refreshToken, user } = response.data.data;
 
     // 토큰과 사용자 정보 저장
@@ -51,7 +51,7 @@ export const authService = {
 
   // 회원가입
   register: async (data: SignUpRequest): Promise<ApiResponse<LoginResponse>> => {
-    const response = await apiClient.post<ApiResponse<LoginResponse>>('/auth/register', data);
+    const response = await apiClient.post<ApiResponse<LoginResponse>>('/api/v1/user/public/register', data);
     const { accessToken, refreshToken, user } = response.data.data;
 
     // 회원가입 후 자동 로그인 처리
@@ -64,7 +64,7 @@ export const authService = {
 
   // 로그아웃
   logout: async (): Promise<ApiResponse<null>> => {
-    const response = await apiClient.post('/auth/logout');
+    const response = await apiClient.delete('/api/v1/user/private/logout');
 
     // 로컬 스토리지에서 인증 정보 제거
     clearAuth();
@@ -80,7 +80,7 @@ export const authService = {
       throw new Error('Refresh token not found');
     }
 
-    const response = await apiClient.post<ApiResponse<RefreshTokenResponse>>('/auth/refresh', { refreshToken });
+    const response = await apiClient.post<ApiResponse<RefreshTokenResponse>>('/api/v1/user/public/refresh', { refreshToken });
     const { accessToken } = response.data.data;
 
     // 새로운 AccessToken 저장
@@ -91,7 +91,7 @@ export const authService = {
 
   // 내 정보 조회
   getProfile: async (): Promise<ApiResponse<User>> => {
-    const response = await apiClient.get('/auth/profile');
+    const response = await apiClient.get('/api/v1/user/private/me');
     return response.data;
   },
 
