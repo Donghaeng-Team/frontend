@@ -31,6 +31,7 @@ const CommunityPostDetail: React.FC = () => {
   const [allComments, setAllComments] = useState<CommentResponse[]>([]);
   const [displayedCommentsCount, setDisplayedCommentsCount] = useState(10);
   const [commentsLoading, setCommentsLoading] = useState(false);
+  const [relatedPosts, setRelatedPosts] = useState<RelatedPost[]>([]);
 
   // 게시글 데이터 로드
   useEffect(() => {
@@ -55,26 +56,8 @@ const CommunityPostDetail: React.FC = () => {
         setLikeCount(response.data.likeCount);
       } catch (error: any) {
         console.error('❌ 게시글 로드 실패:', error);
-        console.warn('⚠️ Using fallback mock post data');
-
-        // Fallback: mock 데이터 사용 (현재 로그인한 사용자 작성으로 설정)
-        const mockPost: PostDetailResponse = {
-          postId: parseInt(id || '1', 10),
-          title: '김농부 유기농 사과 10kg 공동구매 후기 - 샘플 게시글 (내가 작성)',
-          content: '이번에 참여한 유기농 사과 공동구매 정말 만족스러웠어요!\n\n이 게시글은 API 연동 전 샘플 데이터입니다.\n현재 로그인한 사용자가 작성한 것으로 설정되어 수정/삭제 버튼이 표시됩니다.\n실제 게시글을 등록하시면 이 데이터 대신 표시됩니다.',
-          region: '서초구',
-          tag: 'review',
-          authorId: authUser?.userId || 999,
-          imageUrls: [],
-          thumbnailUrl: null,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          likeCount: 24,
-          commentCount: 3,
-          viewCount: 128
-        };
-        setPost(mockPost);
-        setLikeCount(mockPost.likeCount);
+        alert('게시글을 불러올 수 없습니다.');
+        navigate('/community');
       } finally {
         setLoading(false);
       }
@@ -126,32 +109,49 @@ const CommunityPostDetail: React.FC = () => {
     }
   }, [id, post]);
 
-  const relatedPosts: RelatedPost[] = [
-    {
-      id: 1,
-      title: '제주 감귤 공동구매 모집합니다',
-      excerpt: '제주 직송 노지 감귤 10kg 공동구매 진행합니다...',
-      author: '제주러버',
-      timeAgo: '3일 전',
-      views: 156
-    },
-    {
-      id: 2,
-      title: '유기농 채소 정기 공동구매 후기',
-      excerpt: '매주 수요일 유기농 채소 공동구매 1달 후기입니다...',
-      author: '건강맘',
-      timeAgo: '1주일 전',
-      views: 203
-    },
-    {
-      id: 3,
-      title: '배 공동구매 모집 중 (10/5 마감)',
-      excerpt: '나주 배 특상품 15kg 공동구매 모집합니다...',
-      author: '배달인',
-      timeAgo: '2일 전',
-      views: 89
-    }
-  ];
+  // 관련 게시글 데이터 로드
+  useEffect(() => {
+    const loadRelatedPosts = async () => {
+      if (!post) return;
+
+      try {
+        // post.region에 8자리 divisionId가 들어있음
+        const divisionCode = post.region || '11650540';
+        
+        console.log('📍 Related Posts - Using 8-digit divisionId from post.region:', divisionCode);
+
+        const response = await communityService.getPosts({
+          divisionCode: divisionCode,
+          tag: post.tag === 'all' ? undefined : post.tag
+        });
+
+        console.log('✅ Related Posts API Response:', response);
+
+        if (response.success && response.data) {
+          // 현재 게시글 제외하고 최대 3개
+          const related = response.data
+            .filter(p => p.postId !== post.postId)
+            .slice(0, 3)
+            .map(p => ({
+              id: p.postId,
+              title: p.title,
+              excerpt: p.previewContent || p.title,
+              author: '작성자',
+              timeAgo: getTimeAgo(p.createdAt),
+              views: p.viewCount
+            }));
+          setRelatedPosts(related);
+        }
+      } catch (error) {
+        console.error('❌ 관련 게시글 로드 실패:', error);
+        setRelatedPosts([]);
+      }
+    };
+
+    loadRelatedPosts();
+  }, [post]);
+
+
 
   const handleLike = () => {
     setLiked(!liked);
