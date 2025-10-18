@@ -32,7 +32,7 @@ export const communityService = {
    * @returns 게시글 목록
    */
   getPostsByUserId: async (userId: number): Promise<ApiResponse<PostListResponse[]>> => {
-    const response = await apiClient.get(`/api/v1/posts/public/${userId}`);
+    const response = await apiClient.get(`/api/v1/posts/public/user/${userId}`);
     return response.data;
   },
 
@@ -42,7 +42,7 @@ export const communityService = {
    * @returns 게시글 상세 정보
    */
   getPost: async (postId: number): Promise<ApiResponse<PostDetailResponse>> => {
-    const response = await apiClient.get(`/api/v1/posts/public/${postId}`);
+    const response = await apiClient.get(`/api/v1/posts/public/post/${postId}`);
     return response.data;
   },
 
@@ -241,7 +241,7 @@ export const communityService = {
         // ----------------------------
         // 3️⃣ S3에 실제 업로드
         // ----------------------------
-        await Promise.all(
+        const imgUploadResponse = await Promise.all(
           files.map((file, idx) =>
             fetch(urlRes.urls[idx].uploadUrl, {
               method: 'PUT',
@@ -250,18 +250,30 @@ export const communityService = {
             })
           )
         );
-
+        imgUploadResponse.forEach((res, i) => {
+          console.log(`File ${i}: ${res.status}`);
+          if(!res.ok) throw new Error('이미지 업로드 중 오류 발생!');
+        });
         console.log('✅ S3 업로드 완료');
 
         // ----------------------------
         // 4️⃣ 게시글 최종 수정 (이미지 키 반영)
         // ----------------------------
+        const images = files.map((file, idx) => ({
+          s3Key: urlRes.urls[idx].s3Key,
+          order: idx,
+          caption: idx === 0 ? "메인 사진" : `사진 ${idx + 1}`,
+          isThumbnail: idx === 0,
+          contentType: file.type,
+          size: file.size,
+        }));
+
         const updateBody: PostUpdateRequest = {
           region: post.region,
           tag: post.tag,
           title: post.title,
           content: post.content,
-          imageKeys: urlRes.urls.map((u) => u.s3Key),
+          images: images,
         };
 
         const updateHeaders: Record<string, string> = {

@@ -56,6 +56,19 @@ export interface UploadUrlsResponse {
   urls: UploadUrl[];  // 백엔드 실제: urls (문서는 uploadUrls)
 }
 
+
+
+/**
+ * 업데이트 요청의 이미지 메타데이터
+ */
+export interface ImageMeta {
+  s3Key: string;
+  order: number;
+  caption: string;
+  isThumbnail: boolean;
+  contentType: string;
+  size: number;
+}
 /**
  * 게시글 최종 수정 요청
  */
@@ -69,7 +82,7 @@ export interface PostUpdateRequest {
   /** 내용 */
   content?: string;
   /** 이미지 S3 키 목록 */
-  imageKeys?: string[];
+  images?: ImageMeta[];
 }
 
 /**
