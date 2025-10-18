@@ -10,6 +10,7 @@ import type {
   UploadUrlsResponse,
   PostUpdateRequest,
 } from '../../types/community';
+import { getAccessToken } from '../../utils/token';
 
 /**
  * 커뮤니티 게시글 API 서비스
@@ -60,7 +61,7 @@ export const communityService = {
   },
 
   /**
-   * 프리사인드 URL 발급 (Private) - Step 2
+   * 프리사인드 URL 발급 (Private) - Step 2 (fetch 사용)
    * @param postId 게시글 ID
    * @param userId 사용자 ID
    * @param data 파일 정보 목록
@@ -71,28 +72,53 @@ export const communityService = {
     userId: number,
     data: UploadUrlsRequest
   ): Promise<UploadUrlsResponse> => {
-    const response = await apiClient.post(`/api/v1/upload-url/${postId}`, data, {
-      headers: {
-        'Content-Type': 'application/json',
-        'X-User-Id': userId.toString(),
-      },
+    const accessToken = getAccessToken();
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'X-User-Id': userId.toString(),
+    };
+
+    // 액세스 토큰이 있으면 Authorization 헤더 추가
+    if (accessToken) {
+      headers['Authorization'] = `Bearer ${accessToken}`;
+    }
+
+    const response = await fetch(`/upload-url/${postId}`, {
+      method: 'POST',
+      headers,
+      credentials: 'include', // 쿠키 포함
+      body: JSON.stringify(data),
     });
-    return response.data;
+
+    if (!response.ok) {
+      throw new Error('프리사인드 URL 발급 실패');
+    }
+
+    const result: UploadUrlsResponse = await response.json();
+    console.log('✅ Presigned URL 응답:', result);
+    return result;
   },
 
   /**
-   * S3에 이미지 업로드 (External) - Step 3
+   * S3에 이미지 업로드 (External) - Step 3 (fetch 사용)
    * @param presignedUrl S3 프리사인드 URL
    * @param file 업로드할 파일
    */
   uploadToS3: async (presignedUrl: string, file: File): Promise<void> => {
-    await fetch(presignedUrl, {
+    const response = await fetch(presignedUrl, {
       method: 'PUT',
       headers: {
         'Content-Type': file.type,
       },
       body: file,
     });
+
+    if (!response.ok) {
+      throw new Error(`S3 업로드 실패: ${response.status}`);
+    }
+
+    console.log('✅ S3 업로드 성공:', file.name);
   },
 
   /**
@@ -151,7 +177,7 @@ export const communityService = {
   },
 
   /**
-   * 이미지와 함께 게시글 생성 (통합 함수)
+   * 이미지와 함께 게시글 생성 (통합 함수) - fetch 사용
    * @param userId 사용자 ID
    * @param post 게시글 초기 데이터
    * @param files 업로드할 파일 목록
@@ -162,16 +188,38 @@ export const communityService = {
     post: PostCreateInitRequest & { title?: string; content?: string },
     files: File[]
   ): Promise<number> => {
+    const accessToken = getAccessToken();
+
+    // ----------------------------
     // 1️⃣ 게시글 초기 생성
-    const initRes = await communityService.createPostInit({
-      region: post.region,
-      tag: post.tag,
+    // ----------------------------
+    const initHeaders: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (accessToken) {
+      initHeaders['Authorization'] = `Bearer ${accessToken}`;
+    }
+
+    const initRes = await fetch('/api/v1/posts/private', {
+      method: 'POST',
+      headers: initHeaders,
+      credentials: 'include',
+      body: JSON.stringify({
+        region: post.region,
+        tag: post.tag,
+      }),
     });
 
-    if (!initRes.success) throw new Error(initRes.message);
-    const postId = initRes.data.id;
+    if (!initRes.ok) throw new Error('게시글 초기 생성 실패');
+    const initJson: ApiResponse<PostData> = await initRes.json();
+    if (!initJson.success) throw new Error(initJson.message);
 
+    const postId = initJson.data.id;
+
+    // ----------------------------
     // 2️⃣ 프리사인드 URL 발급
+    // ----------------------------
     if (files.length > 0) {
       try {
         const urlReqBody: UploadUrlsRequest = {
@@ -184,26 +232,61 @@ export const communityService = {
 
         const urlRes = await communityService.getUploadUrls(postId, userId, urlReqBody);
 
+        console.log('✅ Presigned URL 응답:', urlRes);
+
+        if (!urlRes || !urlRes.urls || !Array.isArray(urlRes.urls)) {
+          throw new Error('Presigned URL 응답 형식이 올바르지 않습니다.');
+        }
+
+        // ----------------------------
         // 3️⃣ S3에 실제 업로드
+        // ----------------------------
         await Promise.all(
           files.map((file, idx) =>
-            communityService.uploadToS3(urlRes.uploadUrls[idx].presignedUrl, file)
+            fetch(urlRes.urls[idx].uploadUrl, {
+              method: 'PUT',
+              headers: { 'Content-Type': file.type },
+              body: file,
+            })
           )
         );
 
+        console.log('✅ S3 업로드 완료');
+
+        // ----------------------------
         // 4️⃣ 게시글 최종 수정 (이미지 키 반영)
+        // ----------------------------
         const updateBody: PostUpdateRequest = {
           region: post.region,
           tag: post.tag,
           title: post.title,
           content: post.content,
-          imageKeys: urlRes.uploadUrls.map((u) => u.s3Key),
+          imageKeys: urlRes.urls.map((u) => u.s3Key),
         };
 
-        const updateRes = await communityService.updatePost(postId, userId, updateBody);
-        if (!updateRes.success) throw new Error('게시글 최종 수정 실패');
+        const updateHeaders: Record<string, string> = {
+          'Content-Type': 'application/json',
+          'X-User-Id': String(userId),
+        };
 
-        return updateRes.data.id;
+        if (accessToken) {
+          updateHeaders['Authorization'] = `Bearer ${accessToken}`;
+        }
+
+        const updateRes = await fetch(`/api/v1/posts/private/${postId}`, {
+          method: 'PUT',
+          headers: updateHeaders,
+          credentials: 'include',
+          body: JSON.stringify(updateBody),
+        });
+
+        if (!updateRes.ok) throw new Error('게시글 최종 수정 실패');
+        const updateJson: ApiResponse<PostData> = await updateRes.json();
+
+        // ----------------------------
+        // ✅ 최종 결과 반환
+        // ----------------------------
+        return updateJson.data.id;
       } catch (imageError) {
         console.error('⚠️ 이미지 업로드 실패, 텍스트만 저장합니다:', imageError);
         // 이미지 업로드 실패 시에도 텍스트 저장 진행
@@ -219,10 +302,26 @@ export const communityService = {
         content: post.content,
       };
 
-      const updateRes = await communityService.updatePost(postId, userId, updateBody);
-      if (!updateRes.success) throw new Error('게시글 최종 수정 실패');
+      const fallbackUpdateHeaders: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'X-User-Id': String(userId),
+      };
 
-      return updateRes.data.id;
+      if (accessToken) {
+        fallbackUpdateHeaders['Authorization'] = `Bearer ${accessToken}`;
+      }
+
+      const updateRes = await fetch(`/api/v1/posts/private/${postId}`, {
+        method: 'PUT',
+        headers: fallbackUpdateHeaders,
+        credentials: 'include',
+        body: JSON.stringify(updateBody),
+      });
+
+      if (!updateRes.ok) throw new Error('게시글 최종 수정 실패');
+      const updateJson: ApiResponse<PostData> = await updateRes.json();
+
+      return updateJson.data.id;
     }
 
     return postId;
