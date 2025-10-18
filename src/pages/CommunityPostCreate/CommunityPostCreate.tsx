@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import { useAuthStore } from '../../stores/authStore';
+import { useLocationStore } from '../../stores/locationStore';
 import { communityService } from '../../api/services/community';
 import { imageService } from '../../api/services/image';
 import './CommunityPostCreate.css';
@@ -23,6 +24,7 @@ interface DraftData {
 const CommunityPostCreate: React.FC = () => {
   const navigate = useNavigate();
   const authUser = useAuthStore((state) => state.user);
+  const currentDivision = useLocationStore((state) => state.currentDivision);
 
   const [formData, setFormData] = useState<PostFormData>({
     category: 'local-news',
@@ -312,8 +314,14 @@ const CommunityPostCreate: React.FC = () => {
     e.preventDefault();
 
     // 로그인 확인
-    if (!authUser) {
+    console.log('🔍 authUser:', authUser);
+    console.log('🔍 authUser.userId:', authUser?.userId);
+    console.log('🔍 localStorage user:', localStorage.getItem('user'));
+
+    if (!authUser || !authUser.userId) {
+      console.error('❌ 로그인 정보 없음 - authUser:', authUser);
       alert('로그인이 필요합니다.');
+      navigate('/login');
       return;
     }
 
@@ -326,67 +334,54 @@ const CommunityPostCreate: React.FC = () => {
     try {
       setIsSubmitting(true);
 
-      // 1. 이미지 업로드 (있는 경우)
-      let imageUrls: string[] = [];
-      if (formData.images.length > 0) {
-        console.log('📤 이미지 업로드 중...');
-
-        for (const image of formData.images) {
-          try {
-            const presignedResponse = await imageService.getPresignedUrl({
-              fileName: image.name,
-              fileType: image.type
-            });
-
-            if (presignedResponse.success && presignedResponse.data) {
-              const { presignedUrl, imageUrl } = presignedResponse.data;
-
-              // S3에 이미지 업로드
-              await imageService.uploadToS3(presignedUrl, image);
-              imageUrls.push(imageUrl);
-            }
-          } catch (error) {
-            console.error('이미지 업로드 실패:', error);
-          }
-        }
-      }
-
-      // 2. 카테고리 태그 변환
+      // 카테고리 태그 변환
       const tagMap: { [key: string]: string } = {
         'local-news': 'general',
         'group-review': 'review',
         'qna': 'question'
       };
 
-      // 3. 게시글 생성
-      const response = await communityService.createPost(authUser.userId, {
-        title: formData.title,
-        content: formData.content,
-        region: '서초구', // TODO: 사용자 지역 정보 사용
-        tag: tagMap[formData.category] || 'general',
-        imageUrls: imageUrls,
-        thumbnailUrl: imageUrls.length > 0 ? imageUrls[0] : null
-      });
-
-      if (response.success) {
-        // 성공 시 임시 저장 데이터 삭제
-        clearDraft();
-
-        // postId가 반환되면 상세 페이지로, 없으면 목록으로 이동
-        const postId = (response.data as any)?.postId;
-
-        if (postId) {
-          console.log('✅ 게시글 생성 성공, postId:', postId);
-          alert('게시글이 성공적으로 등록되었습니다!');
-          navigate(`/community/${postId}`);
-        } else {
-          console.warn('⚠️ postId가 반환되지 않음, 목록으로 이동');
-          alert('게시글이 성공적으로 등록되었습니다!');
-          navigate('/community');
-        }
+      // locationStore에서 현재 위치 가져오기 (CommunityBoard와 동일)
+      let divisionCode = '11650540'; // 기본값: 서초구 8자리 divisionId
+      
+      if (currentDivision) {
+        // locationStore에서 가져온 division 사용 (8자리 divisionId)
+        divisionCode = currentDivision.id;
+        console.log('📍 Post Create - Using 8-digit divisionId from locationStore:', divisionCode, currentDivision);
       } else {
-        alert('게시글 등록에 실패했습니다.');
+        // fallback: localStorage에서 가져오기
+        const selectedLocationStr = localStorage.getItem('selectedLocation');
+        if (selectedLocationStr) {
+          try {
+            const selectedLocation = JSON.parse(selectedLocationStr);
+            if (selectedLocation && selectedLocation.id) {
+              divisionCode = selectedLocation.id;
+            }
+          } catch (error) {
+            console.error('Failed to parse selected location:', error);
+          }
+        }
+        console.log('📍 Post Create - Using 8-digit divisionId from localStorage:', divisionCode);
       }
+
+      // communityService.createPostWithImages 사용
+      const postId = await communityService.createPostWithImages(
+        authUser.userId,
+        {
+          region: divisionCode,
+          tag: tagMap[formData.category] || 'general',
+          title: formData.title,
+          content: formData.content,
+        },
+        formData.images
+      );
+
+      // 성공 시 임시 저장 데이터 삭제
+      clearDraft();
+
+      console.log('✅ 게시글 생성 성공, postId:', postId);
+      alert('게시글이 성공적으로 등록되었습니다!');
+      navigate(`/community/${postId}`);
     } catch (error) {
       console.error('게시글 등록 실패:', error);
       alert('게시글 등록 중 오류가 발생했습니다.');

@@ -151,19 +151,23 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   // 인증 초기화 (앱 시작 시 호출)
   initializeAuth: async () => {
     const token = getAccessToken();
+    const savedUser = getUser(); // localStorage에서 사용자 정보 먼저 가져오기
 
     if (token) {
+      // localStorage에 사용자 정보가 있으면 먼저 설정 (빠른 UI 업데이트)
+      if (savedUser) {
+        set({
+          isAuthenticated: true,
+          user: savedUser,
+          loading: false,
+          error: null,
+        });
+        console.log('✅ localStorage에서 사용자 정보 복원:', savedUser);
+      }
+
       // 테스트 토큰인 경우 API 호출 건너뛰기
       if (token.startsWith('fake-access-token-')) {
-        // localStorage에서 이미 저장된 사용자 정보 사용
-        const user = getUser();
-        if (user) {
-          set({
-            isAuthenticated: true,
-            user,
-            loading: false,
-            error: null,
-          });
+        if (savedUser) {
           return;
         }
       }
@@ -172,14 +176,37 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         const response = await authService.getProfile();
 
         if (response.success) {
+          // getProfile 응답과 localStorage 데이터 병합 (userId 유지)
+          const mergedUser = {
+            ...response.data,
+            // getProfile에 userId가 없으면 localStorage의 userId 사용
+            userId: response.data.userId || savedUser?.userId
+          };
+
+          console.log('🔄 프로필 업데이트:', mergedUser);
+
           set({
             isAuthenticated: true,
-            user: response.data,
+            user: mergedUser,
             loading: false,
             error: null,
           });
         } else {
-          // API 호출 실패 시 토큰 삭제
+          // API 호출 실패 시, localStorage에 사용자 정보가 있으면 유지
+          if (!savedUser) {
+            clearAuth();
+            set({
+              isAuthenticated: false,
+              user: null,
+              loading: false,
+              error: null,
+            });
+          }
+        }
+      } catch (error) {
+        // 401 등 인증 오류 발생 시, localStorage에 사용자 정보가 있으면 유지
+        console.warn('인증 초기화 실패 (토큰 만료 또는 유효하지 않음)');
+        if (!savedUser) {
           clearAuth();
           set({
             isAuthenticated: false,
@@ -188,16 +215,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             error: null,
           });
         }
-      } catch (error) {
-        // 401 등 인증 오류 발생 시 토큰 삭제 (조용히 처리)
-        console.warn('인증 초기화 실패 (토큰 만료 또는 유효하지 않음)');
-        clearAuth();
-        set({
-          isAuthenticated: false,
-          user: null,
-          loading: false,
-          error: null,
-        });
       }
     } else {
       // 토큰이 없으면 로그인되지 않은 상태로 설정

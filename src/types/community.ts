@@ -1,41 +1,75 @@
 // 커뮤니티 게시글 관련 타입 정의
 
 /**
- * 게시글 이미지 등록 정보
+ * 게시글 초기 생성 요청
  */
-export interface PostImageRegister {
-  /** S3 키 (필수) */
-  s3Key: string;
-  /** 이미지 순서 (0부터 시작) */
-  order: number;
-  /** 이미지 설명 (최대 200자) */
-  caption?: string;
-  /** MIME 타입 (image/로 시작) */
-  contentType?: string;
-  /** 파일 크기 (bytes) */
-  size?: number;
-  /** 이미지 너비 (px) */
-  width?: number;
-  /** 이미지 높이 (px) */
-  height?: number;
-  /** 썸네일 여부 */
-  thumbnail?: boolean;
-}
-
-/**
- * 게시글 생성/수정 요청
- */
-export interface PostCreateAndUpdateRequest {
+export interface PostCreateInitRequest {
   /** 지역 코드 (필수) */
   region: string;
   /** 태그 (필수) */
   tag: string;
-  /** 제목 (필수) */
+}
+
+/**
+ * 게시글 데이터
+ */
+export interface PostData {
+  /** 게시글 ID */
+  id: number;
+  /** 작성자 ID */
+  authorId: number;
+  /** 제목 */
   title: string;
-  /** 내용 (필수) */
+  /** 내용 */
   content: string;
-  /** 이미지 목록 (최대 5개) */
-  images?: PostImageRegister[];
+  /** 지역 */
+  region: string;
+  /** 태그 */
+  tag: string;
+  /** 이미지 URL 목록 */
+  imageUrls: string[] | null;
+}
+
+/**
+ * 업로드 URL 요청
+ */
+export interface UploadUrlsRequest {
+  files: {
+    index: number;
+    fileName: string;
+    contentType: string;
+  }[];
+}
+
+/**
+ * 업로드 URL
+ */
+export interface UploadUrl {
+  presignedUrl: string;
+  s3Key: string;
+}
+
+/**
+ * 업로드 URL 응답
+ */
+export interface UploadUrlsResponse {
+  uploadUrls: UploadUrl[];
+}
+
+/**
+ * 게시글 최종 수정 요청
+ */
+export interface PostUpdateRequest {
+  /** 지역 코드 (필수) */
+  region: string;
+  /** 태그 (필수) */
+  tag: string;
+  /** 제목 */
+  title?: string;
+  /** 내용 */
+  content?: string;
+  /** 이미지 S3 키 목록 */
+  imageKeys?: string[];
 }
 
 /**

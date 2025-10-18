@@ -4,6 +4,7 @@ import Layout from '../../components/Layout';
 import { communityService } from '../../api/services/community';
 import type { PostListResponse } from '../../types/community';
 import { APP_CONSTANTS } from '../../utils/constants';
+import { useLocationStore } from '../../stores/locationStore';
 import './CommunityBoard.css';
 
 export interface Post {
@@ -45,6 +46,7 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
   notificationCount = 3
 }) => {
   const navigate = useNavigate();
+  const currentDivision = useLocationStore((state) => state.currentDivision);
   const [activeCategory, setActiveCategory] = useState('전체');
   const [searchQuery, setSearchQuery] = useState('');
   const [posts, setPosts] = useState<Post[]>([]);
@@ -112,24 +114,31 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
       try {
         setLoading(true);
         
-        // 로컬스토리지에서 선택된 위치 정보 가져오기
-        const selectedLocationStr = localStorage.getItem(APP_CONSTANTS.STORAGE_KEYS.SELECTED_LOCATION);
-        let currentDivisionCode = '11650'; // 기본값: 서초구
+        // locationStore의 currentDivision 사용 (실시간 업데이트)
+        let currentDivisionCode = '11650540'; // 기본값: 서초구 8자리 divisionId
         
-        if (selectedLocationStr) {
-          try {
-            const selectedLocation = JSON.parse(selectedLocationStr);
-            if (selectedLocation && selectedLocation.sggCode) {
-              // divisionCode는 시군구 코드 (5자리)
-              currentDivisionCode = selectedLocation.sidoCode + selectedLocation.sggCode;
+        if (currentDivision) {
+          // locationStore에서 가져온 division 사용 (8자리 divisionId)
+          currentDivisionCode = currentDivision.id;
+          console.log('📍 Using 8-digit divisionId from locationStore:', currentDivisionCode, currentDivision);
+        } else {
+          // fallback: localStorage에서 가져오기
+          const selectedLocationStr = localStorage.getItem(APP_CONSTANTS.STORAGE_KEYS.SELECTED_LOCATION);
+          if (selectedLocationStr) {
+            try {
+              const selectedLocation = JSON.parse(selectedLocationStr);
+              if (selectedLocation && selectedLocation.id) {
+                // 8자리 divisionId 사용 (ex: "11010540")
+                currentDivisionCode = selectedLocation.id;
+              }
+            } catch (error) {
+              console.error('Failed to parse selected location:', error);
             }
-          } catch (error) {
-            console.error('Failed to parse selected location:', error);
           }
+          console.log('📍 Using 8-digit divisionId from localStorage:', currentDivisionCode);
         }
         
         setDivisionCode(currentDivisionCode);
-        console.log('📍 Using divisionCode:', currentDivisionCode);
         
         const response = await communityService.getPosts({
           divisionCode: currentDivisionCode,
@@ -145,16 +154,24 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
           console.warn('⚠️ API returned no data');
           setPosts([]);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('❌ Failed to load posts from API:', error);
-        setPosts([]);
+
+        // 타임아웃이나 연결 오류는 빈 데이터로 처리 (에러 표시 안 함)
+        if (error.code === 'ECONNABORTED' || error.code === 'ERR_NETWORK') {
+          console.warn('⚠️ Backend server timeout or not running - showing empty list');
+          setPosts([]);
+        } else {
+          // 다른 에러는 빈 데이터 표시
+          setPosts([]);
+        }
       } finally {
         setLoading(false);
       }
     };
 
     loadInitialPosts();
-  }, [initialPosts]);
+  }, [initialPosts, currentDivision]);
 
   // 더 많은 게시글 로드
   const loadMorePosts = useCallback(async () => {
