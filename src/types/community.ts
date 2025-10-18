@@ -42,18 +42,18 @@ export interface UploadUrlsRequest {
 }
 
 /**
- * 업로드 URL
+ * 업로드 URL (백엔드 실제 응답 형식)
  */
 export interface UploadUrl {
-  presignedUrl: string;
+  uploadUrl: string;  // 백엔드 실제: uploadUrl (문서는 presignedUrl)
   s3Key: string;
 }
 
 /**
- * 업로드 URL 응답
+ * 업로드 URL 응답 (백엔드 실제 응답 형식)
  */
 export interface UploadUrlsResponse {
-  uploadUrls: UploadUrl[];
+  urls: UploadUrl[];  // 백엔드 실제: urls (문서는 uploadUrls)
 }
 
 /**

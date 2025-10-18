@@ -32,6 +32,13 @@ export default defineConfig(({ mode }) => {
               console.log('Received Response from the Target:', proxyRes.statusCode, req.url);
             });
           },
+        },
+        // 이미지 업로드 URL 프록시
+        '/upload-url': {
+          target: env.VITE_API_BASE_URL || 'http://localhost:8080',
+          changeOrigin: true,
+          secure: false,
+          timeout: 10000,
         }
       }
     }
