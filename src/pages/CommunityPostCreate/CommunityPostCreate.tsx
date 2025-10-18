@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import { useAuthStore } from '../../stores/authStore';
+import { useLocationStore } from '../../stores/locationStore';
 import { communityService } from '../../api/services/community';
 import { imageService } from '../../api/services/image';
 import './CommunityPostCreate.css';
@@ -23,6 +24,7 @@ interface DraftData {
 const CommunityPostCreate: React.FC = () => {
   const navigate = useNavigate();
   const authUser = useAuthStore((state) => state.user);
+  const currentDivision = useLocationStore((state) => state.currentDivision);
 
   const [formData, setFormData] = useState<PostFormData>({
     category: 'local-news',
@@ -339,23 +341,28 @@ const CommunityPostCreate: React.FC = () => {
         'qna': 'question'
       };
 
-      // localStorage에서 지역 코드 가져오기 (8자리 divisionId 사용)
-      const selectedLocationStr = localStorage.getItem('selectedLocation');
+      // locationStore에서 현재 위치 가져오기 (CommunityBoard와 동일)
       let divisionCode = '11650540'; // 기본값: 서초구 8자리 divisionId
-
-      if (selectedLocationStr) {
-        try {
-          const selectedLocation = JSON.parse(selectedLocationStr);
-          if (selectedLocation && selectedLocation.id) {
-            // 8자리 divisionId 사용 (ex: "11010540")
-            divisionCode = selectedLocation.id;
+      
+      if (currentDivision) {
+        // locationStore에서 가져온 division 사용 (8자리 divisionId)
+        divisionCode = currentDivision.id;
+        console.log('📍 Post Create - Using 8-digit divisionId from locationStore:', divisionCode, currentDivision);
+      } else {
+        // fallback: localStorage에서 가져오기
+        const selectedLocationStr = localStorage.getItem('selectedLocation');
+        if (selectedLocationStr) {
+          try {
+            const selectedLocation = JSON.parse(selectedLocationStr);
+            if (selectedLocation && selectedLocation.id) {
+              divisionCode = selectedLocation.id;
+            }
+          } catch (error) {
+            console.error('Failed to parse selected location:', error);
           }
-        } catch (error) {
-          console.error('Failed to parse selected location:', error);
         }
+        console.log('📍 Post Create - Using 8-digit divisionId from localStorage:', divisionCode);
       }
-
-      console.log('📍 Post Create - Using 8-digit divisionId:', divisionCode);
 
       // communityService.createPostWithImages 사용
       const postId = await communityService.createPostWithImages(
