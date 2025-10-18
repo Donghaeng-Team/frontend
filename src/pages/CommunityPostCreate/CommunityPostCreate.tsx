@@ -39,7 +39,7 @@ const CommunityPostCreate: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dropZoneRef = useRef<HTMLDivElement>(null);
   const hasPromptedRef = useRef(false); // 중복 알림 방지
 
