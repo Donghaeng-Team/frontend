@@ -350,12 +350,15 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
                 key={post.id}
                 className="post-item"
                 onClick={() => {
-                  if (onPostClick) {
-                    onPostClick(post.id);
-                  } else {
-                    navigate(`/community/${post.id}`);
-                  }
+                  // 임시: 백엔드 500 에러 수정 전까지 상세 페이지 비활성화 (BACKEND_HANDOFF.md 참조)
+                  console.warn('⚠️ 게시글 상세 페이지는 백엔드 수정 후 활성화됩니다.');
+                  // if (onPostClick) {
+                  //   onPostClick(post.id);
+                  // } else {
+                  //   navigate(`/community/${post.id}`);
+                  // }
                 }}
+                style={{ cursor: 'not-allowed', opacity: 0.7 }}
               >
                 <div className="post-content">
                   <div className="post-header">
