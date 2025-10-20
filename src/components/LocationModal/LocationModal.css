@@ -95,6 +95,7 @@
   border-radius: 8px;
   overflow: hidden;
   min-height: 0;
+  max-height: 350px;
 }
   
   /* 컬럼 */
