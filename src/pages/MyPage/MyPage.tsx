@@ -382,24 +382,28 @@ const MyPage: React.FC<MyPageProps> = () => {
               value={stats.hosting.toString()}
               unit="건"
               color="#3399ff"
+              onClick={() => navigate('/purchase-history?tab=hosting')}
             />
             <StatCard
               label="참여중인 공동구매"
               value={stats.participating.toString()}
               unit="건"
               color="#ff5e2f"
+              onClick={() => navigate('/purchase-history?tab=participating')}
             />
             <StatCard
               label="완료된 공동구매"
               value={stats.completed.toString()}
               unit="건"
               color="#6633cc"
+              onClick={() => navigate('/purchase-history?tab=completed')}
             />
             <StatCard
               label="좋아요한 상품"
               value={stats.liked.toString()}
               unit="개"
               color="#ff3333"
+              onClick={() => navigate('/purchase-history?tab=liked')}
             />
           </div>
         </section>

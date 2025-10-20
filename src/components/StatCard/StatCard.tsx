@@ -12,6 +12,7 @@ interface StatCardProps {
   };
   color?: string;
   icon?: React.ReactNode;
+  onClick?: () => void;
 }
 
 const StatCard: React.FC<StatCardProps> = ({
@@ -20,10 +21,16 @@ const StatCard: React.FC<StatCardProps> = ({
   unit,
   change,
   color = '#ff5e2f',
-  icon
+  icon,
+  onClick
 }) => {
   return (
-    <Card variant="outlined" className="stat-card">
+    <Card
+      variant="outlined"
+      className={`stat-card ${onClick ? 'stat-card-clickable' : ''}`}
+      onClick={onClick}
+      style={{ cursor: onClick ? 'pointer' : 'default' }}
+    >
       <div className="stat-card-content">
         {icon && <div className="stat-icon">{icon}</div>}
         <p className="stat-label">{label}</p>
