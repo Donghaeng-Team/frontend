@@ -148,10 +148,78 @@
   }
 
   /* Responsive */
-  @media (max-width: 600px) {
-    .login-box {
-      padding: 32px 24px;
+  @media (max-width: 768px) {
+    .login-page {
+      padding: 20px 16px;
     }
+
+    .login-box {
+      padding: 40px 24px;
+      border-radius: 10px;
+    }
+  
+    .login-logo {
+      font-size: 28px;
+      margin-bottom: 32px;
+    }
+  
+    .login-title {
+      font-size: 22px;
+      margin-bottom: 24px;
+    }
+
+    .login-description {
+      font-size: 13px;
+      margin-bottom: 40px;
+    }
+
+    .login-buttons {
+      gap: 14px;
+    }
+
+    .login-footer {
+      margin-top: 40px;
+    }
+
+    .login-signup-text,
+    .login-signup-link {
+      font-size: 13px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .login-page {
+      padding: 16px 12px;
+    }
+
+    .login-box {
+      padding: 32px 20px;
+    }
+
+    .login-logo {
+      font-size: 26px;
+      margin-bottom: 28px;
+    }
+
+    .login-title {
+      font-size: 20px;
+      margin-bottom: 20px;
+    }
+
+    .login-description {
+      font-size: 12px;
+      margin-bottom: 32px;
+    }
+
+    .test-login-buttons {
+      padding: 12px;
+      gap: 10px;
+    }
+
+    .test-login-buttons button {
+      font-size: 12px;
+    }
+  }
   
     .login-logo {
       font-size: 28px;
