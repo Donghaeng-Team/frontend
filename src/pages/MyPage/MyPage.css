@@ -288,6 +288,7 @@
       justify-content: center !important;
       align-items: center !important;
       width: 100% !important;
+      min-height: 80px !important;
     }
 
     .profile-image,
