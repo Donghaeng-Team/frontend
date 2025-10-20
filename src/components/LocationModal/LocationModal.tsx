@@ -151,7 +151,7 @@ const LocationModal: React.FC<LocationModalProps> = ({
   const handleConfirm = () => {
     if (selectedLocation.sido && selectedLocation.gugun && selectedLocation.dong) {
       onConfirm(selectedLocation);
-      onClose();
+      // onClose()는 Wrapper의 handleConfirm에서 처리
     }
   };
 
