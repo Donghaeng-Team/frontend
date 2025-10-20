@@ -1,6 +1,7 @@
 .product-detail-page {
     min-height: 100vh;
     background-color: #ffffff;
+    overflow-x: hidden;
   }
   
   .product-detail-container {
@@ -8,6 +9,7 @@
     max-width: 1440px;
     margin: 0 auto;
     padding: 0 120px;
+    overflow-x: hidden;
   }
 
   .loading-message {
@@ -30,6 +32,13 @@
   .product-image-container {
     flex: 0 0 560px;
     height: 500px;
+  }
+  
+  .product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
   }
   
   .product-image-placeholder {
@@ -74,7 +83,10 @@
     font-weight: 700;
     color: #222222;
     margin: 0 0 20px 0;
-    line-height: 1.2;
+    line-height: 1.3;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
   }
   
   .price-container {
@@ -241,6 +253,19 @@
     font-weight: 600;
     color: #222222;
     margin-bottom: 20px;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+  
+  /* 모든 섹션에 오버플로우 방지 */
+  .seller-section,
+  .description-section,
+  .participants-section,
+  .related-section,
+  .faq-section,
+  .process-section {
+    overflow-x: hidden;
   }
   
   /* 판매자 정보 섹션 */
@@ -280,11 +305,17 @@
     font-weight: 600;
     color: #222222;
     margin: 0 0 10px 0;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
   }
   
   .seller-location {
     font-size: 14px;
     color: #666666;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
   }
   
   /* 상세 설명 섹션 */
@@ -297,6 +328,16 @@
     color: #4d4d4d;
     font-size: 15px;
     line-height: 1.8;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+  
+  .description-text p {
+    margin: 10px 0;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
   }
   
   .description-content h3 {
@@ -319,6 +360,9 @@
   
   .description-group p {
     margin: 8px 0;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
   }
   
   /* 참여자 현황 섹션 */
@@ -434,7 +478,7 @@
   /* 반응형 */
   @media (max-width: 1200px) {
     .product-detail-container {
-      padding: 0 60px;
+      padding: 0 40px;
     }
     
     .product-main-section {
@@ -448,35 +492,174 @@
       margin: 0 auto;
     }
     
+    .product-info-section {
+      max-width: 560px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    
     .related-products {
       grid-template-columns: repeat(2, 1fr);
     }
   }
   
-  @media (max-width: 768px) {
+  @media (max-width: 960px) {
     .product-detail-container {
-      padding: 0 20px;
+      padding: 0 24px;
     }
     
     .product-title {
-      font-size: 24px;
+      font-size: 26px;
+    }
+    
+    .price-current {
+      font-size: 32px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .product-detail-container {
+      padding: 0 16px;
+    }
+    
+    .product-main-section {
+      padding: 20px 0;
+      gap: 24px;
+    }
+    
+    .product-image-container {
+      height: 300px;
+      max-width: 100%;
+    }
+    
+    .product-info-section {
+      padding: 0;
+    }
+    
+    .product-title {
+      font-size: 20px;
+      margin-bottom: 16px;
+    }
+    
+    .price-container {
+      gap: 8px;
+      margin-top: 16px;
     }
     
     .price-current {
       font-size: 28px;
     }
     
+    .price-max-info {
+      font-size: 12px;
+    }
+    
+    .recruitment-status {
+      padding: 16px 20px;
+    }
+    
+    .participants-count {
+      font-size: 16px;
+    }
+    
+    .time-badge {
+      font-size: 12px;
+      padding: 3px 8px;
+    }
+    
+    .action-buttons {
+      gap: 8px;
+    }
+    
+    .chat-button,
+    .edit-button {
+      height: 50px;
+      font-size: 15px;
+    }
+    
+    .wish-button {
+      width: 50px;
+      min-width: 50px;
+      height: 50px;
+      font-size: 20px;
+    }
+    
+    .seller-section,
+    .description-section,
+    .participants-section,
+    .faq-section {
+      padding: 24px 0;
+    }
+    
+    .section-title {
+      font-size: 18px;
+      margin-bottom: 16px;
+    }
+    
+    .seller-card {
+      padding: 12px 16px;
+      gap: 12px;
+    }
+    
+    .seller-avatar {
+      width: 50px;
+      height: 50px;
+      font-size: 20px;
+    }
+    
+    .seller-name {
+      font-size: 16px;
+      margin-bottom: 6px;
+    }
+    
+    .seller-location {
+      font-size: 13px;
+    }
+    
+    .description-content {
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    
+    .description-content h4 {
+      font-size: 14px;
+      margin: 20px 0 12px 0;
+    }
+    
     .related-products {
       grid-template-columns: 1fr;
     }
     
+    .process-section {
+      padding: 30px 0;
+    }
+    
     .process-steps {
-      flex-direction: column;
-      gap: 20px;
+      gap: 8px;
+      padding: 20px 0;
+      overflow-x: auto;
+      justify-content: flex-start;
     }
     
     .step-arrow {
-      transform: rotate(90deg);
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    
+    .step-icon {
+      width: 40px;
+      height: 40px;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    
+    .step-text {
+      font-size: 11px;
+      white-space: nowrap;
+    }
+    
+    .process-step {
+      flex-shrink: 0;
     }
     
     .participants-list {

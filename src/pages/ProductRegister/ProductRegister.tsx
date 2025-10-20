@@ -22,8 +22,7 @@ interface FoodCategoryData {
 // 임시 저장 데이터 타입
 interface DraftData {
   title: string;
-  minPrice: string;
-  maxPrice: string;
+  totalPrice: string;
   minParticipants: string;
   maxParticipants: string;
   deadline: string;
@@ -64,8 +63,7 @@ const ProductRegister: React.FC = () => {
   const authUser = useAuthStore((state) => state.user);
 
   const [title, setTitle] = useState('');
-  const [minPrice, setMinPrice] = useState('');
-  const [maxPrice, setMaxPrice] = useState('');
+  const [totalPrice, setTotalPrice] = useState('');
   const [minParticipants, setMinParticipants] = useState('');
   const [maxParticipants, setMaxParticipants] = useState('');
   const [deadline, setDeadline] = useState('');
@@ -86,8 +84,7 @@ const ProductRegister: React.FC = () => {
   const [errors, setErrors] = useState<{
     images?: string;
     title?: string;
-    minPrice?: string;
-    maxPrice?: string;
+    totalPrice?: string;
     minParticipants?: string;
     maxParticipants?: string;
     deadline?: string;
@@ -104,6 +101,7 @@ const ProductRegister: React.FC = () => {
   const AUTO_SAVE_DELAY = 2000;
   const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
   const MAX_FILE_SIZE = 10 * 1024 * 1024;
+  const MAX_IMAGES = 5;
 
   // 필드별 검증 함수
   const validateField = (field: string, value: any): string | undefined => {
@@ -118,23 +116,12 @@ const ProductRegister: React.FC = () => {
           return '제목을 입력해주세요.';
         }
         break;
-      case 'minPrice':
+      case 'totalPrice':
         if (!value || value.trim() === '') {
-          return '최소 인원 가격을 입력해주세요.';
+          return '총 금액을 입력해주세요.';
         }
         if (isNaN(Number(value)) || Number(value) <= 0) {
-          return '올바른 가격을 입력해주세요.';
-        }
-        break;
-      case 'maxPrice':
-        if (!value || value.trim() === '') {
-          return '최대 인원 가격을 입력해주세요.';
-        }
-        if (isNaN(Number(value)) || Number(value) <= 0) {
-          return '올바른 가격을 입력해주세요.';
-        }
-        if (minPrice && Number(value) > Number(minPrice)) {
-          return '최대 인원 가격은 최소 인원 가격보다 작거나 같아야 합니다.';
+          return '올바른 금액을 입력해주세요.';
         }
         break;
       case 'minParticipants':
@@ -189,8 +176,7 @@ const ProductRegister: React.FC = () => {
 
     newErrors.images = validateField('images', images);
     newErrors.title = validateField('title', title);
-    newErrors.minPrice = validateField('minPrice', minPrice);
-    newErrors.maxPrice = validateField('maxPrice', maxPrice);
+    newErrors.totalPrice = validateField('totalPrice', totalPrice);
     newErrors.minParticipants = validateField('minParticipants', minParticipants);
     newErrors.maxParticipants = validateField('maxParticipants', maxParticipants);
     newErrors.deadline = validateField('deadline', deadline);
@@ -207,8 +193,7 @@ const ProductRegister: React.FC = () => {
   const saveDraft = () => {
     const draft: DraftData = {
       title,
-      minPrice,
-      maxPrice,
+      totalPrice,
       minParticipants,
       maxParticipants,
       deadline,
@@ -268,8 +253,7 @@ const ProductRegister: React.FC = () => {
       );
       if (confirm) {
         setTitle(draft.title);
-        setMinPrice(draft.minPrice);
-        setMaxPrice(draft.maxPrice);
+        setTotalPrice(draft.totalPrice);
         setMinParticipants(draft.minParticipants);
         setMaxParticipants(draft.maxParticipants);
         setDeadline(draft.deadline);
@@ -302,7 +286,7 @@ const ProductRegister: React.FC = () => {
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [title, minPrice, maxPrice, minParticipants, maxParticipants, deadline, description, selectedCategories, detailLocation]);
+  }, [title, totalPrice, minParticipants, maxParticipants, deadline, description, selectedCategories, detailLocation]);
 
   // 이미지 파일 검증
   const validateImageFile = (file: File): string | null => {
@@ -319,8 +303,8 @@ const ProductRegister: React.FC = () => {
   const processImageFiles = (files: File[]) => {
     const totalImages = images.length + files.length;
 
-    if (totalImages > 10) {
-      alert('최대 10장까지 업로드 가능합니다.');
+    if (totalImages > MAX_IMAGES) {
+      alert(`최대 ${MAX_IMAGES}장까지 업로드 가능합니다.`);
       return;
     }
 
@@ -338,17 +322,17 @@ const ProductRegister: React.FC = () => {
     if (validFiles.length === 0) return;
 
     // 새 이미지 추가
-    const newImages = [...images, ...validFiles.slice(0, 10 - images.length)];
+    const newImages = [...images, ...validFiles.slice(0, MAX_IMAGES - images.length)];
     setImages(newImages);
 
     // 미리보기 생성
     const newPreviews: string[] = [];
-    validFiles.slice(0, 10 - images.length).forEach(file => {
+    validFiles.slice(0, MAX_IMAGES - images.length).forEach(file => {
       const reader = new FileReader();
       reader.onloadend = () => {
         newPreviews.push(reader.result as string);
-        if (newPreviews.length === validFiles.slice(0, 10 - images.length).length) {
-          setImagePreviews(prev => [...prev, ...newPreviews].slice(0, 10));
+        if (newPreviews.length === validFiles.slice(0, MAX_IMAGES - images.length).length) {
+          setImagePreviews(prev => [...prev, ...newPreviews].slice(0, MAX_IMAGES));
         }
       };
       reader.readAsDataURL(file);
@@ -393,8 +377,8 @@ const ProductRegister: React.FC = () => {
     e.stopPropagation();
     setIsDragging(false);
 
-    if (images.length >= 10) {
-      alert('최대 10장까지 업로드 가능합니다.');
+    if (images.length >= MAX_IMAGES) {
+      alert(`최대 ${MAX_IMAGES}장까지 업로드 가능합니다.`);
       return;
     }
 
@@ -438,12 +422,12 @@ const ProductRegister: React.FC = () => {
     try {
       setIsSubmitting(true);
 
-      // Swagger 기반 CreateMarketRequest 생성
-      const response = await productService.createProduct({
+      // 제출할 데이터 구조 확인
+      const requestData = {
         images: images, // File[] 직접 전달
         title,
         categoryId: selectedCategories.join(''),  // 카테고리 ID (예: "01010101")
-        price: parseInt(minPrice, 10),
+        price: Math.floor(parseInt(totalPrice, 10) / parseInt(minParticipants, 10)),
         recruitMin: parseInt(minParticipants, 10),
         recruitMax: parseInt(maxParticipants, 10),
         endTime: new Date(deadline).toISOString(),
@@ -451,7 +435,28 @@ const ProductRegister: React.FC = () => {
         latitude: locationCoords.lat,
         longitude: locationCoords.lng,
         locationText: detailLocation
-      }, authUser.userId!);
+      };
+
+      console.log('📤 제출할 데이터 구조:', {
+        ...requestData,
+        images: `File[] (${images.length}개)`,
+        imageNames: images.map(img => img.name)
+      });
+      console.log('📤 각 필드 타입 확인:');
+      console.log('  images:', Array.isArray(requestData.images) ? `array<File> (${requestData.images.length}개)` : typeof requestData.images);
+      console.log('  title:', typeof requestData.title, `"${requestData.title}"`);
+      console.log('  categoryId:', typeof requestData.categoryId, `"${requestData.categoryId}"`);
+      console.log('  price:', typeof requestData.price, requestData.price);
+      console.log('  recruitMin:', typeof requestData.recruitMin, requestData.recruitMin);
+      console.log('  recruitMax:', typeof requestData.recruitMax, requestData.recruitMax);
+      console.log('  endTime:', typeof requestData.endTime, `"${requestData.endTime}"`);
+      console.log('  content:', typeof requestData.content, `"${requestData.content.substring(0, 50)}..."`);
+      console.log('  latitude:', typeof requestData.latitude, requestData.latitude);
+      console.log('  longitude:', typeof requestData.longitude, requestData.longitude);
+      console.log('  locationText:', typeof requestData.locationText, `"${requestData.locationText}"`);
+
+      // Swagger 기반 CreateMarketRequest 생성
+      const response = await productService.createProduct(requestData, authUser.userId!);
 
       if (response.success) {
         // 성공 시 임시 저장 데이터 삭제
@@ -538,7 +543,7 @@ const ProductRegister: React.FC = () => {
         {/* 이미지 업로드 섹션 */}
         <section className="register-section image-section">
           <h2 className="section-title">📷 상품 이미지</h2>
-          <p className="section-description">최대 10장까지 업로드 가능합니다.</p>
+          <p className="section-description">최대 {MAX_IMAGES}장까지 업로드 가능합니다.</p>
           <div
             ref={dropZoneRef}
             className={`image-upload-container ${isDragging ? 'dragging' : ''}`}
@@ -546,8 +551,8 @@ const ProductRegister: React.FC = () => {
             onDragLeave={handleDragLeave}
             onDragOver={handleDragOver}
             onDrop={handleDrop}
-            onClick={() => images.length < 10 && fileInputRef.current?.click()}
-            style={{ cursor: images.length < 10 ? 'pointer' : 'default' }}
+            onClick={() => images.length < MAX_IMAGES && fileInputRef.current?.click()}
+            style={{ cursor: images.length < MAX_IMAGES ? 'pointer' : 'default' }}
           >
             <input
               ref={fileInputRef}
@@ -574,7 +579,7 @@ const ProductRegister: React.FC = () => {
                   <span className="upload-link">파일을 업로드</span>
                   <span className="upload-text"> 하세요.</span>
                 </div>
-                <span className="image-count">0/10</span>
+                <span className="image-count">0/{MAX_IMAGES}</span>
               </div>
             ) : (
               <>
@@ -594,10 +599,10 @@ const ProductRegister: React.FC = () => {
                     </button>
                   </div>
                 ))}
-                {images.length < 10 && (
+                {images.length < MAX_IMAGES && (
                   <div className="upload-more-hint">
                     <span className="plus-icon">+</span>
-                    <span className="image-count">{images.length}/10</span>
+                    <span className="image-count">{images.length}/{MAX_IMAGES}</span>
                   </div>
                 )}
               </>
@@ -633,42 +638,34 @@ const ProductRegister: React.FC = () => {
             />
           </div>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label className="form-label">최소 인원 가격 (1인당) *</label>
-              <input
-                type="text"
-                className={`form-input price-input ${errors.minPrice ? 'error' : ''}`}
-                placeholder="₩ 최소 인원 기준 가격"
-                value={minPrice}
-                onChange={(e) => setMinPrice(e.target.value)}
-                onBlur={() => handleBlur('minPrice', minPrice)}
-              />
-              {errors.minPrice && <div className="error-message">{errors.minPrice}</div>}
-              <p className="form-hint">최소 인원일 때 1인당 가격입니다.</p>
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">최대 인원 가격 (1인당) *</label>
-              <input
-                type="text"
-                className={`form-input price-input ${errors.maxPrice ? 'error' : ''}`}
-                placeholder="₩ 최대 인원 기준 가격"
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(e.target.value)}
-                onBlur={() => handleBlur('maxPrice', maxPrice)}
-              />
-              {errors.maxPrice && <div className="error-message">{errors.maxPrice}</div>}
-              <p className="form-hint">최대 인원 모집 시 1인당 가격입니다.</p>
-            </div>
+          <div className="form-group">
+            <label className="form-label">총 금액 *</label>
+            <input
+              type="text"
+              className={`form-input ${errors.totalPrice ? 'error' : ''}`}
+              placeholder="₩ 총 금액 입력"
+              value={totalPrice}
+              onChange={(e) => setTotalPrice(e.target.value)}
+              onBlur={() => handleBlur('totalPrice', totalPrice)}
+            />
+            {errors.totalPrice && <div className="error-message">{errors.totalPrice}</div>}
+            <p className="form-hint">공동구매 상품의 총 금액을 입력해주세요.</p>
           </div>
 
-          {minPrice && minParticipants && (
-            <div className="price-preview">
-              <span className="preview-label">예상 총 금액:</span>
-              <span className="preview-value">
-                ₩{(parseInt(minPrice, 10) * parseInt(minParticipants, 10) || 0).toLocaleString()}
-              </span>
+          {totalPrice && minParticipants && maxParticipants && (
+            <div className="price-calculation">
+              <div className="calculation-item">
+                <span className="calculation-label">최소 인원 ({minParticipants}명) 시 1인당:</span>
+                <span className="calculation-value">
+                  ₩{Math.floor(parseInt(totalPrice, 10) / parseInt(minParticipants, 10)).toLocaleString()}
+                </span>
+              </div>
+              <div className="calculation-item">
+                <span className="calculation-label">최대 인원 ({maxParticipants}명) 시 1인당:</span>
+                <span className="calculation-value">
+                  ₩{Math.floor(parseInt(totalPrice, 10) / parseInt(maxParticipants, 10)).toLocaleString()}
+                </span>
+              </div>
             </div>
           )}
         </section>

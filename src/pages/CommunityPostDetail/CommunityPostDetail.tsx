@@ -588,7 +588,11 @@ const CommunityPostDetail: React.FC = () => {
             
             <div className="related-posts-list">
                 {relatedPosts.map((post) => (
-                <div key={post.id} className="related-post-item">
+                <div
+                  key={post.id}
+                  className="related-post-item"
+                  onClick={() => navigate(`/community/${post.id}`)}
+                >
                     <h3 className="related-post-title">{post.title}</h3>
                     <p className="related-post-excerpt">{post.excerpt}</p>
                     <span className="related-post-info">

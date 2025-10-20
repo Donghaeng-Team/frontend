@@ -53,6 +53,7 @@ const CommunityPostCreate: React.FC = () => {
   const AUTO_SAVE_DELAY = 2000; // 2초
   const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+  const MAX_IMAGES = 5;
 
   const categories = [
     { id: 'local-news', label: '동네 소식' },
@@ -221,8 +222,8 @@ const CommunityPostCreate: React.FC = () => {
   const processImageFiles = (files: File[]) => {
     const totalImages = formData.images.length + files.length;
 
-    if (totalImages > 10) {
-      alert('최대 10장까지 업로드 가능합니다.');
+    if (totalImages > MAX_IMAGES) {
+      alert(`최대 ${MAX_IMAGES}장까지 업로드 가능합니다.`);
       return;
     }
 
@@ -240,17 +241,17 @@ const CommunityPostCreate: React.FC = () => {
     if (validFiles.length === 0) return;
 
     // 새 이미지 추가
-    const newImages = [...formData.images, ...validFiles.slice(0, 10 - formData.images.length)];
+    const newImages = [...formData.images, ...validFiles.slice(0, MAX_IMAGES - formData.images.length)];
     setFormData(prev => ({ ...prev, images: newImages }));
 
     // 미리보기 생성
     const newPreviews: string[] = [];
-    validFiles.slice(0, 10 - formData.images.length).forEach(file => {
+    validFiles.slice(0, MAX_IMAGES - formData.images.length).forEach(file => {
       const reader = new FileReader();
       reader.onloadend = () => {
         newPreviews.push(reader.result as string);
-        if (newPreviews.length === validFiles.slice(0, 10 - formData.images.length).length) {
-          setImagePreviews(prev => [...prev, ...newPreviews].slice(0, 10));
+        if (newPreviews.length === validFiles.slice(0, MAX_IMAGES - formData.images.length).length) {
+          setImagePreviews(prev => [...prev, ...newPreviews].slice(0, MAX_IMAGES));
         }
       };
       reader.readAsDataURL(file);
@@ -301,8 +302,8 @@ const CommunityPostCreate: React.FC = () => {
     e.stopPropagation();
     setIsDragging(false);
 
-    if (formData.images.length >= 10) {
-      alert('최대 10장까지 업로드 가능합니다.');
+    if (formData.images.length >= MAX_IMAGES) {
+      alert(`최대 ${MAX_IMAGES}장까지 업로드 가능합니다.`);
       return;
     }
 
@@ -497,7 +498,7 @@ const CommunityPostCreate: React.FC = () => {
             <div className="form-section">
                 <div className="form-label-wrapper">
                 <label className="form-label">사진 첨부</label>
-                <span className="form-hint">최대 10장까지 업로드 가능 (JPG, PNG, GIF, WebP)</span>
+                <span className="form-hint">최대 {MAX_IMAGES}장까지 업로드 가능 (JPG, PNG, GIF, WebP)</span>
                 </div>
                 <div
                   ref={dropZoneRef}
@@ -506,8 +507,8 @@ const CommunityPostCreate: React.FC = () => {
                   onDragLeave={handleDragLeave}
                   onDragOver={handleDragOver}
                   onDrop={handleDrop}
-                  onClick={() => formData.images.length < 10 && fileInputRef.current?.click()}
-                  style={{ cursor: formData.images.length < 10 ? 'pointer' : 'default' }}
+                  onClick={() => formData.images.length < MAX_IMAGES && fileInputRef.current?.click()}
+                  style={{ cursor: formData.images.length < MAX_IMAGES ? 'pointer' : 'default' }}
                 >
                 <input
                     ref={fileInputRef}
@@ -535,7 +536,7 @@ const CommunityPostCreate: React.FC = () => {
                       <span className="upload-text"> 하세요.</span>
                     </div>
                     <div className="upload-info">
-                      <span className="image-count">0/10</span>
+                      <span className="image-count">0/{MAX_IMAGES}</span>
                       <span className="thumbnail-hint">💡 첫 번째 이미지가 썸네일로 사용됩니다</span>
                     </div>
                   </div>
@@ -561,10 +562,10 @@ const CommunityPostCreate: React.FC = () => {
                         </button>
                       </div>
                     ))}
-                    {formData.images.length < 10 && (
+                    {formData.images.length < MAX_IMAGES && (
                       <div className="upload-more-hint">
                         <span className="plus-icon">+</span>
-                        <span className="image-count">{formData.images.length}/10</span>
+                        <span className="image-count">{formData.images.length}/{MAX_IMAGES}</span>
                       </div>
                     )}
                   </>

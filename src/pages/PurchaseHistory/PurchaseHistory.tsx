@@ -470,6 +470,9 @@ const PurchaseHistory: React.FC = () => {
     <Layout isLoggedIn={true} notificationCount={3}>
       <div className="purchase-history-container">
         <div className="purchase-history-header">
+          <button className="back-button" onClick={() => navigate(-1)}>
+            ← 뒤로가기
+          </button>
           <h1 className="page-title">공동구매 내역</h1>
           <p className="page-subtitle">내가 주최하거나 참여한 공동구매 내역을 확인하세요</p>
         </div>

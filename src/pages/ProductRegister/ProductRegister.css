@@ -430,7 +430,6 @@
   .btn {
     height: 54px;
     padding: 0 40px;
-    border: none;
     border-radius: 8px;
     font-size: 16px;
     font-weight: 600;
@@ -455,21 +454,22 @@
   }
 
   .btn-save {
-    background-color: #ffffff;
-    border: 1px solid #999999;
-    color: #333333;
-    font-weight: 600;
-  }
+  background-color: #ffffff;
+  border: 1px solid #999999;
+  color: #333333;
+  font-weight: 600;
+}
 
   .btn-save:hover {
     background-color: #f5f5f5;
-    border-color: #666666;
+    border-color: #333333;
     color: #000000;
   }
 
   .btn-submit {
     background-color: #ff5e2f;
     color: #ffffff;
+    border: none;
   }
 
   .btn-submit:hover {
@@ -514,3 +514,36 @@
       width: 100%;
     }
   }
+
+/* 가격 계산 표시 */
+.price-calculation {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.calculation-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background-color: #ffffff;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.calculation-label {
+  font-size: 14px;
+  color: #666666;
+  font-weight: 500;
+}
+
+.calculation-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ff5e2f;
+}

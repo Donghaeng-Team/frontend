@@ -94,6 +94,11 @@
     font-size: 14px;
     color: #333333;
   }
+
+  /* 인디케이터 dots */
+  .category-indicators {
+    display: none;
+  }
   
   /* 스크롤바 스타일 */
   .category-level-content::-webkit-scrollbar {
@@ -111,4 +116,162 @@
   
   .category-level-content::-webkit-scrollbar-thumb:hover {
     background: #999999;
+  }
+
+  /* 모바일 반응형 - 가로 스크롤 */
+  @media (max-width: 768px) {
+    .category-levels {
+      display: flex;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      gap: 0;
+      height: 280px;
+    }
+
+    .category-levels::-webkit-scrollbar {
+      display: none;
+    }
+
+    .category-selector[data-max-level="3"] .category-levels {
+      display: flex;
+    }
+
+    .category-level {
+      flex: 0 0 100%;
+      min-width: 100%;
+      height: 280px;
+      border-right: none;
+      border-bottom: none;
+      scroll-snap-align: start;
+    }
+
+    .category-level:last-child {
+      border-right: none;
+    }
+
+    .category-level-header {
+      padding: 12px 16px;
+      background-color: #f8f8f8;
+    }
+
+    .category-level-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .category-level-content {
+      height: calc(280px - 45px);
+    }
+
+    .category-item {
+      padding: 12px 16px;
+      font-size: 14px;
+    }
+
+    .category-placeholder,
+    .category-loading {
+      padding: 16px;
+      font-size: 14px;
+    }
+
+    .category-selected-path {
+      margin-top: 16px;
+      padding: 12px;
+      font-size: 14px;
+    }
+
+    /* 인디케이터 dots 표시 (모바일에서만) */
+    .category-indicators {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      padding: 8px 0;
+    }
+
+    .indicator-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #d9d9d9;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      padding: 0;
+    }
+
+    .indicator-dot.active {
+      background-color: #ff5e2f;
+      width: 10px;
+      height: 10px;
+    }
+
+    .indicator-dot:hover {
+      background-color: #ff8c66;
+      transform: scale(1.1);
+    }
+
+    .indicator-dot.active:hover {
+      background-color: #ff5e2f;
+    }
+  }
+
+  
+
+  @media (max-width: 480px) {
+    .category-levels {
+      height: 260px;
+    }
+
+    .category-level {
+      height: 260px;
+    }
+
+    .category-level-header {
+      padding: 10px 14px;
+    }
+
+    .category-level-title {
+      font-size: 13px;
+    }
+
+    .category-level-content {
+      height: calc(260px - 42px);
+    }
+
+    .category-item {
+      padding: 11px 14px;
+      font-size: 13px;
+    }
+
+    .category-placeholder,
+    .category-loading {
+      padding: 14px;
+      font-size: 13px;
+    }
+  }
+
+    .category-level-header {
+      padding: 7px 10px;
+    }
+
+    .category-level-title {
+      font-size: 12px;
+    }
+
+    .category-item {
+      padding: 8px 10px;
+      font-size: 12px;
+    }
+
+    .category-placeholder,
+    .category-loading {
+      padding: 10px;
+      font-size: 12px;
+    }
   }

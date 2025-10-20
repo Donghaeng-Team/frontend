@@ -122,6 +122,7 @@ const ProductList: React.FC = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [categoryData, setCategoryData] = useState<CategoryItem[]>([]);
   const [divisionId, setDivisionId] = useState<string>('11650510'); // 기본값: 서초구 서초동
+  const [isFilterOpen, setIsFilterOpen] = useState(false); // 모바일 필터 토글 상태
   
   // 초기 데이터 로드
   useEffect(() => {
@@ -468,7 +469,17 @@ const ProductList: React.FC = () => {
       <div className="product-list-container">
         {/* 필터 섹션 */}
         <section className="filter-section">
-          <div className="filter-content">
+          {/* 모바일 필터 토글 버튼 */}
+          <button 
+            className="filter-toggle-button"
+            onClick={() => setIsFilterOpen(!isFilterOpen)}
+            aria-label="필터 열기/닫기"
+          >
+            <span className="filter-toggle-icon">{isFilterOpen ? '▲' : '▼'}</span>
+            <span className="filter-toggle-text">필터</span>
+          </button>
+
+          <div className={`filter-content ${isFilterOpen ? 'filter-content-open' : ''}`}>
               {/* 카테고리 필터 */}
               <div className="category-filter-container">
                 <h3 className="filter-title">카테고리</h3>

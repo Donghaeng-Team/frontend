@@ -49,3 +49,17 @@
   .stat-change-decrease {
     color: #ff3333;
   }
+
+  /* Clickable stat card */
+  .stat-card-clickable {
+    transition: all 0.2s;
+  }
+
+  .stat-card-clickable:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .stat-card-clickable:active {
+    transform: translateY(0);
+  }

@@ -28,6 +28,8 @@ const CategorySelector: FC<CategorySelectorProps> = ({
   const [selectedValues, setSelectedValues] = useState<string[]>(value || []);
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
   const [categoryLevels, setCategoryLevels] = useState<CategoryItem[][]>([]);
+  const [currentLevel, setCurrentLevel] = useState(0);
+  const levelsRef = useRef<HTMLDivElement>(null);
 
   // data가 변경될 때만 초기화
   useEffect(() => {
@@ -45,7 +47,7 @@ const CategorySelector: FC<CategorySelectorProps> = ({
   const handleSelect = (level: number, item: CategoryItem) => {
     const newValues = [...selectedValues.slice(0, level), item.value];
     const newLabels = [...selectedLabels.slice(0, level), item.label];
-    
+
     // 선택한 레벨 이후 값들 초기화
     setSelectedValues(newValues);
     setSelectedLabels(newLabels);
@@ -54,6 +56,8 @@ const CategorySelector: FC<CategorySelectorProps> = ({
     const newLevels = [...categoryLevels.slice(0, level + 1)];
     if (item.children && level < maxLevel - 1) {
       newLevels[level + 1] = item.children;
+      // 하위 카테고리가 있으면 자동으로 다음 레벨로 스크롤
+      setTimeout(() => scrollToLevel(level + 1), 300);
     }
     setCategoryLevels(newLevels);
 
@@ -61,6 +65,26 @@ const CategorySelector: FC<CategorySelectorProps> = ({
   };
 
   const levelTitles = ['대분류', '중분류', '소분류', '세부분류'];
+
+  // 스크롤 이벤트 핸들러 - 현재 보이는 레벨 추적
+  const handleScroll = () => {
+    if (levelsRef.current) {
+      const scrollLeft = levelsRef.current.scrollLeft;
+      const levelWidth = levelsRef.current.offsetWidth;
+      const newLevel = Math.round(scrollLeft / levelWidth);
+      setCurrentLevel(newLevel);
+    }
+  };
+
+  // 특정 레벨로 스크롤
+  const scrollToLevel = (index: number) => {
+    if (levelsRef.current) {
+      levelsRef.current.scrollTo({
+        left: index * levelsRef.current.offsetWidth,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   // 내부 스크롤 시 외부 스크롤 방지
   const handleWheel = (e: React.WheelEvent) => {
@@ -80,7 +104,7 @@ const CategorySelector: FC<CategorySelectorProps> = ({
 
   return (
     <div className={`category-selector ${className}`}>
-      <div className="category-levels">
+      <div className="category-levels" ref={levelsRef} onScroll={handleScroll}>
         {Array.from({ length: maxLevel }, (_, index) => (
           <div key={index} className="category-level">
             <div className="category-level-header">
@@ -111,6 +135,18 @@ const CategorySelector: FC<CategorySelectorProps> = ({
               )}
             </div>
           </div>
+        ))}
+      </div>
+
+      {/* 모바일 인디케이터 dots */}
+      <div className="category-indicators">
+        {Array.from({ length: maxLevel }).map((_, i) => (
+          <button
+            key={i}
+            className={`indicator-dot ${currentLevel === i ? 'active' : ''}`}
+            onClick={() => scrollToLevel(i)}
+            aria-label={`${levelTitles[i]}로 이동`}
+          />
         ))}
       </div>
       

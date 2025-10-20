@@ -70,7 +70,7 @@
   white-space: nowrap;
 }
 
-.category-tab:hover {
+.category-tab:not(.active):hover {
   border-color: #ff5e2f;
   color: #ff5e2f;
 }
@@ -78,8 +78,12 @@
 .category-tab.active {
   background-color: #ff5e2f;
   border-color: #ff5e2f;
-  color: #ffffff;
+  color: #ffffff !important;
   font-weight: 600;
+}
+
+.category-tab.active:hover {
+  color: #ffffff !important;
 }
 
 /* 툴바 액션 */
@@ -153,6 +157,7 @@
 .post-item {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding: 30px;
   background-color: #ffffff;
   border: 1px solid #f2f2f2;
@@ -160,6 +165,7 @@
   margin-bottom: 0;
   cursor: pointer;
   transition: all 0.2s;
+  min-height: 150px;
 }
 
 .post-item:not(:last-child) {
@@ -213,6 +219,13 @@
   margin: 0;
   font-family: 'Inter', -apple-system, sans-serif;
   line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  word-wrap: break-word;
+  word-break: break-word;
 }
 
 .post-excerpt {
@@ -222,8 +235,11 @@
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 674px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-wrap: break-word;
+  word-break: break-word;
   font-family: 'Inter', -apple-system, sans-serif;
   line-height: 1.4;
 }
@@ -248,19 +264,22 @@
 }
 
 .post-thumbnail {
-  width: 95px;
-  height: 94px;
+  width: 120px;
+  height: 120px;
   background-color: #d9d9d9;
   border-radius: 10px;
   overflow: hidden;
   flex-shrink: 0;
   margin-left: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .post-thumbnail img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 /* 무한 스크롤 관련 스타일 */
@@ -412,47 +431,195 @@
 }
 
 @media (max-width: 768px) {
+  .community-banner {
+    padding: 40px 0;
+  }
+
   .banner-content,
   .toolbar-container,
   .posts-container {
-    padding: 0 20px;
+    padding: 0 16px;
   }
 
   .banner-title {
-    font-size: 28px;
+    font-size: 24px;
+    margin: 0 0 8px 0;
   }
 
   .banner-subtitle {
-    font-size: 16px;
+    font-size: 14px;
+  }
+
+  /* Sticky toolbar adjustment for mobile header */
+  .community-toolbar {
+    top: 60px; /* 모바일 헤더 높이 */
+    padding: 12px 0;
   }
 
   .toolbar-container {
     flex-direction: column;
-    gap: 15px;
+    gap: 12px;
     align-items: stretch;
   }
 
   .category-tabs {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+    padding-bottom: 4px;
+  }
+
+  .category-tabs::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+  }
+
+  .category-tab {
+    padding: 10px 18px;
+    font-size: 13px;
   }
 
   .toolbar-actions {
+    width: 100%;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .search-form {
     width: 100%;
   }
 
   .search-input {
     flex: 1;
+    width: 100%;
+    font-size: 14px;
+  }
+
+  .write-button {
+    width: 100%;
+    height: 42px;
+    font-size: 14px;
+  }
+
+  /* Posts section */
+  .posts-section {
+    padding: 24px 0;
   }
 
   .post-item {
-    padding: 20px;
+    padding: 16px;
+    flex-direction: row;
+    min-height: auto;
+  }
+
+  .post-content {
+    flex: 1;
+  }
+
+  .post-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .post-title {
+    font-size: 15px;
+    line-height: 1.4;
   }
 
   .post-excerpt {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    white-space: normal;
+    font-size: 14px;
+  }
+
+  .post-meta {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .post-author,
+  .post-stats {
+    font-size: 12px;
+  }
+
+  .post-thumbnail {
+    width: 80px;
+    height: 80px;
+    margin-left: 12px;
+    margin-top: 0;
+  }
+
+  /* Empty state */
+  .empty-state {
+    padding: 60px 20px;
+  }
+
+  .empty-icon {
+    font-size: 60px;
+  }
+
+  .empty-title {
+    font-size: 20px;
+  }
+
+  .empty-description {
+    font-size: 14px;
+  }
+
+  .empty-action-button {
+    width: 100%;
+    height: 44px;
+    font-size: 15px;
+  }
+
+  /* No more posts */
+  .no-more-posts {
+    padding: 32px 16px;
+  }
+
+  .no-more-icon {
+    font-size: 40px;
+  }
+
+  .no-more-text {
+    font-size: 14px;
+  }
+}
+
+/* 작은 모바일 (480px 이하) */
+@media (max-width: 480px) {
+  .community-banner {
+    padding: 32px 0;
+  }
+
+  .banner-title {
+    font-size: 22px;
+  }
+
+  .banner-subtitle {
+    font-size: 13px;
+  }
+
+  .category-tab {
+    padding: 9px 16px;
+    font-size: 12px;
+  }
+
+  .post-item {
+    padding: 14px;
+  }
+
+  .post-title {
+    font-size: 14px;
+  }
+
+  .post-excerpt {
+    font-size: 13px;
+  }
+
+  .post-thumbnail {
+    width: 70px;
+    height: 70px;
   }
 }
