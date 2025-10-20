@@ -454,11 +454,11 @@
   }
 
   .btn-save {
-    background-color: #ffffff;
-    border: 2px solid #666666;
-    color: #333333;
-    font-weight: 600;
-  }
+  background-color: #ffffff;
+  border: 2px solid #666666 !important;
+  color: #333333;
+  font-weight: 600;
+}
 
   .btn-save:hover {
     background-color: #f5f5f5;
