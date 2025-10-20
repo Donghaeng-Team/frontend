@@ -293,13 +293,13 @@
     .profile-image-placeholder {
       width: 80px;
       height: 80px;
-      margin: 0 auto;
+      margin: 0 auto !important;
     }
 
     .profile-image-container {
       width: 80px;
       height: 80px;
-      margin: 0 auto;
+      margin: 0 auto !important;
     }
 
     .profile-icon {
