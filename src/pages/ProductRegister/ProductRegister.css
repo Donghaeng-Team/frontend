@@ -456,14 +456,14 @@
 
   .btn-save {
     background-color: #ffffff;
-    border: 1px solid #999999;
+    border: 2px solid #666666;
     color: #333333;
     font-weight: 600;
   }
 
   .btn-save:hover {
     background-color: #f5f5f5;
-    border-color: #666666;
+    border-color: #333333;
     color: #000000;
   }
 
