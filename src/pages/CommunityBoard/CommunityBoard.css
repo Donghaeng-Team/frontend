@@ -267,6 +267,9 @@
   overflow: hidden;
   flex-shrink: 0;
   margin-left: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .post-thumbnail img {
