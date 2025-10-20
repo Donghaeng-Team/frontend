@@ -127,6 +127,8 @@ const LocationModal: React.FC<LocationModalProps> = ({
       gugun: null,
       dong: null
     });
+    // 모바일에서 자동으로 다음 레벨(구/군)로 스크롤
+    setTimeout(() => scrollToColumn(1), 300);
   };
 
   const handleGugunSelect = (gugun: LocationItem) => {
@@ -135,6 +137,8 @@ const LocationModal: React.FC<LocationModalProps> = ({
       gugun,
       dong: null
     }));
+    // 모바일에서 자동으로 다음 레벨(동)로 스크롤
+    setTimeout(() => scrollToColumn(2), 300);
   };
 
   const handleDongSelect = (dong: LocationItem) => {
