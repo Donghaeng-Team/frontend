@@ -101,6 +101,7 @@ const ProductRegister: React.FC = () => {
   const AUTO_SAVE_DELAY = 2000;
   const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
   const MAX_FILE_SIZE = 10 * 1024 * 1024;
+  const MAX_IMAGES = 5;
 
   // 필드별 검증 함수
   const validateField = (field: string, value: any): string | undefined => {
@@ -302,8 +303,8 @@ const ProductRegister: React.FC = () => {
   const processImageFiles = (files: File[]) => {
     const totalImages = images.length + files.length;
 
-    if (totalImages > 10) {
-      alert('최대 10장까지 업로드 가능합니다.');
+    if (totalImages > MAX_IMAGES) {
+      alert(`최대 ${MAX_IMAGES}장까지 업로드 가능합니다.`);
       return;
     }
 
@@ -321,17 +322,17 @@ const ProductRegister: React.FC = () => {
     if (validFiles.length === 0) return;
 
     // 새 이미지 추가
-    const newImages = [...images, ...validFiles.slice(0, 10 - images.length)];
+    const newImages = [...images, ...validFiles.slice(0, MAX_IMAGES - images.length)];
     setImages(newImages);
 
     // 미리보기 생성
     const newPreviews: string[] = [];
-    validFiles.slice(0, 10 - images.length).forEach(file => {
+    validFiles.slice(0, MAX_IMAGES - images.length).forEach(file => {
       const reader = new FileReader();
       reader.onloadend = () => {
         newPreviews.push(reader.result as string);
-        if (newPreviews.length === validFiles.slice(0, 10 - images.length).length) {
-          setImagePreviews(prev => [...prev, ...newPreviews].slice(0, 10));
+        if (newPreviews.length === validFiles.slice(0, MAX_IMAGES - images.length).length) {
+          setImagePreviews(prev => [...prev, ...newPreviews].slice(0, MAX_IMAGES));
         }
       };
       reader.readAsDataURL(file);
@@ -376,8 +377,8 @@ const ProductRegister: React.FC = () => {
     e.stopPropagation();
     setIsDragging(false);
 
-    if (images.length >= 10) {
-      alert('최대 10장까지 업로드 가능합니다.');
+    if (images.length >= MAX_IMAGES) {
+      alert(`최대 ${MAX_IMAGES}장까지 업로드 가능합니다.`);
       return;
     }
 
@@ -542,7 +543,7 @@ const ProductRegister: React.FC = () => {
         {/* 이미지 업로드 섹션 */}
         <section className="register-section image-section">
           <h2 className="section-title">📷 상품 이미지</h2>
-          <p className="section-description">최대 10장까지 업로드 가능합니다.</p>
+          <p className="section-description">최대 {MAX_IMAGES}장까지 업로드 가능합니다.</p>
           <div
             ref={dropZoneRef}
             className={`image-upload-container ${isDragging ? 'dragging' : ''}`}
@@ -550,8 +551,8 @@ const ProductRegister: React.FC = () => {
             onDragLeave={handleDragLeave}
             onDragOver={handleDragOver}
             onDrop={handleDrop}
-            onClick={() => images.length < 10 && fileInputRef.current?.click()}
-            style={{ cursor: images.length < 10 ? 'pointer' : 'default' }}
+            onClick={() => images.length < MAX_IMAGES && fileInputRef.current?.click()}
+            style={{ cursor: images.length < MAX_IMAGES ? 'pointer' : 'default' }}
           >
             <input
               ref={fileInputRef}
@@ -578,7 +579,7 @@ const ProductRegister: React.FC = () => {
                   <span className="upload-link">파일을 업로드</span>
                   <span className="upload-text"> 하세요.</span>
                 </div>
-                <span className="image-count">0/10</span>
+                <span className="image-count">0/{MAX_IMAGES}</span>
               </div>
             ) : (
               <>
@@ -598,10 +599,10 @@ const ProductRegister: React.FC = () => {
                     </button>
                   </div>
                 ))}
-                {images.length < 10 && (
+                {images.length < MAX_IMAGES && (
                   <div className="upload-more-hint">
                     <span className="plus-icon">+</span>
-                    <span className="image-count">{images.length}/10</span>
+                    <span className="image-count">{images.length}/{MAX_IMAGES}</span>
                   </div>
                 )}
               </>
