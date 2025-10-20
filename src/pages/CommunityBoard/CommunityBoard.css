@@ -509,6 +509,13 @@
     flex: 1;
   }
 
+  .post-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
   .post-title {
     font-size: 15px;
     line-height: 1.4;
@@ -519,7 +526,9 @@
   }
 
   .post-meta {
-    gap: 5px;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
   }
 
   .post-author,
@@ -603,7 +612,7 @@
   }
 
   .post-thumbnail {
-    height: 160px;
+    width: 70px;
+    height: 70px;
   }
-}
 }
