@@ -403,7 +403,9 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
               )}
               {!hasMore && posts.length > 0 && (
                 <div className="no-more-posts">
-                  더 이상 게시글이 없습니다.
+                  <div className="no-more-icon">📚</div>
+                  <p className="no-more-text">모든 게시글을 확인하셨어요!</p>
+                  <div className="no-more-divider">• • •</div>
                 </div>
               )}
             </div>
