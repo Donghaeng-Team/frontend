@@ -112,3 +112,84 @@
   .category-level-content::-webkit-scrollbar-thumb:hover {
     background: #999999;
   }
+
+  /* 모바일 반응형 */
+  @media (max-width: 768px) {
+    .category-levels {
+      grid-template-columns: 1fr;
+      gap: 0;
+      height: auto;
+      max-height: 400px;
+    }
+
+    .category-selector[data-max-level="3"] .category-levels {
+      grid-template-columns: 1fr;
+    }
+
+    .category-level {
+      border-right: none;
+      border-bottom: 1px solid #e6e6e6;
+      height: auto;
+      min-height: 180px;
+      max-height: 200px;
+    }
+
+    .category-level:last-child {
+      border-bottom: none;
+    }
+
+    .category-level-header {
+      padding: 8px 12px;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background-color: #f8f8f8;
+    }
+
+    .category-level-title {
+      font-size: 13px;
+    }
+
+    .category-item {
+      padding: 9px 12px;
+      font-size: 13px;
+    }
+
+    .category-placeholder,
+    .category-loading {
+      padding: 12px;
+      font-size: 13px;
+    }
+
+    .category-selected-path {
+      margin-top: 12px;
+      padding: 10px;
+      font-size: 13px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .category-level {
+      min-height: 160px;
+      max-height: 180px;
+    }
+
+    .category-level-header {
+      padding: 7px 10px;
+    }
+
+    .category-level-title {
+      font-size: 12px;
+    }
+
+    .category-item {
+      padding: 8px 10px;
+      font-size: 12px;
+    }
+
+    .category-placeholder,
+    .category-loading {
+      padding: 10px;
+      font-size: 12px;
+    }
+  }
