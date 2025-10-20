@@ -211,6 +211,7 @@
     .header-container {
       padding: 0 16px;
       gap: 12px;
+      position: relative;
     }
 
     /* Show Hamburger Button */
@@ -222,9 +223,9 @@
     /* Logo - Center on Mobile */
     .header-logo {
       order: 2;
-      flex: 1;
-      display: flex;
-      justify-content: center;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
     }
 
     .logo-text {
