@@ -47,7 +47,7 @@ const CategorySelector: FC<CategorySelectorProps> = ({
   const handleSelect = (level: number, item: CategoryItem) => {
     const newValues = [...selectedValues.slice(0, level), item.value];
     const newLabels = [...selectedLabels.slice(0, level), item.label];
-    
+
     // 선택한 레벨 이후 값들 초기화
     setSelectedValues(newValues);
     setSelectedLabels(newLabels);
@@ -56,6 +56,8 @@ const CategorySelector: FC<CategorySelectorProps> = ({
     const newLevels = [...categoryLevels.slice(0, level + 1)];
     if (item.children && level < maxLevel - 1) {
       newLevels[level + 1] = item.children;
+      // 하위 카테고리가 있으면 자동으로 다음 레벨로 스크롤
+      setTimeout(() => scrollToLevel(level + 1), 300);
     }
     setCategoryLevels(newLevels);
 
