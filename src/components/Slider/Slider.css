@@ -116,6 +116,18 @@
   min-width: max-content;
 }
 
+/* 첫 번째 라벨 - 왼쪽 정렬 */
+.slider-label-first {
+  transform: translateX(0);
+  left: 0 !important;
+}
+
+/* 마지막 라벨 - 오른쪽 정렬 */
+.slider-label-last {
+  transform: translateX(-100%);
+  left: 100% !important;
+}
+
 .slider-label:hover {
   color: #ff5e2f;
 }

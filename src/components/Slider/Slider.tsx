@@ -170,20 +170,25 @@ const Slider: FC<SliderProps> = ({
       
       {/* 라벨 */}
       <div className="slider-labels">
-        {marks.map((mark) => 
-          mark.label ? (
+        {marks.map((mark, index) => {
+          // 첫 번째와 마지막 라벨 구분
+          const isFirst = index === 0;
+          const isLast = index === marks.length - 1;
+          const alignClass = isFirst ? 'slider-label-first' : isLast ? 'slider-label-last' : '';
+          
+          return mark.label ? (
             <button
               key={mark.value}
               type="button"
-              className={`slider-label ${currentValue === mark.value ? 'slider-label-active' : ''}`}
+              className={`slider-label ${currentValue === mark.value ? 'slider-label-active' : ''} ${alignClass}`}
               style={{ left: `${getPercentage(mark.value)}%` }}
               onClick={() => handleStepClick(mark.value)}
               disabled={disabled}
             >
               {mark.label}
             </button>
-          ) : null
-        )}
+          ) : null;
+        })}
       </div>
     </div>
   );
