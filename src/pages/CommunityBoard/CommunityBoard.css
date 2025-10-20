@@ -78,8 +78,12 @@
 .category-tab.active {
   background-color: #ff5e2f;
   border-color: #ff5e2f;
-  color: #ffffff;
+  color: #ffffff !important;
   font-weight: 600;
+}
+
+.category-tab.active:hover {
+  color: #ffffff !important;
 }
 
 /* 툴바 액션 */
