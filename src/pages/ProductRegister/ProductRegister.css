@@ -430,7 +430,6 @@
   .btn {
     height: 54px;
     padding: 0 40px;
-    border: none;
     border-radius: 8px;
     font-size: 16px;
     font-weight: 600;
@@ -470,6 +469,7 @@
   .btn-submit {
     background-color: #ff5e2f;
     color: #ffffff;
+    border: none;
   }
 
   .btn-submit:hover {
