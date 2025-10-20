@@ -49,8 +49,9 @@ function App() {
 
         {/* 상품 관련 */}
         <Route path="/products" element={<ProductList />} />
-        <Route path="/products/:id" element={<ProductDetail />} />
         <Route path="/products/register" element={<ProtectedRoute><ProductRegister /></ProtectedRoute>} />
+        <Route path="/products/create" element={<ProtectedRoute><ProductRegister /></ProtectedRoute>} />
+        <Route path="/products/:id" element={<ProductDetail />} />
         <Route path="/products/:id/edit" element={<ProtectedRoute><ProductEdit /></ProtectedRoute>} />
 
         {/* 커뮤니티 */}
