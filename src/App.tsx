@@ -25,10 +25,12 @@ import PasswordVerification from "./pages/PasswordVerification/PasswordVerificat
 
 // Components
 import ProtectedRoute from './components/ProtectedRoute';
+import ScrollToTop from './components/ScrollToTop';
 
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <Routes>
         {/* 메인 페이지 */}
         <Route path="/" element={<Main />} />
