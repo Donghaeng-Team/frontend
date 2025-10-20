@@ -107,10 +107,25 @@ const Header: React.FC<HeaderProps> = ({
             커뮤니티
           </a>
 
-          {/* Mobile Only - Auth Actions */}
-          <div className="mobile-auth-section">
-            {isAuthenticated ? (
+          {/* Mobile Only - User Actions */}
+          <div className="mobile-user-actions">
+            {isAuthenticated && (
               <>
+                <button
+                  className="mobile-menu-item"
+                  onClick={() => {
+                    setIsNotificationModalOpen(true);
+                    setIsMobileMenuOpen(false);
+                    onNotificationClick?.();
+                  }}
+                >
+                  <span className="icon">🔔</span>
+                  <span>알림</span>
+                  {notificationCount > 0 && (
+                    <span className="mobile-notification-badge">{notificationCount}</span>
+                  )}
+                </button>
+
                 <button
                   className="mobile-menu-item"
                   onClick={() => {
@@ -123,6 +138,25 @@ const Header: React.FC<HeaderProps> = ({
                   <span>찜한 상품</span>
                 </button>
 
+                <button
+                  className="mobile-menu-item"
+                  onClick={() => {
+                    setIsChatModalOpen(true);
+                    setIsMobileMenuOpen(false);
+                    onChatClick?.();
+                  }}
+                >
+                  <span className="icon">💬</span>
+                  <span>채팅</span>
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* Mobile Only - Auth Actions */}
+          <div className="mobile-auth-section">
+            {isAuthenticated ? (
+              <>
                 <button
                   className="mobile-menu-item"
                   onClick={() => {
