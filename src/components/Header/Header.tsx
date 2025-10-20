@@ -28,6 +28,7 @@ const Header: React.FC<HeaderProps> = ({
   notificationButtonRef
 }) => {
   const [activeMenu, setActiveMenu] = useState<string>('');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
@@ -57,6 +58,17 @@ const Header: React.FC<HeaderProps> = ({
   return (
     <header className="header">
       <div className="header-container">
+        {/* Hamburger Menu (Mobile) */}
+        <button 
+          className="hamburger-btn"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          aria-label="메뉴 열기"
+        >
+          <span className={`hamburger-line ${isMobileMenuOpen ? 'open' : ''}`}></span>
+          <span className={`hamburger-line ${isMobileMenuOpen ? 'open' : ''}`}></span>
+          <span className={`hamburger-line ${isMobileMenuOpen ? 'open' : ''}`}></span>
+        </button>
+
         {/* Logo */}
         <div className="header-logo">
           <a href="/">
@@ -66,7 +78,7 @@ const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Navigation */}
-        <nav className="header-nav">
+        <nav className={`header-nav ${isMobileMenuOpen ? 'mobile-menu-open' : ''}`}>
           <button className="location-selector" onClick={() => setIsLocationModalOpen(true)}>
             <span className="location-icon">📍</span>
             <span className="location-text">{getLocationText()}</span>
@@ -76,7 +88,10 @@ const Header: React.FC<HeaderProps> = ({
           <a 
             href="/products" 
             className={`nav-link ${activeMenu === 'products' ? 'active' : ''}`}
-            onClick={() => setActiveMenu('products')}
+            onClick={() => {
+              setActiveMenu('products');
+              setIsMobileMenuOpen(false);
+            }}
           >
             공동구매
           </a>
@@ -84,10 +99,62 @@ const Header: React.FC<HeaderProps> = ({
           <a 
             href="/community" 
             className={`nav-link ${activeMenu === 'community' ? 'active' : ''}`}
-            onClick={() => setActiveMenu('community')}
+            onClick={() => {
+              setActiveMenu('community');
+              setIsMobileMenuOpen(false);
+            }}
           >
             커뮤니티
           </a>
+
+          {/* Mobile Only - Auth Actions */}
+          <div className="mobile-auth-section">
+            {isAuthenticated ? (
+              <>
+                <button
+                  className="mobile-menu-item"
+                  onClick={() => {
+                    navigate('/purchase-history?tab=liked');
+                    setIsMobileMenuOpen(false);
+                    onFavoriteClick?.();
+                  }}
+                >
+                  <span className="icon">♥</span>
+                  <span>찜한 상품</span>
+                </button>
+
+                <button
+                  className="mobile-menu-item"
+                  onClick={() => {
+                    navigate('/mypage');
+                    setIsMobileMenuOpen(false);
+                    onProfileClick?.();
+                  }}
+                >
+                  <span className="icon">👤</span>
+                  <span>마이페이지</span>
+                </button>
+
+                <button
+                  className="mobile-menu-item"
+                  onClick={() => {
+                    logout();
+                    setIsMobileMenuOpen(false);
+                  }}
+                >
+                  <span>로그아웃</span>
+                </button>
+              </>
+            ) : (
+              <a 
+                href="/login" 
+                className="mobile-menu-item"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                로그인
+              </a>
+            )}
+          </div>
         </nav>
 
         {/* Right Icons */}
