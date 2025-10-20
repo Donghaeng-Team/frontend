@@ -119,3 +119,78 @@
       opacity: 1;
     }
   }
+
+  /* 반응형 디자인 */
+  @media (max-width: 768px) {
+    .tab-nav {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .tab-nav::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tab-nav-item {
+      padding: 10px 14px;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .tab-nav-small .tab-nav-item {
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+
+    .tab-nav-medium .tab-nav-item {
+      padding: 10px 14px;
+      font-size: 14px;
+    }
+
+    .tab-nav-large .tab-nav-item {
+      padding: 12px 16px;
+      font-size: 15px;
+    }
+
+    .tab-nav-pills .tab-nav-item {
+      padding: 8px 16px;
+      font-size: 13px;
+    }
+
+    .tab-nav-icon {
+      font-size: 16px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .tab-nav-item {
+      padding: 10px 12px;
+      font-size: 13px;
+    }
+
+    .tab-nav-small .tab-nav-item {
+      padding: 8px 10px;
+      font-size: 12px;
+    }
+
+    .tab-nav-medium .tab-nav-item {
+      padding: 10px 12px;
+      font-size: 13px;
+    }
+
+    .tab-nav-large .tab-nav-item {
+      padding: 12px 14px;
+      font-size: 14px;
+    }
+
+    .tab-nav-pills .tab-nav-item {
+      padding: 8px 14px;
+      font-size: 12px;
+    }
+
+    .tab-nav-icon {
+      font-size: 14px;
+    }
+  }
