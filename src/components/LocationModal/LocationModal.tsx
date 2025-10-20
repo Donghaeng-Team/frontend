@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './LocationModal.css';
 
 // 타입 정의
@@ -45,6 +45,8 @@ const LocationModal: React.FC<LocationModalProps> = ({
     dong: false
   });
   const [loadingCurrentLocation, setLoadingCurrentLocation] = useState(false);
+  const [currentColumnIndex, setCurrentColumnIndex] = useState(0);
+  const selectContainerRef = useRef<HTMLDivElement>(null);
 
   // 시/도 목록 로드 및 외부 스크롤 제어
   useEffect(() => {
@@ -172,6 +174,26 @@ const LocationModal: React.FC<LocationModalProps> = ({
     return parts.join(' ➔ ');
   };
 
+  // 스크롤 이벤트 핸들러
+  const handleScroll = () => {
+    if (selectContainerRef.current) {
+      const scrollLeft = selectContainerRef.current.scrollLeft;
+      const columnWidth = selectContainerRef.current.offsetWidth;
+      const newIndex = Math.round(scrollLeft / columnWidth);
+      setCurrentColumnIndex(newIndex);
+    }
+  };
+
+  // 특정 컬럼으로 스크롤
+  const scrollToColumn = (index: number) => {
+    if (selectContainerRef.current) {
+      selectContainerRef.current.scrollTo({
+        left: index * selectContainerRef.current.offsetWidth,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -193,7 +215,7 @@ const LocationModal: React.FC<LocationModalProps> = ({
         </div>
 
         {/* 선택 영역 */}
-        <div className="location-select-container">
+        <div className="location-select-container" ref={selectContainerRef} onScroll={handleScroll}>
           {/* 시/도 선택 */}
           <div className="location-column">
             <div className="location-column-header">
@@ -290,6 +312,18 @@ const LocationModal: React.FC<LocationModalProps> = ({
               )}
             </div>
           </div>
+        </div>
+
+        {/* 인디케이터 dots (모바일 전용) */}
+        <div className="location-indicators">
+          {[0, 1, 2].map((i) => (
+            <button
+              key={i}
+              className={`indicator-dot ${currentColumnIndex === i ? 'active' : ''}`}
+              onClick={() => scrollToColumn(i)}
+              aria-label={`${['시/도', '구/군', '동/읍/면'][i]} 선택으로 이동`}
+            />
+          ))}
         </div>
 
         {/* 하단 버튼 영역 */}

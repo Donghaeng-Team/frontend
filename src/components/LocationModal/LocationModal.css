@@ -288,10 +288,62 @@
       font-size: 15px;
     }
     
+    /* 가로 스크롤 컨테이너로 변경 */
     .location-select-container {
-      grid-template-columns: 1fr 1fr 1fr;
-      margin: 0 20px 15px 20px;
+      display: flex;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      margin: 0 0 15px 0;
+      border: none;
+      border-radius: 0;
       gap: 0;
+    }
+
+    .location-select-container::-webkit-scrollbar {
+      display: none;
+    }
+
+    .location-column {
+      flex: 0 0 100%;
+      min-width: 100%;
+      scroll-snap-align: start;
+      border-right: none;
+    }
+
+    /* 인디케이터 dots */
+    .location-indicators {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 0;
+      background-color: #ffffff;
+    }
+
+    .location-indicators .indicator-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #d9d9d9;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      transition: all 0.3s ease;
+    }
+
+    .location-indicators .indicator-dot.active {
+      background-color: #ff5e2f;
+      width: 10px;
+      height: 10px;
+    }
+
+    .location-indicators .indicator-dot:hover {
+      background-color: #ff5e2f;
+      opacity: 0.7;
     }
 
     .location-column-header {
@@ -443,4 +495,9 @@
     color: #999999;
     font-size: 14px;
     font-family: 'Inter', -apple-system, sans-serif;
+  }
+
+  /* 인디케이터 dots (기본적으로 숨김, 모바일에서만 표시) */
+  .location-indicators {
+    display: none;
   }
