@@ -33,6 +33,11 @@ const CommunityPostDetail: React.FC = () => {
   const [commentsLoading, setCommentsLoading] = useState(false);
   const [relatedPosts, setRelatedPosts] = useState<RelatedPost[]>([]);
 
+  // 페이지 로드 시 스크롤 최상단으로 이동
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
+
   // 게시글 데이터 로드
   useEffect(() => {
     const loadPost = async () => {
