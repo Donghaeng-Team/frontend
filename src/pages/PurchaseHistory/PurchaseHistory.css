@@ -9,15 +9,37 @@
   .purchase-history-header {
     text-align: center;
     margin-bottom: 40px;
+    position: relative;
   }
-  
+
+  .back-button {
+    position: absolute;
+    left: 0;
+    top: 0;
+    padding: 8px 16px;
+    background-color: #ffffff;
+    border: 1px solid #e6e6e6;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #666666;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
+
+  .back-button:hover {
+    background-color: #fafafa;
+    border-color: #ff5e2f;
+    color: #ff5e2f;
+  }
+
   .page-title {
     font-size: 32px;
     font-weight: 700;
     color: #222222;
     margin: 0 0 12px 0;
   }
-  
+
   .page-subtitle {
     font-size: 16px;
     color: #666666;
@@ -272,6 +294,14 @@
 
     .purchase-history-header {
       margin-bottom: 24px;
+    }
+
+    .back-button {
+      position: static;
+      width: 100%;
+      margin-bottom: 16px;
+      font-size: 13px;
+      padding: 10px 14px;
     }
 
     .page-title {
