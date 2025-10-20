@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import Header from '../Header';
 import Footer from '../Footer';
+import FloatingActionButton from '../FloatingActionButton/FloatingActionButton';
 import type { NotificationItem } from '../NotificationModal';
 import type { ChatRoom } from '../ChatRoomListModal';
 import './Layout.css';
@@ -118,6 +119,9 @@ const Layout: React.FC<LayoutProps> = ({
         {children}
       </main>
       <Footer />
+
+      {/* Floating Action Button - 로그인 시에만 표시 */}
+      <FloatingActionButton isLoggedIn={isLoggedIn || false} />
     </div>
   );
 };
