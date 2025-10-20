@@ -61,7 +61,7 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ isLoggedIn 
 
           {/* 커뮤니티 글쓰기 */}
           <div className="fab-action-item">
-            <span className="fab-label">커뮤니티</span>
+            <span className="fab-label">커뮤니티 글쓰기</span>
             <button
               className="fab-action-button"
               onClick={handleNavigateToCommunity}
@@ -73,7 +73,7 @@ const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ isLoggedIn 
 
           {/* 공동구매 글쓰기 */}
           <div className="fab-action-item">
-            <span className="fab-label">공동구매</span>
+            <span className="fab-label">공동구매 글쓰기</span>
             <button
               className="fab-action-button"
               onClick={handleNavigateToProduct}
