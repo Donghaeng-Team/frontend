@@ -32,14 +32,46 @@ OPTIONS https://sesac-bytogether-bucket.s3.ap-northeast-2.amazonaws.com/... 403 
 
 ---
 
-### ❌ 2. 게시글 상세 조회 500 에러
+### ❌ 2. Swagger 문서와 실제 API 엔드포인트 불일치
+
+**현재 Swagger 문서** (포트 8085):
+```
+GET /api/v1/posts/public/{userId}   ← 사용자별 게시글 목록
+GET /api/v1/posts/public/{postId}   ← 게시글 상세
+```
+
+**문제점**: 두 엔드포인트가 **같은 패턴**을 사용하여 라우팅 충돌 발생!
+- 백엔드가 `postId=25`를 `userId=25`로 잘못 해석
+- RESTful 설계 원칙 위반
+
+**실제 구현된 엔드포인트** (dev-comm 브랜치):
+```
+GET /api/v1/posts/public/user/{userId}  ← 사용자별 게시글 목록
+GET /api/v1/posts/public/post/{postId}  ← 게시글 상세
+```
+
+**프론트엔드 상태**: ✅ 이미 올바른 엔드포인트로 수정 완료
+```typescript
+// src/api/services/community.ts
+getPostsByUserId: `/api/v1/posts/public/user/${userId}`  // ✅
+getPost: `/api/v1/posts/public/post/${postId}`           // ✅
+```
+
+**백엔드 조치 필요**:
+1. Swagger 문서 업데이트 (포트 8085)
+2. 실제 컨트롤러가 `/user/`, `/post/` 세그먼트를 사용하도록 확인
+3. API Gateway 라우팅 설정 확인
+
+---
+
+### ❌ 3. 게시글 상세 조회 500 에러
 
 **파일**: `backend/comm-service/src/main/java/com/bytogether/commservice/service/PostService.java`
 **메서드**: `getPostDetail(Long postId)` (86-101번 줄)
 
 **에러 메시지**:
 ```
-GET http://localhost:8080/api/v1/posts/public/12 500 (Internal Server Error)
+GET http://localhost:8080/api/v1/posts/public/post/25 500 (Internal Server Error)
 ```
 
 **문제 코드**:

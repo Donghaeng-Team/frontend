@@ -55,9 +55,16 @@ const CommunityPostDetail: React.FC = () => {
         setPost(response.data);
         setLikeCount(response.data.likeCount);
       } catch (error: any) {
-        console.error('❌ 게시글 로드 실패:', error);
-        alert('게시글을 불러올 수 없습니다.');
-        navigate('/community');
+        // 500 에러는 백엔드 이슈이므로 조용히 처리 (BACKEND_HANDOFF.md 참조)
+        if (error.response?.status === 500) {
+          console.warn('⚠️ 게시글 상세 조회 500 에러 (백엔드 수정 대기 중)');
+          // 목록 페이지로 부드럽게 리다이렉트
+          setTimeout(() => navigate('/community'), 100);
+        } else {
+          console.error('❌ 게시글 로드 실패:', error);
+          alert('게시글을 불러올 수 없습니다.');
+          navigate('/community');
+        }
       } finally {
         setLoading(false);
       }
