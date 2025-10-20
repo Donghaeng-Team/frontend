@@ -253,7 +253,12 @@
   .location-column-content::-webkit-scrollbar-thumb:active {
     background: #666666;
   }
-  
+
+  /* 인디케이터 dots (기본적으로 숨김, 모바일에서만 표시) */
+  .location-indicators {
+    display: none;
+  }
+
   /* 반응형 */
   @media (max-width: 768px) {
     .location-modal {
@@ -497,9 +502,4 @@
     color: #999999;
     font-size: 14px;
     font-family: 'Inter', -apple-system, sans-serif;
-  }
-
-  /* 인디케이터 dots (기본적으로 숨김, 모바일에서만 표시) */
-  .location-indicators {
-    display: none;
   }
