@@ -50,3 +50,50 @@
     font-size: 12px;
     user-select: none;
   }
+
+  /* 모바일 반응형 */
+  @media (max-width: 768px) {
+    .footer {
+      height: auto;
+      padding: 24px 0;
+    }
+
+    .footer-container {
+      padding: 0 16px;
+    }
+
+    .footer-content {
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .footer-copyright {
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .footer-links {
+      flex-direction: column;
+      gap: 8px;
+      text-align: center;
+    }
+
+    .footer-link {
+      font-size: 12px;
+    }
+
+    .footer-divider {
+      display: none;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .footer {
+      padding: 20px 0;
+    }
+
+    .footer-copyright,
+    .footer-link {
+      font-size: 11px;
+    }
+  }
