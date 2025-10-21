@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
+import MobileHeader from '../../components/MobileHeader';
 import { communityService } from '../../api/services/community';
 import type { PostListResponse } from '../../types/community';
 import { APP_CONSTANTS } from '../../utils/constants';
@@ -285,7 +286,9 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
   };
 
   return (
-    <Layout isLoggedIn={isLoggedIn} notificationCount={notificationCount}>
+    <>
+      <MobileHeader />
+      <Layout isLoggedIn={isLoggedIn} notificationCount={notificationCount}>
       <div className="community-board">
         {/* 배너 섹션 */}
         <section className="community-banner">
@@ -410,6 +413,7 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
         </section>
       </div>
     </Layout>
+    </>
   );
 };
 

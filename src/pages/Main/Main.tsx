@@ -1,9 +1,19 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import SearchBar from '../../components/SearchBar';
 import './Main.css';
 
 const Main: React.FC = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // 모바일에서는 공동구매 페이지로 리다이렉트
+    if (window.innerWidth <= 768) {
+      navigate('/products', { replace: true });
+    }
+  }, [navigate]);
+
   const handleSearch = (value: string) => {
     console.log('검색:', value);
     // 검색 로직 구현
