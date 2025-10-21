@@ -31,8 +31,8 @@ const BottomNav: React.FC<BottomNavProps> = ({ onChatClick, notificationCount = 
         className={`bottom-nav-item ${isActive('/products') ? 'active' : ''}`}
         onClick={() => navigate('/products')}
       >
-        <span className="bottom-nav-icon">🛒</span>
-        <span className="bottom-nav-label">공동구매</span>
+        <span className="bottom-nav-icon">🏠</span>
+        <span className="bottom-nav-label">홈</span>
       </button>
 
       <button

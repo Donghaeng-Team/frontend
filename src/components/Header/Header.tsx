@@ -15,6 +15,7 @@ interface HeaderProps {
   onChatClick?: () => void;
   onProfileClick?: () => void;
   notificationCount?: number;
+  chatNotificationCount?: number;
   notificationButtonRef?: React.RefObject<HTMLButtonElement | null>;
   onChatModalStateChange?: (isOpen: boolean) => void;
   className?: string;
@@ -27,6 +28,7 @@ const Header: React.FC<HeaderProps> = ({
   onChatClick,
   onProfileClick,
   notificationCount = 0,
+  chatNotificationCount = 0,
   notificationButtonRef,
   onChatModalStateChange,
   className = ''
@@ -219,6 +221,7 @@ const Header: React.FC<HeaderProps> = ({
         <div className="header-actions">
           {isAuthenticated ? (
             <>
+              {/* 알림 기능 추후 구현 예정
               <button
                 ref={internalNotificationButtonRef}
                 className="header-icon-btn"
@@ -232,6 +235,7 @@ const Header: React.FC<HeaderProps> = ({
                   <span className="notification-badge">{notificationCount}</span>
                 )}
               </button>
+              */}
 
               <button
                 className="header-icon-btn"
@@ -249,6 +253,9 @@ const Header: React.FC<HeaderProps> = ({
                 onClick={handleChatClick}
               >
                 <span className="icon">💬</span>
+                {chatNotificationCount > 0 && (
+                  <span className="notification-badge">{chatNotificationCount}</span>
+                )}
               </button>
 
               <button
@@ -259,14 +266,6 @@ const Header: React.FC<HeaderProps> = ({
                 }}
               >
                 <span className="icon">👤</span>
-              </button>
-
-              <button
-                className="header-logout-btn"
-                onClick={logout}
-                title="로그아웃"
-              >
-                로그아웃
               </button>
             </>
           ) : (
