@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- 배경 원 -->
+  <circle cx="32" cy="32" r="32" fill="#FF5E2F"/>
+
+  <!-- 쇼핑카트 본체 -->
+  <path d="M 20 22 L 22 22 L 26 38 L 46 38 L 50 26 L 28 26"
+        fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- 카트 바퀴 -->
+  <circle cx="28" cy="44" r="2.5" fill="white"/>
+  <circle cx="42" cy="44" r="2.5" fill="white"/>
+
+  <!-- 사람 아이콘 1 (왼쪽) -->
+  <circle cx="14" cy="14" r="3" fill="white" opacity="0.9"/>
+  <path d="M 11 20 Q 14 17 17 20" fill="white" opacity="0.9"/>
+
+  <!-- 사람 아이콘 2 (오른쪽) -->
+  <circle cx="50" cy="14" r="3" fill="white" opacity="0.9"/>
+  <path d="M 47 20 Q 50 17 53 20" fill="white" opacity="0.9"/>
+
+  <!-- 하트 (함께의 의미) -->
+  <path d="M 32 30 L 30 28 Q 28 26 26 28 Q 24 30 26 32 L 32 36 L 38 32 Q 40 30 38 28 Q 36 26 34 28 Z"
+        fill="#FFD700" opacity="0.8"/>
+</svg>
