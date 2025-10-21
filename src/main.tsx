@@ -9,8 +9,10 @@ import { useAuthStore } from './stores/authStore'
 useLocationStore.getState().initializeLocation();
 useAuthStore.getState().initializeAuth();
 
+
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <App /> 
   </StrictMode>,
 )
