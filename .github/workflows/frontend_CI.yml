@@ -7,8 +7,8 @@ on:
 
 env:
   AWS_REGION: ap-northeast-2
-  S3_BUCKET: sesac-bytogether-frontend-bucket
-  CLOUDFRONT_DISTRIBUTION_ID: E2ZOY8H9UHUMSJ
+  S3_BUCKET: kis-dev-static-assets
+  CLOUDFRONT_DISTRIBUTION_ID: EJZW5C1UQEXVH
 
 jobs:
   deploy:
