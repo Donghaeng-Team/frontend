@@ -1,0 +1,56 @@
+name: Deploy Frontend to S3 & CloudFront (Staging)
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  AWS_REGION: ap-northeast-2
+  S3_BUCKET: sesac-bytogether-frontend-bucket
+  CLOUDFRONT_DISTRIBUTION_ID: E2ZOY8H9UHUMSJ
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::857360183365:role/bytogether-gitaction-frontend-role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Clean npm cache and reinstall
+        run: |
+          rm -rf node_modules package-lock.json
+          npm cache clean --force
+          npm install
+
+      - name: Build Vite project
+        run: npm run build
+
+      - name: Upload to S3 using AWS CLI
+        run: |
+          aws s3 sync dist s3://${{ env.S3_BUCKET }} \
+            --delete \
+            --region ${{ env.AWS_REGION }}
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
