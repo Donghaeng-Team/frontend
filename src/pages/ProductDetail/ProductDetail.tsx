@@ -10,6 +10,7 @@ import Accordion from '../../components/Accordion';
 import type { AccordionItem } from '../../components/Accordion';
 import { useAuthStore } from '../../stores/authStore';
 import { getCategoryName } from '../../utils/categoryMapping';
+import { convertToCloudFrontUrl } from '../../utils/urlHelper';
 import { productService } from '../../api/services/product';
 import type { MarketDetailResponse } from '../../types/market';
 
@@ -276,7 +277,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
                   {product.images.map((image, index) => (
                     <img
                       key={index}
-                      src={image.imageUrl}
+                      src={convertToCloudFrontUrl(image.imageUrl)}
                       alt={`${product.title} - ${index + 1}`}
                       className={`product-image ${index === currentImageIndex ? 'active' : ''}`}
                       style={{
