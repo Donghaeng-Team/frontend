@@ -22,6 +22,7 @@ import Callback from "./pages/Auth/Callback"
 import EMailVerification from "./pages/EmailVerification/EmailVerification"
 import PasswordVerification from "./pages/PasswordVerification/PasswordVerification"
 import ChatRoomPage from "./pages/ChatRoomPage"
+import ChatList from "./pages/ChatList"
 
 
 // Components
@@ -64,6 +65,7 @@ function App() {
         <Route path="/community/:id/edit" element={<ProtectedRoute><CommunityPostEdit /></ProtectedRoute>} />
 
         {/* 채팅 */}
+        <Route path="/chat" element={<ProtectedRoute><ChatList /></ProtectedRoute>} />
         <Route path="/chat/:roomId" element={<ProtectedRoute><ChatRoomPage /></ProtectedRoute>} />
 
         {/* 개발용 컴포넌트 쇼케이스 */}

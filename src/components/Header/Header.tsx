@@ -17,6 +17,7 @@ interface HeaderProps {
   notificationCount?: number;
   notificationButtonRef?: React.RefObject<HTMLButtonElement | null>;
   onChatModalStateChange?: (isOpen: boolean) => void;
+  className?: string;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -27,7 +28,8 @@ const Header: React.FC<HeaderProps> = ({
   onProfileClick,
   notificationCount = 0,
   notificationButtonRef,
-  onChatModalStateChange
+  onChatModalStateChange,
+  className = ''
 }) => {
   const [activeMenu, setActiveMenu] = useState<string>('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -57,13 +59,29 @@ const Header: React.FC<HeaderProps> = ({
     onLocationChange?.();
   };
 
-  // 채팅 모달 상태 변경 감지
+  // ChatModal 상태 변경 시 Layout에 알림
   useEffect(() => {
     onChatModalStateChange?.(isChatModalOpen);
   }, [isChatModalOpen, onChatModalStateChange]);
 
+  const handleChatClick = () => {
+    // 화면 크기 확인
+    const isMobile = window.innerWidth <= 768;
+    
+    if (isMobile) {
+      // 모바일: 페이지로 이동
+      navigate('/chat');
+    } else {
+      // 데스크톱: 모달 열기
+      setIsChatModalOpen(true);
+    }
+    onChatClick?.();
+  };
+
+
+
   return (
-    <header className="header">
+    <header className={`header ${className}`}>
       <div className="header-container">
         {/* Hamburger Menu (Mobile) */}
         <button 
@@ -148,9 +166,8 @@ const Header: React.FC<HeaderProps> = ({
                 <button
                   className="mobile-menu-item"
                   onClick={() => {
-                    setIsChatModalOpen(true);
+                    handleChatClick();
                     setIsMobileMenuOpen(false);
-                    onChatClick?.();
                   }}
                 >
                   <span className="icon">💬</span>
@@ -229,10 +246,7 @@ const Header: React.FC<HeaderProps> = ({
               <button
                 ref={chatButtonRef}
                 className="header-icon-btn"
-                onClick={() => {
-                  setIsChatModalOpen(true);
-                  onChatClick?.();
-                }}
+                onClick={handleChatClick}
               >
                 <span className="icon">💬</span>
               </button>
@@ -286,7 +300,9 @@ const Header: React.FC<HeaderProps> = ({
         ]}
       />
 
-      {/* ChatModal */}
+
+
+      {/* ChatModal - 데스크톱 전용 */}
       <ChatModal
         isOpen={isChatModalOpen}
         onClose={() => setIsChatModalOpen(false)}

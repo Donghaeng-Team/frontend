@@ -331,3 +331,27 @@
   .chat-room-messages::-webkit-scrollbar-thumb:hover {
     background: #999999;
   }
+
+  /* 모바일 반응형 */
+  @media (max-width: 768px) {
+    .chat-room {
+      height: calc(100vh - 96px - env(safe-area-inset-bottom));
+      max-height: calc(100vh - 96px - env(safe-area-inset-bottom));
+      border-radius: 0;
+    }
+
+    .chat-room-input {
+      position: fixed;
+      bottom: calc(96px + env(safe-area-inset-bottom));
+      left: 0;
+      right: 0;
+      padding: 12px 15px;
+      background-color: #ffffff;
+      border-top: 1px solid #e6e6e6;
+      z-index: 10;
+    }
+
+    .chat-room-messages {
+      padding-bottom: 80px;
+    }
+  }

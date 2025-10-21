@@ -63,13 +63,6 @@ const ChatRoomListModal: FC<ChatRoomListModalProps> = ({
         {/* 헤더 */}
         <div className="chat-room-list-header">
           <h2 className="chat-room-list-title">💬 참여중인 채팅방</h2>
-          <button
-            className="chat-room-modal-close"
-            onClick={onClose}
-            aria-label="닫기"
-          >
-            ✕
-          </button>
         </div>
 
         {/* 채팅방 목록 */}

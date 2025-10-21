@@ -33,6 +33,17 @@
 }
 
 @media (max-width: 768px) {
+  /* 모바일에서 Header와 Footer 숨김 */
+  .layout .desktop-header,
+  .layout > footer {
+    display: none;
+  }
+
+  /* 하단 네비게이션을 위한 여백 추가 */
+  .layout-main {
+    padding-bottom: calc(60px + env(safe-area-inset-bottom));
+  }
+
   .layout-content {
     padding: 16px 12px;
   }

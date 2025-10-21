@@ -1,4 +1,4 @@
-import { FC, useState } from 'react';
+import { FC, useState, useEffect } from 'react';
 import ChatRoomListModal from '../ChatRoomListModal/ChatRoomListModal';
 import ChatRoom from '../ChatRoom';
 import type { ChatRoom as ChatRoomType } from '../ChatRoomListModal/ChatRoomListModal';
@@ -46,6 +46,20 @@ const ChatModal: FC<ChatModalProps> = ({
       timestamp: '2024-01-15 10:10'
     }
   ]);
+
+  // 모달 열릴 때 body 스크롤 막기
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+
+    // cleanup: 컴포넌트 언마운트 시 스크롤 복원
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 

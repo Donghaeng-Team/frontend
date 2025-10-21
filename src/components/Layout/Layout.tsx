@@ -2,8 +2,8 @@ import React, { useState, useRef } from 'react';
 import Header from '../Header';
 import Footer from '../Footer';
 import FloatingActionButton from '../FloatingActionButton/FloatingActionButton';
+import BottomNav from '../BottomNav';
 import type { NotificationItem } from '../NotificationModal';
-import type { ChatRoom } from '../ChatRoomListModal';
 import './Layout.css';
 
 interface LayoutProps {
@@ -30,7 +30,6 @@ const Layout: React.FC<LayoutProps> = ({
   onProfileClick
 }) => {
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
-  const [isChatRoomListModalOpen, setIsChatRoomListModalOpen] = useState(false);
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
   const notificationButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -68,51 +67,18 @@ const Layout: React.FC<LayoutProps> = ({
     onNotificationClick?.();
   };
 
-  // 샘플 채팅방 데이터
-  const sampleChatRooms: ChatRoom[] = [
-    {
-      id: '1',
-      productName: '제주 감귤 10kg 공동구매',
-      productImage: '',
-      lastMessage: '판매자: 현재 7명 참여중입니다! ...',
-      lastMessageTime: '2시간 전',
-      unreadCount: 3,
-      participants: { current: 7, max: 10 },
-      status: 'active'
-    },
-    {
-      id: '2',
-      productName: '애플 에어팟 프로 공동구매',
-      lastMessage: '구매자: 배송은 언제쯤 받을 수...',
-      lastMessageTime: '30분 전',
-      unreadCount: 1,
-      participants: { current: 5, max: 8 },
-      status: 'active'
-    },
-    {
-      id: '3',
-      productName: '스타벅스 텀블러 공동구매',
-      lastMessage: '판매자: 마감 임박! 2명만 더 모집...',
-      lastMessageTime: '1시간 전',
-      participants: { current: 18, max: 20 },
-      status: 'closing'
-    }
-  ];
 
-  const handleChatClick = () => {
-    setIsChatRoomListModalOpen(true);
-    onChatClick?.();
-  };
 
   return (
     <div className="layout">
       <Header
+        className="desktop-header"
         notificationCount={notificationCount}
         currentLocation={currentLocation}
         onLocationChange={onLocationChange}
         onNotificationClick={handleNotificationClick}
         onFavoriteClick={onFavoriteClick}
-        onChatClick={handleChatClick}
+        onChatClick={onChatClick}
         onProfileClick={onProfileClick}
         notificationButtonRef={notificationButtonRef}
         onChatModalStateChange={setIsChatModalOpen}
@@ -124,6 +90,9 @@ const Layout: React.FC<LayoutProps> = ({
 
       {/* Floating Action Button - 로그인 시에만 표시 */}
       <FloatingActionButton isLoggedIn={isLoggedIn || false} isChatModalOpen={isChatModalOpen} />
+
+      {/* Bottom Navigation - 모바일 전용 */}
+      <BottomNav notificationCount={notificationCount} />
     </div>
   );
 };
