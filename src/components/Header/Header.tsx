@@ -1,11 +1,11 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { useLocationStore } from '../../stores/locationStore';
 import { divisionApi } from '../../api/divisionApi';
 import './Header.css';
 import NotificationModal from '../NotificationModal/NotificationModal';
-import ChatRoomListModal from '../ChatRoomListModal/ChatRoomListModal';
+import ChatModal from '../ChatModal';
 import LocationModalWrapper from '../LocationModal/LocationModalWrapper';
 
 interface HeaderProps {
@@ -15,7 +15,10 @@ interface HeaderProps {
   onChatClick?: () => void;
   onProfileClick?: () => void;
   notificationCount?: number;
+  chatNotificationCount?: number;
   notificationButtonRef?: React.RefObject<HTMLButtonElement | null>;
+  onChatModalStateChange?: (isOpen: boolean) => void;
+  className?: string;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -25,7 +28,10 @@ const Header: React.FC<HeaderProps> = ({
   onChatClick,
   onProfileClick,
   notificationCount = 0,
-  notificationButtonRef
+  chatNotificationCount = 0,
+  notificationButtonRef,
+  onChatModalStateChange,
+  className = ''
 }) => {
   const [activeMenu, setActiveMenu] = useState<string>('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -55,8 +61,29 @@ const Header: React.FC<HeaderProps> = ({
     onLocationChange?.();
   };
 
+  // ChatModal 상태 변경 시 Layout에 알림
+  useEffect(() => {
+    onChatModalStateChange?.(isChatModalOpen);
+  }, [isChatModalOpen, onChatModalStateChange]);
+
+  const handleChatClick = () => {
+    // 화면 크기 확인
+    const isMobile = window.innerWidth <= 768;
+    
+    if (isMobile) {
+      // 모바일: 페이지로 이동
+      navigate('/chat');
+    } else {
+      // 데스크톱: 모달 열기
+      setIsChatModalOpen(true);
+    }
+    onChatClick?.();
+  };
+
+
+
   return (
-    <header className="header">
+    <header className={`header ${className}`}>
       <div className="header-container">
         {/* Hamburger Menu (Mobile) */}
         <button 
@@ -141,9 +168,8 @@ const Header: React.FC<HeaderProps> = ({
                 <button
                   className="mobile-menu-item"
                   onClick={() => {
-                    setIsChatModalOpen(true);
+                    handleChatClick();
                     setIsMobileMenuOpen(false);
-                    onChatClick?.();
                   }}
                 >
                   <span className="icon">💬</span>
@@ -195,6 +221,7 @@ const Header: React.FC<HeaderProps> = ({
         <div className="header-actions">
           {isAuthenticated ? (
             <>
+              {/* 알림 기능 추후 구현 예정
               <button
                 ref={internalNotificationButtonRef}
                 className="header-icon-btn"
@@ -208,6 +235,7 @@ const Header: React.FC<HeaderProps> = ({
                   <span className="notification-badge">{notificationCount}</span>
                 )}
               </button>
+              */}
 
               <button
                 className="header-icon-btn"
@@ -222,12 +250,12 @@ const Header: React.FC<HeaderProps> = ({
               <button
                 ref={chatButtonRef}
                 className="header-icon-btn"
-                onClick={() => {
-                  setIsChatModalOpen(true);
-                  onChatClick?.();
-                }}
+                onClick={handleChatClick}
               >
                 <span className="icon">💬</span>
+                {chatNotificationCount > 0 && (
+                  <span className="notification-badge">{chatNotificationCount}</span>
+                )}
               </button>
 
               <button
@@ -238,14 +266,6 @@ const Header: React.FC<HeaderProps> = ({
                 }}
               >
                 <span className="icon">👤</span>
-              </button>
-
-              <button
-                className="header-logout-btn"
-                onClick={logout}
-                title="로그아웃"
-              >
-                로그아웃
               </button>
             </>
           ) : (
@@ -279,8 +299,10 @@ const Header: React.FC<HeaderProps> = ({
         ]}
       />
 
-      {/* ChatRoomListModal */}
-      <ChatRoomListModal
+
+
+      {/* ChatModal - 데스크톱 전용 */}
+      <ChatModal
         isOpen={isChatModalOpen}
         onClose={() => setIsChatModalOpen(false)}
         triggerRef={chatButtonRef}
@@ -303,9 +325,6 @@ const Header: React.FC<HeaderProps> = ({
             status: 'closing'
           }
         ]}
-        onRoomClick={(roomId) => {
-          setIsChatModalOpen(false);
-        }}
       />
 
       {/* LocationModal */}

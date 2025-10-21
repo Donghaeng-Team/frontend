@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
+import MobileHeader from '../../components/MobileHeader';
 import CategorySelector from '../../components/CategorySelector';
 import type { CategoryItem } from '../../components/CategorySelector';
 import Slider from '../../components/Slider';
@@ -465,7 +466,9 @@ const ProductList: React.FC = () => {
   };
 
   return (
-    <Layout isLoggedIn={true} notificationCount={3}>
+    <>
+      <MobileHeader />
+      <Layout isLoggedIn={true} notificationCount={3}>
       <div className="product-list-container">
         {/* 필터 섹션 */}
         <section className="filter-section">
@@ -668,6 +671,7 @@ const ProductList: React.FC = () => {
         </section>
       </div>
     </Layout>
+    </>
   );
 };
 

@@ -30,6 +30,11 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
   if (!isOpen) return null;
 
   const getModalPosition = () => {
+    // 모바일에서는 위치 계산하지 않음 (CSS에서 전체화면으로 처리)
+    if (window.innerWidth <= 768) {
+      return null;
+    }
+
     if (!triggerRef?.current) {
       return { top: '100px', right: '20px' };
     }
@@ -68,12 +73,12 @@ const NotificationModal: React.FC<NotificationModalProps> = ({
     <div className="notification-modal-overlay" onClick={handleOverlayClick}>
       <div
         className="notification-modal"
-        style={{
+        style={modalPosition ? {
           position: 'fixed',
           top: modalPosition.top,
           right: modalPosition.right,
           minWidth: 'minWidth' in modalPosition ? modalPosition.minWidth : undefined
-        }}
+        } : undefined}
       >
         {/* 헤더 */}
         <div className="notification-modal-header">

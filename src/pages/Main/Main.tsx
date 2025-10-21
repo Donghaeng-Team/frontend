@@ -1,13 +1,28 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import SearchBar from '../../components/SearchBar';
 import './Main.css';
 
 const Main: React.FC = () => {
+  const navigate = useNavigate();
+
+  // 모바일에서는 공동구매 페이지로 즉시 리다이렉트
+  useEffect(() => {
+    if (window.innerWidth <= 768) {
+      navigate('/products', { replace: true });
+    }
+  }, [navigate]);
+
   const handleSearch = (value: string) => {
     console.log('검색:', value);
     // 검색 로직 구현
   };
+
+  // 모바일에서는 렌더링하지 않음
+  if (window.innerWidth <= 768) {
+    return null;
+  }
 
   return (
     <Layout isLoggedIn={true} notificationCount={3}>

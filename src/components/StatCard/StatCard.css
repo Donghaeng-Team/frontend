@@ -53,6 +53,7 @@
   /* Clickable stat card */
   .stat-card-clickable {
     transition: all 0.2s;
+    cursor: pointer;
   }
 
   .stat-card-clickable:hover {

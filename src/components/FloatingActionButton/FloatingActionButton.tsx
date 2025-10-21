@@ -4,14 +4,15 @@ import './FloatingActionButton.css';
 
 interface FloatingActionButtonProps {
   isLoggedIn: boolean;
+  isChatModalOpen?: boolean;
 }
 
-const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ isLoggedIn }) => {
+const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ isLoggedIn, isChatModalOpen = false }) => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
-  // 로그인하지 않은 경우 렌더링하지 않음
-  if (!isLoggedIn) {
+  // 로그인하지 않은 경우 또는 채팅 모달이 열린 경우 렌더링하지 않음
+  if (!isLoggedIn || isChatModalOpen) {
     return null;
   }
 

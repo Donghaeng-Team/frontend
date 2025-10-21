@@ -1,0 +1,48 @@
+.mobile-header {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 12px 16px;
+    background-color: #ffffff;
+    border-bottom: 1px solid #e6e6e6;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .mobile-location-button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background-color: #ffffff;
+    border: 1px solid #e6e6e6;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .mobile-location-button:active {
+    background-color: #f5f5f5;
+  }
+
+  .location-icon {
+    font-size: 16px;
+  }
+
+  .location-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333333;
+  }
+
+  .location-arrow {
+    font-size: 10px;
+    color: #999999;
+  }
+}
