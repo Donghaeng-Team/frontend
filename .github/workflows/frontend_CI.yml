@@ -8,7 +8,7 @@ on:
 env:
   AWS_REGION: ap-northeast-2
   S3_BUCKET: kis-dev-static-assets
-  CLOUDFRONT_DISTRIBUTION_ID: EJZW5C1UQEXVH
+  CLOUDFRONT_DISTRIBUTION_ID: E3CVE168S77RF2
 
 jobs:
   deploy:
