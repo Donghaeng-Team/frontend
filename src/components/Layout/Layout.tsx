@@ -74,7 +74,6 @@ const Layout: React.FC<LayoutProps> = ({
       <Header
         className="desktop-header"
         notificationCount={notificationCount}
-        currentLocation={currentLocation}
         onLocationChange={onLocationChange}
         onNotificationClick={handleNotificationClick}
         onFavoriteClick={onFavoriteClick}

@@ -611,8 +611,7 @@ const ProductList: React.FC = () => {
                   }}
                   location={product.emdName}
                   status={product.status === 'RECRUITING' ? 'active' :
-                         product.status === 'ENDED' ? 'completed' :
-                         product.status === 'CANCELLED' ? 'cancelled' : 'expired'}
+                         product.status === 'ENDED' ? 'completed' : 'pending'}
                   onClick={() => navigate(`/products/${product.marketId}`)}
                 />
               ))

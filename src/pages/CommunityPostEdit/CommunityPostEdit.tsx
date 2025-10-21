@@ -6,8 +6,8 @@ import { imageService } from '../../api/services/image';
 import { useAuthStore } from '../../stores/authStore';
 import type {
   PostDetailResponse,
-  PostCreateAndUpdateRequest,
-  PostImageRegister,
+  PostUpdateRequest,
+  ImageMeta,
 } from '../../types/community';
 import './CommunityPostEdit.css';
 
@@ -277,7 +277,7 @@ const CommunityPostEdit: React.FC = () => {
 
     try {
       const postId = parseInt(id, 10);
-      let imageRegisters: PostImageRegister[] = [];
+      let imageRegisters: ImageMeta[] = [];
 
       // 새로운 이미지가 있으면 S3에 업로드
       if (images.length > 0) {
@@ -294,17 +294,19 @@ const CommunityPostEdit: React.FC = () => {
           throw new Error('일부 이미지 업로드에 실패했습니다.');
         }
 
-        // S3 키를 PostImageRegister 형식으로 변환
+        // S3 키를 ImageMeta 형식으로 변환
         imageRegisters = successUploads.map((result, index) => ({
           s3Key: result.s3Key,
           order: existingImageUrls.length + index,
+          caption: '',
+          isThumbnail: index === 0,
           contentType: result.file.type,
           size: result.file.size
         }));
       }
 
       // 게시글 수정 API 호출
-      const updateData: PostCreateAndUpdateRequest = {
+      const updateData: PostUpdateRequest = {
         region: formData.region,
         tag: formData.category,
         title: formData.title,

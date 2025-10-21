@@ -166,7 +166,7 @@ const CommunityPostDetail: React.FC = () => {
   };
 
   const handleCommentSubmit = async () => {
-    if (!commentText.trim() || !authUser || !post) return;
+    if (!commentText.trim() || !authUser || !authUser.userId || !post) return;
 
     try {
       const response = await commentService.createComment(post.postId, {
@@ -191,7 +191,7 @@ const CommunityPostDetail: React.FC = () => {
   };
 
   const handleCommentDelete = async (commentId: number) => {
-    if (!authUser) return;
+    if (!authUser || !authUser.userId) return;
 
     if (!window.confirm('댓글을 삭제하시겠습니까?')) return;
 
