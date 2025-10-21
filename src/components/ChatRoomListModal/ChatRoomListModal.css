@@ -1,34 +1,11 @@
-/* Chat room modal overlay */
-.chat-room-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: transparent;
-  z-index: 99999;
-}
-
 .chat-room-list-modal {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-  max-height: 500px;
-  z-index: 100000;
-  animation: slideDown 0.3s ease;
   font-family: 'Inter', -apple-system, sans-serif;
-  width: 420px;
-}
-
-@keyframes slideDown {
-  from {
-    transform: translateY(-10px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+  overflow: hidden;
 }
 
 /* 헤더 */
@@ -275,3 +252,4 @@
   color: #999999;
   margin: 0;
 }
+

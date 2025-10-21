@@ -157,6 +157,15 @@
   .chat-room-action-btn.apply:hover {
     background-color: #99d9ff;
   }
+
+  .chat-room-action-btn.leave {
+    background-color: #ffcccc;
+    color: #b20000;
+  }
+
+  .chat-room-action-btn.leave:hover {
+    background-color: #ffb3b3;
+  }
   
   /* Messages */
   .chat-room-messages {

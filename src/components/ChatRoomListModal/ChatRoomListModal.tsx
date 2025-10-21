@@ -1,4 +1,5 @@
 import type { FC } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './ChatRoomListModal.css';
 
 export interface ChatRoom {
@@ -19,7 +20,7 @@ interface ChatRoomListModalProps {
   isOpen: boolean;
   onClose: () => void;
   chatRooms: ChatRoom[];
-  onRoomClick: (roomId: string) => void;
+  onRoomClick?: (roomId: string) => void;
   className?: string;
   triggerRef?: React.RefObject<HTMLElement | null>;
 }
@@ -32,23 +33,11 @@ const ChatRoomListModal: FC<ChatRoomListModalProps> = ({
   className = '',
   triggerRef
 }) => {
+  const navigate = useNavigate();
+
   if (!isOpen) return null;
 
-  const getModalPosition = () => {
-    if (!triggerRef?.current) {
-      return { top: '100px', right: '20px' };
-    }
-
-    const rect = triggerRef.current.getBoundingClientRect();
-
-    return {
-      top: `${rect.bottom + 10}px`,
-      right: `${window.innerWidth - rect.right}px`,
-      minWidth: '420px'
-    };
-  };
-
-  const modalPosition = getModalPosition();
+  // ChatModal에서 사용할 때는 위치를 지정하지 않음
 
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
@@ -70,16 +59,7 @@ const ChatRoomListModal: FC<ChatRoomListModalProps> = ({
   };
 
   return (
-    <div className="chat-room-modal-overlay" onClick={handleOverlayClick}>
-      <div
-        className={`chat-room-list-modal ${className}`}
-        style={{
-          position: 'fixed',
-          top: modalPosition.top,
-          right: modalPosition.right,
-          minWidth: 'minWidth' in modalPosition ? modalPosition.minWidth : undefined
-        }}
-      >
+    <div className={`chat-room-list-modal ${className}`}>
         {/* 헤더 */}
         <div className="chat-room-list-header">
           <h2 className="chat-room-list-title">💬 참여중인 채팅방</h2>
@@ -108,7 +88,13 @@ const ChatRoomListModal: FC<ChatRoomListModalProps> = ({
                   <div
                     key={room.id}
                     className="chat-room-item"
-                    onClick={() => onRoomClick(room.id)}
+                    onClick={() => {
+                      if (onRoomClick) {
+                        onRoomClick(room.id);
+                      } else {
+                        navigate(`/chat/${room.id}`);
+                      }
+                    }}
                   >
                     <div className="chat-room-image-wrapper">
                       {room.productImage ? (
@@ -160,7 +146,6 @@ const ChatRoomListModal: FC<ChatRoomListModalProps> = ({
             </div>
           )}
         </div>
-      </div>
     </div>
   );
 };

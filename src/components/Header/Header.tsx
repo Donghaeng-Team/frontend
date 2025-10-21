@@ -5,7 +5,7 @@ import { useLocationStore } from '../../stores/locationStore';
 import { divisionApi } from '../../api/divisionApi';
 import './Header.css';
 import NotificationModal from '../NotificationModal/NotificationModal';
-import ChatRoomListModal from '../ChatRoomListModal/ChatRoomListModal';
+import ChatModal from '../ChatModal';
 import LocationModalWrapper from '../LocationModal/LocationModalWrapper';
 
 interface HeaderProps {
@@ -279,8 +279,8 @@ const Header: React.FC<HeaderProps> = ({
         ]}
       />
 
-      {/* ChatRoomListModal */}
-      <ChatRoomListModal
+      {/* ChatModal */}
+      <ChatModal
         isOpen={isChatModalOpen}
         onClose={() => setIsChatModalOpen(false)}
         triggerRef={chatButtonRef}
@@ -303,9 +303,6 @@ const Header: React.FC<HeaderProps> = ({
             status: 'closing'
           }
         ]}
-        onRoomClick={(roomId) => {
-          setIsChatModalOpen(false);
-        }}
       />
 
       {/* LocationModal */}

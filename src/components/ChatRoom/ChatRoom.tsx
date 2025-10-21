@@ -100,9 +100,6 @@ const ChatRoom: FC<ChatRoomProps> = ({
         <button className="chat-room-back-btn" onClick={onBack}>
           ← 채팅방
         </button>
-        <button className="chat-room-leave-btn" onClick={onLeave}>
-          나가기
-        </button>
       </div>
 
       {/* Product Info */}
@@ -144,11 +141,19 @@ const ChatRoom: FC<ChatRoomProps> = ({
             <button className="chat-room-action-btn confirm" onClick={onConfirm}>
               ✅ 모집 확정
             </button>
+            <button className="chat-room-action-btn leave" onClick={onLeave}>
+              🚪 채팅방 나가기
+            </button>
           </>
         ) : (
-          <button className="chat-room-action-btn apply" onClick={onApply}>
-            ✅ 구매 신청
-          </button>
+          <>
+            <button className="chat-room-action-btn apply" onClick={onApply}>
+              ✅ 구매 신청
+            </button>
+            <button className="chat-room-action-btn leave" onClick={onLeave}>
+              🚪 채팅방 나가기
+            </button>
+          </>
         )}
       </div>
 
