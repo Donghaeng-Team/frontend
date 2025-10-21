@@ -23,7 +23,7 @@ const processQueue = (error: any, token: string | null = null) => {
 
 // API 클라이언트 인스턴스 생성
 const apiClient: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '', // 개발 환경에서는 Vite proxy 사용
+  // baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080', // 개발 환경에서는 Vite proxy 사용
   timeout: Number(import.meta.env.VITE_API_TIMEOUT) || 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -67,6 +67,12 @@ apiClient.interceptors.request.use(
 // 응답 인터셉터: 에러 처리 및 토큰 재발급
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => {
+    console.log('✅ API Response:', response.status, response.config.url, response.data);
+    console.log(response.headers.Authorization);
+    
+    console.log('📋 응답 헤더:', response.headers);
+    console.log('🔑 Authorization 헤더:', response.headers['authorization']);
+    console.log('🔑 Authorization 헤더:', response.headers['Authorization']);
     return response;
   },
   async (error) => {
