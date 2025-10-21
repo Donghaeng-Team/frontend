@@ -14,6 +14,7 @@ import { marketService } from '../../api/services/market';
 import type { MarketSimpleResponse } from '../../types/market';
 import { APP_CONSTANTS } from '../../utils/constants';
 import { getCategoryNameWithDepth } from '../../utils/categoryMapping';
+import { useLocationStore } from '../../stores/locationStore';
 // 임시로 작은 샘플 데이터를 사용하여 테스트
 const sampleFoodCategoriesData = [
   {
@@ -72,7 +73,7 @@ const transformFoodCategories = (categories: FoodCategoryData[]): CategoryItem[]
 const loadCategoryData = async (): Promise<CategoryItem[]> => {
   try {
     // 실제 JSON 파일에서 로드
-    const response = await fetch('/foodCategories.json');
+    const response = await fetch('/category.json');
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -105,6 +106,7 @@ type ApiProduct = MarketSimpleResponse;
 
 const ProductList: React.FC = () => {
   const navigate = useNavigate();
+  const currentDivision = useLocationStore((state) => state.currentDivision);
 
   // 상태 관리
   const [displayedProducts, setDisplayedProducts] = useState<ApiProduct[]>([]);
@@ -135,23 +137,31 @@ const ProductList: React.FC = () => {
         const categories = await loadCategoryData();
         setCategoryData(categories);
 
-        // 로컬스토리지에서 선택된 위치 정보 가져오기
-        const selectedLocationStr = localStorage.getItem(APP_CONSTANTS.STORAGE_KEYS.SELECTED_LOCATION);
-        let currentDivisionId = '11650510'; // 기본값: 서초구 서초동
+        // locationStore의 currentDivision 사용 (실시간 업데이트)
+        let currentDivisionId = '11650510'; // 기본값: 서초구 서초동 (8자리 divisionId)
         
-        if (selectedLocationStr) {
-          try {
-            const selectedLocation = JSON.parse(selectedLocationStr);
-            if (selectedLocation && selectedLocation.id) {
-              currentDivisionId = selectedLocation.id;
+        if (currentDivision) {
+          // locationStore에서 가져온 division 사용 (8자리 divisionId)
+          currentDivisionId = currentDivision.id;
+          console.log('📍 Using 8-digit divisionId from locationStore:', currentDivisionId, currentDivision);
+        } else {
+          // fallback: localStorage에서 가져오기
+          const selectedLocationStr = localStorage.getItem(APP_CONSTANTS.STORAGE_KEYS.SELECTED_LOCATION);
+          if (selectedLocationStr) {
+            try {
+              const selectedLocation = JSON.parse(selectedLocationStr);
+              if (selectedLocation && selectedLocation.id) {
+                // 8자리 divisionId 사용 (ex: "11010540")
+                currentDivisionId = selectedLocation.id;
+              }
+            } catch (error) {
+              console.error('Failed to parse selected location:', error);
             }
-          } catch (error) {
-            console.error('Failed to parse selected location:', error);
           }
+          console.log('📍 Using 8-digit divisionId from localStorage:', currentDivisionId);
         }
 
         setDivisionId(currentDivisionId);
-        console.log('📍 Using divisionId:', currentDivisionId);
 
         // 상품 데이터 로드 (Public API 사용)
         const response = await marketService.getMarketPosts({
@@ -202,7 +212,7 @@ const ProductList: React.FC = () => {
     };
 
     initializeData();
-  }, []);
+  }, [currentDivision]);
 
   // 필터 변경 감지
   useEffect(() => {
