@@ -166,7 +166,7 @@
 /* 반응형 */
 @media (max-width: 768px) {
   .fab-container {
-    bottom: 20px;
+    bottom: calc(96px + 20px + env(safe-area-inset-bottom));
     right: 20px;
   }
 

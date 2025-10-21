@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './FloatingActionButton.css';
 
 interface FloatingActionButtonProps {
@@ -9,10 +9,17 @@ interface FloatingActionButtonProps {
 
 const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({ isLoggedIn, isChatModalOpen = false }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
 
-  // 로그인하지 않은 경우 또는 채팅 모달이 열린 경우 렌더링하지 않음
-  if (!isLoggedIn || isChatModalOpen) {
+  // 모바일에서만 공동구매 또는 커뮤니티 페이지에서만 표시
+  const isMobile = window.innerWidth <= 768;
+  const isProductPage = location.pathname.startsWith('/products');
+  const isCommunityPage = location.pathname.startsWith('/community');
+  const shouldShowFAB = !isMobile || isProductPage || isCommunityPage;
+
+  // 로그인하지 않았거나, 채팅 모달이 열렸거나, 조건에 맞지 않으면 렌더링하지 않음
+  if (!isLoggedIn || isChatModalOpen || !shouldShowFAB) {
     return null;
   }
 
