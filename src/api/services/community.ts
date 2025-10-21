@@ -6,10 +6,12 @@ import type {
   PostListResponse,
   PostDetailResponse,
   GetPostsListParams,
-  UploadUrlsRequest,
-  UploadUrlsResponse,
   PostUpdateRequest,
 } from '../../types/community';
+import type {
+  UploadUrlsRequest,
+  UploadUrlsResponse,
+} from '../../types/image';
 import { getAccessToken } from '../../utils/token';
 
 /**

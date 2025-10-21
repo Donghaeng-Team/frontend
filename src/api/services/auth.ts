@@ -16,13 +16,7 @@ import {
   getRefreshToken
 } from '../../utils/token';
 
-// 기존 타입 (하위 호환성 유지)
-export interface RegisterRequest {
-  email: string;
-  password: string;
-  name: string;
-  phoneNumber?: string;
-}
+
 
 export interface AuthResponse {
   accessToken: string;
@@ -112,7 +106,8 @@ export const authService = {
         accessToken,
         refreshToken: '', // 쿠키로 관리되므로 빈 문자열
         user
-      }
+      },
+      timestamp: new Date().toISOString()
     };
   },
 
@@ -154,7 +149,8 @@ export const authService = {
     return {
       success: true,
       message: '토큰 갱신 성공',
-      data: { accessToken }
+      data: { accessToken },
+      timestamp: new Date().toISOString()
     };
   },
 

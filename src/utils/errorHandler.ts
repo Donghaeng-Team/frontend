@@ -1,7 +1,13 @@
 import { AxiosError } from 'axios';
-import { ApiError } from '../api/config';
 
-// 에러 타입 정의
+// API 에러 타입 정의 (서버 응답)
+interface ApiError {
+  code?: string;
+  message?: string;
+  details?: any;
+}
+
+// 앱 에러 타입 정의
 export interface AppError {
   code: string;
   message: string;
@@ -148,7 +154,7 @@ export const getUserFriendlyMessage = (error: AppError): string => {
 
 // 에러 재시도 가능 여부 확인
 export const isRetryableError = (error: AppError): boolean => {
-  const retryableCodes = [
+  const retryableCodes: string[] = [
     ERROR_CODES.NETWORK_ERROR,
     ERROR_CODES.TIMEOUT_ERROR,
     ERROR_CODES.INTERNAL_SERVER_ERROR,

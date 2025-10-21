@@ -1,17 +1,17 @@
 import apiClient from './client';
 import type {
   MarketPost,
-  CreateMarketPostRequest,
-  UpdateMarketPostRequest,
-  MarketPostListResponse,
-  MarketPostFilters,
+  CreateMarketRequest,
+  PutMarketRequest,
+  MarketListResponse,
+  MarketListRequest,
   PaginationParams,
   ApiResponse
 } from '../types';
 
 class MarketApi {
   // 마켓글 작성
-  async createMarketPost(data: CreateMarketPostRequest): Promise<ApiResponse<MarketPost>> {
+  async createMarketPost(data: CreateMarketRequest): Promise<ApiResponse<MarketPost>> {
     const formData = new FormData();
 
     // 텍스트 데이터 추가
@@ -37,7 +37,7 @@ class MarketApi {
   }
 
   // 마켓글 수정
-  async updateMarketPost(marketId: number, data: UpdateMarketPostRequest): Promise<ApiResponse<MarketPost>> {
+  async updateMarketPost(marketId: number, data: PutMarketRequest): Promise<ApiResponse<MarketPost>> {
     const formData = new FormData();
 
     Object.entries(data).forEach(([key, value]) => {
@@ -74,9 +74,9 @@ class MarketApi {
 
   // 마켓글 목록 조회 (공개)
   async getMarketPosts(
-    filters: MarketPostFilters = {},
+    filters: Partial<MarketListRequest> = {},
     pagination: PaginationParams = {}
-  ): Promise<ApiResponse<MarketPostListResponse>> {
+  ): Promise<ApiResponse<MarketListResponse>> {
     const params = {
       ...filters,
       page: pagination.page || 0,
@@ -89,9 +89,9 @@ class MarketApi {
 
   // 마켓글 목록 조회 (로그인)
   async getMarketPostsPrivate(
-    filters: MarketPostFilters = {},
+    filters: Partial<MarketListRequest> = {},
     pagination: PaginationParams = {}
-  ): Promise<ApiResponse<MarketPostListResponse>> {
+  ): Promise<ApiResponse<MarketListResponse>> {
     const params = {
       ...filters,
       page: pagination.page || 0,
@@ -129,7 +129,7 @@ class MarketApi {
   async getUserMarketPosts(
     userId: number,
     pagination: PaginationParams = {}
-  ): Promise<ApiResponse<MarketPostListResponse>> {
+  ): Promise<ApiResponse<MarketListResponse>> {
     const params = {
       page: pagination.page || 0,
       size: pagination.size || 20,
@@ -152,7 +152,7 @@ class MarketApi {
   }
 
   // 내가 찜한 목록 보기
-  async getMyWishlist(pagination: PaginationParams = {}): Promise<ApiResponse<MarketPostListResponse>> {
+  async getMyWishlist(pagination: PaginationParams = {}): Promise<ApiResponse<MarketListResponse>> {
     const params = {
       page: pagination.page || 0,
       size: pagination.size || 20,

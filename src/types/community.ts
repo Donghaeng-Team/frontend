@@ -31,34 +31,6 @@ export interface PostData {
 }
 
 /**
- * 업로드 URL 요청
- */
-export interface UploadUrlsRequest {
-  files: {
-    index: number;
-    fileName: string;
-    contentType: string;
-  }[];
-}
-
-/**
- * 업로드 URL (백엔드 실제 응답 형식)
- */
-export interface UploadUrl {
-  uploadUrl: string;  // 백엔드 실제: uploadUrl (문서는 presignedUrl)
-  s3Key: string;
-}
-
-/**
- * 업로드 URL 응답 (백엔드 실제 응답 형식)
- */
-export interface UploadUrlsResponse {
-  urls: UploadUrl[];  // 백엔드 실제: urls (문서는 uploadUrls)
-}
-
-
-
-/**
  * 업데이트 요청의 이미지 메타데이터
  */
 export interface ImageMeta {
