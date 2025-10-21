@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import { useLocationStore } from '../../stores/locationStore';
@@ -16,6 +16,7 @@ interface HeaderProps {
   onProfileClick?: () => void;
   notificationCount?: number;
   notificationButtonRef?: React.RefObject<HTMLButtonElement | null>;
+  onChatModalStateChange?: (isOpen: boolean) => void;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -25,7 +26,8 @@ const Header: React.FC<HeaderProps> = ({
   onChatClick,
   onProfileClick,
   notificationCount = 0,
-  notificationButtonRef
+  notificationButtonRef,
+  onChatModalStateChange
 }) => {
   const [activeMenu, setActiveMenu] = useState<string>('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -54,6 +56,11 @@ const Header: React.FC<HeaderProps> = ({
     setIsLocationModalOpen(false);
     onLocationChange?.();
   };
+
+  // 채팅 모달 상태 변경 감지
+  useEffect(() => {
+    onChatModalStateChange?.(isChatModalOpen);
+  }, [isChatModalOpen, onChatModalStateChange]);
 
   return (
     <header className="header">

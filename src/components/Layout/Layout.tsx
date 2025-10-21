@@ -31,6 +31,7 @@ const Layout: React.FC<LayoutProps> = ({
 }) => {
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const [isChatRoomListModalOpen, setIsChatRoomListModalOpen] = useState(false);
+  const [isChatModalOpen, setIsChatModalOpen] = useState(false);
   const notificationButtonRef = useRef<HTMLButtonElement>(null);
 
 
@@ -114,6 +115,7 @@ const Layout: React.FC<LayoutProps> = ({
         onChatClick={handleChatClick}
         onProfileClick={onProfileClick}
         notificationButtonRef={notificationButtonRef}
+        onChatModalStateChange={setIsChatModalOpen}
       />
       <main className="layout-main">
         {children}
@@ -121,7 +123,7 @@ const Layout: React.FC<LayoutProps> = ({
       <Footer />
 
       {/* Floating Action Button - 로그인 시에만 표시 */}
-      <FloatingActionButton isLoggedIn={isLoggedIn || false} />
+      <FloatingActionButton isLoggedIn={isLoggedIn || false} isChatModalOpen={isChatModalOpen} />
     </div>
   );
 };
