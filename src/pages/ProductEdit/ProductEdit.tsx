@@ -28,7 +28,7 @@ const transformFoodCategories = (categories: FoodCategoryData[]): CategoryItem[]
 // 카테고리 데이터 로드 함수
 const loadCategoryData = async (): Promise<CategoryItem[]> => {
   try {
-    const response = await fetch('/foodCategories.json');
+    const response = await fetch('/category.json');
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }

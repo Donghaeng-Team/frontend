@@ -22,7 +22,7 @@ const loadCategories = async (): Promise<FoodCategory[]> => {
   if (categoriesCache) return categoriesCache;
   
   try {
-    const response = await fetch('/foodCategories.json');
+    const response = await fetch('/category.json');
     const data = await response.json();
     categoriesCache = data;
     return data;
