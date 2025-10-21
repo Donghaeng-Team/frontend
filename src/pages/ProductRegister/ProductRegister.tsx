@@ -12,6 +12,43 @@ import { productService } from '../../api/services/product';
 import { imageService } from '../../api/services/image';
 import './ProductRegister.css';
 
+// 샘플 카테고리 데이터 (fallback용)
+const sampleFoodCategoriesData = [
+  {
+    "code": "01",
+    "name": "가공식품",
+    "sub": [
+      {
+        "code": "01",
+        "name": "조미료",
+        "sub": [
+          {
+            "code": "01",
+            "name": "종합조미료",
+            "sub": [
+              { "code": "01", "name": "천연/발효조미료" },
+              { "code": "02", "name": "식초" }
+            ]
+          }
+        ]
+      },
+      {
+        "code": "02",
+        "name": "유제품",
+        "sub": [
+          { "code": "01", "name": "우유" },
+          { "code": "02", "name": "요구르트" }
+        ]
+      }
+    ]
+  },
+  {
+    "code": "02",
+    "name": "신선식품",
+    "sub": []
+  }
+];
+
 // foodCategories.json 데이터 타입
 interface FoodCategoryData {
   code: string;
@@ -51,10 +88,14 @@ const loadCategoryData = async (): Promise<CategoryItem[]> => {
     }
 
     const foodCategories = await response.json() as FoodCategoryData[];
-    return transformFoodCategories(foodCategories);
+    const transformed = transformFoodCategories(foodCategories);
+    return transformed;
   } catch (error) {
-    console.error('Failed to load food categories:', error);
-    return [];
+    console.error('Failed to load food categories from file, using sample data:', error);
+    // 실패 시 샘플 데이터 사용
+    const foodCategories = sampleFoodCategoriesData as FoodCategoryData[];
+    const transformed = transformFoodCategories(foodCategories);
+    return transformed;
   }
 };
 
