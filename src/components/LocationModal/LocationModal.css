@@ -380,6 +380,8 @@
     
     .location-modal-footer {
       padding: 16px 20px;
+      /* BottomNav 높이(93px) + 여유 공간 확보 */
+      padding-bottom: calc(93px + 16px);
       flex-direction: column;
     }
 
@@ -448,6 +450,8 @@
 
     .location-modal-footer {
       padding: 14px 16px;
+      /* BottomNav 높이(93px) + 여유 공간 확보 */
+      padding-bottom: calc(93px + 14px);
     }
 
     .location-btn-current,
