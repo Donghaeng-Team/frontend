@@ -217,7 +217,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
           <div className="product-image-container">
             {product.images && product.images.length > 0 ? (
               <img
-                src={product.images[0].imageUrl}
+                src={`${import.meta.env.VITE_API_BASE_URL}/${product.images[0].imageUrl}`}
                 alt={product.title}
                 className="product-image"
                 onError={(e) => {
@@ -225,7 +225,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
                   e.currentTarget.style.display = 'none';
                   e.currentTarget.parentElement!.innerHTML = '<div class="product-image-placeholder">📦 이미지를 불러올 수 없습니다</div>';
                 }}
-                onLoad={() => console.log('✅ 이미지 로드 성공:', product.images[0].imageUrl)}
+                onLoad={() => console.log('✅ 이미지 로드 성공:', `${import.meta.env.VITE_API_BASE_URL}/${product.images[0].imageUrl}`)}
               />
             ) : (
               <div className="product-image-placeholder">
