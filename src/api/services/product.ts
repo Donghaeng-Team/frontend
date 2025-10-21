@@ -165,14 +165,15 @@ export const productService = {
       success: true,
       message: '조회 성공',
       data: {
-        items: [],
+        content: [],
         totalElements: 0,
         totalPages: 0,
         currentPage: 0,
-        pageSize: params.size || 10,
+        size: params.size || 10,
         hasNext: false,
         hasPrevious: false
-      }
+      },
+      timestamp: new Date().toISOString()
     };
   },
 
@@ -214,7 +215,8 @@ export const productService = {
     return {
       success: true,
       message: '좋아요 추가',
-      data: { isWishlisted: true }
+      data: { isWishlisted: true },
+      timestamp: new Date().toISOString()
     };
   },
 

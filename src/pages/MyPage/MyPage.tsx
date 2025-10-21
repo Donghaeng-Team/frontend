@@ -74,28 +74,28 @@ const MyPage: React.FC<MyPageProps> = () => {
         // 주최한 상품
         const hostingResponse = await productService.getMyProducts();
         const hostingCount = hostingResponse.success && hostingResponse.data
-          ? hostingResponse.data.items.filter(p => p.status === 'active').length
+          ? hostingResponse.data.content.filter(p => p.status === 'active').length
           : 0;
 
         // 참여중인 상품
         const participatingResponse = await productService.getMyJoinedProducts();
         const participatingCount = participatingResponse.success && participatingResponse.data
-          ? participatingResponse.data.items.filter(p => p.status === 'active').length
+          ? participatingResponse.data.content.filter(p => p.status === 'active').length
           : 0;
 
         // 완료된 상품 (주최 + 참여)
         const myCompleted = hostingResponse.success && hostingResponse.data
-          ? hostingResponse.data.items.filter(p => p.status === 'completed').length
+          ? hostingResponse.data.content.filter(p => p.status === 'completed').length
           : 0;
 
         const joinedCompleted = participatingResponse.success && participatingResponse.data
-          ? participatingResponse.data.items.filter(p => p.status === 'completed').length
+          ? participatingResponse.data.content.filter(p => p.status === 'completed').length
           : 0;
 
         // 좋아요한 상품
         const likedResponse = await productService.getWishlistedProducts();
         const likedCount = likedResponse.success && likedResponse.data
-          ? likedResponse.data.items.length
+          ? likedResponse.data.content.length
           : 0;
 
         setStats({
@@ -155,7 +155,7 @@ const MyPage: React.FC<MyPageProps> = () => {
         // 닉네임 변경
         if (hasNicknameChange) {
           await userService.changeNickname(authUser.userId, {
-            nickName: editName
+            newNickname: editName
           });
         }
 

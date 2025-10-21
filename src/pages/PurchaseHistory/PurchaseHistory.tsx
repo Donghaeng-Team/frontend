@@ -83,14 +83,14 @@ const PurchaseHistory: React.FC = () => {
         // 주최한 상품
         const hostingResponse = await productService.getMyProducts();
         if (hostingResponse.success && hostingResponse.data) {
-          const items = hostingResponse.data.items.map(p => convertProductToPurchaseItem(p, 'host'));
+          const items = hostingResponse.data.content.map(p => convertProductToPurchaseItem(p, 'host'));
           setHostingItems(items);
         }
 
         // 참여중인 상품
         const participatingResponse = await productService.getMyJoinedProducts();
         if (participatingResponse.success && participatingResponse.data) {
-          const items = participatingResponse.data.items
+          const items = participatingResponse.data.content
             .filter(p => p.status === 'active')
             .map(p => convertProductToPurchaseItem(p, 'participant'));
           setParticipatingItems(items);
@@ -101,11 +101,11 @@ const PurchaseHistory: React.FC = () => {
         const joinedCompletedResponse = await productService.getMyJoinedProducts();
 
         const myCompleted = myCompletedResponse.success && myCompletedResponse.data
-          ? myCompletedResponse.data.items.filter(p => p.status === 'completed').map(p => convertProductToPurchaseItem(p, 'host'))
+          ? myCompletedResponse.data.content.filter(p => p.status === 'completed').map(p => convertProductToPurchaseItem(p, 'host'))
           : [];
 
         const joinedCompleted = joinedCompletedResponse.success && joinedCompletedResponse.data
-          ? joinedCompletedResponse.data.items.filter(p => p.status === 'completed').map(p => convertProductToPurchaseItem(p, 'participant'))
+          ? joinedCompletedResponse.data.content.filter(p => p.status === 'completed').map(p => convertProductToPurchaseItem(p, 'participant'))
           : [];
 
         setCompletedItems([...myCompleted, ...joinedCompleted]);
@@ -113,7 +113,7 @@ const PurchaseHistory: React.FC = () => {
         // 좋아요한 상품
         const likedResponse = await productService.getWishlistedProducts();
         if (likedResponse.success && likedResponse.data) {
-          const items = likedResponse.data.items.map(p => convertProductToPurchaseItem(p, 'participant'));
+          const items = likedResponse.data.content.map(p => convertProductToPurchaseItem(p, 'participant'));
           setLikedItems(items);
         }
       } catch (error) {

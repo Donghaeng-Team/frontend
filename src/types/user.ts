@@ -88,3 +88,44 @@ export interface NicknameUpdateRequest {
 export interface EmailVerifyRequest {
   token: string;
 }
+
+// 이메일 관련
+export interface EmailCheckRequest {
+  email: string;
+}
+
+export interface EmailRequestDto {
+  email: string;
+}
+
+// 닉네임 관련
+export interface NicknameCheckRequest {
+  nickname: string;
+}
+
+export interface ChangeNicknameRequest {
+  newNickname: string;
+}
+
+// 인증 코드 관련
+export interface VerifyRequest {
+  email: string;
+  code: string;
+}
+
+// 비밀번호 재설정 관련
+export interface ResetPasswordRequest {
+  email: string;
+  code: string;
+  newPassword: string;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+// 사용자 정보 조회 관련
+export interface UserInfoRequest {
+  userId: number;
+}

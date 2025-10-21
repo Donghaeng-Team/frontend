@@ -99,7 +99,7 @@ const ChangePassword = () => {
 
     try {
       await userService.changePassword(authUser.userId, {
-        oldPassword: passwords.currentPassword,
+        currentPassword: passwords.currentPassword,
         newPassword: passwords.newPassword
       });
 
