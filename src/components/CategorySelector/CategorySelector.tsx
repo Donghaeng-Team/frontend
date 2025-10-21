@@ -15,6 +15,7 @@ interface CategorySelectorProps {
   placeholder?: string[];
   maxLevel?: 3 | 4;  // 3단계 또는 4단계
   className?: string;
+  disabled?: boolean;
 }
 
 const CategorySelector: FC<CategorySelectorProps> = ({
@@ -23,7 +24,8 @@ const CategorySelector: FC<CategorySelectorProps> = ({
   onChange,
   placeholder = ['대분류 선택', '중분류 선택', '소분류 선택', '세부분류 선택'],
   maxLevel = 4,
-  className = ''
+  className = '',
+  disabled = false
 }) => {
   const [selectedValues, setSelectedValues] = useState<string[]>(value || []);
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);

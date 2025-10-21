@@ -1,5 +1,6 @@
 import apiClient from '../client';
 import type { ApiResponse, PaginationResponse } from '../../types';
+import type { MarketDetailResponse } from '../../types/market';
 import { getUser } from '../../utils/token';
 
 // 상품 관련 타입 정의
@@ -72,7 +73,7 @@ export const productService = {
   },
 
   // 상품 상세 조회
-  getProduct: async (id: string): Promise<ApiResponse<Product>> => {
+  getProduct: async (id: string): Promise<ApiResponse<MarketDetailResponse>> => {
     const response = await apiClient.get(`/api/v1/market/public/${id}`);
     return response.data;
   },

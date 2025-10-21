@@ -1,4 +1,4 @@
-import { FC, useState, useEffect } from 'react';
+import { type FC, useState, useEffect } from 'react';
 import ChatRoomListModal from '../ChatRoomListModal/ChatRoomListModal';
 import ChatRoom from '../ChatRoom';
 import type { ChatRoom as ChatRoomType } from '../ChatRoomListModal/ChatRoomListModal';

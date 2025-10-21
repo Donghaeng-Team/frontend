@@ -11,6 +11,7 @@ interface CardProps {
   hoverable?: boolean;
   onClick?: () => void;
   className?: string;
+  style?: React.CSSProperties;
 }
 
 const Card: React.FC<CardProps> = ({
@@ -22,7 +23,8 @@ const Card: React.FC<CardProps> = ({
   padding = 'medium',
   hoverable = false,
   onClick,
-  className = ''
+  className = '',
+  style
 }) => {
   const cardClasses = [
     'card',
@@ -34,7 +36,7 @@ const Card: React.FC<CardProps> = ({
   ].filter(Boolean).join(' ');
 
   return (
-    <div className={cardClasses} onClick={onClick}>
+    <div className={cardClasses} onClick={onClick} style={style}>
       {(title || subtitle) && (
         <div className="card-header">
           {title && <h3 className="card-title">{title}</h3>}

@@ -4,7 +4,8 @@ import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import CategorySelector from '../../components/CategorySelector';
 import type { CategoryItem } from '../../components/CategorySelector';
-import { productService, type Product, type ProductUpdateRequest } from '../../api/services/product';
+import { productService, type ProductUpdateRequest } from '../../api/services/product';
+import type { MarketDetailResponse } from '../../types/market';
 import { useAuthStore } from '../../stores/authStore';
 import './ProductEdit.css';
 
@@ -45,7 +46,7 @@ const ProductEdit: React.FC = () => {
   const authUser = useAuthStore((state) => state.user);
 
   const [loading, setLoading] = useState(true);
-  const [product, setProduct] = useState<Product | null>(null);
+  const [product, setProduct] = useState<MarketDetailResponse | null>(null);
 
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
@@ -111,7 +112,7 @@ const ProductEdit: React.FC = () => {
         const productData = response.data;
 
         // 작성자 확인
-        if (productData.seller.id !== authUser?.userId?.toString()) {
+        if (productData.authorId !== authUser?.userId) {
           alert('수정 권한이 없습니다.');
           navigate(`/products/${id}`);
           return;
@@ -122,14 +123,14 @@ const ProductEdit: React.FC = () => {
         // 폼 데이터 설정
         setTitle(productData.title);
         setPrice(productData.price.toString());
-        setDescription(productData.description);
-        setMinParticipants(productData.targetQuantity.toString());
-        setMaxParticipants(productData.targetQuantity.toString());
-        setDeadline(productData.deadline);
-        setSelectedLocation(productData.location.fullAddress);
-        setSelectedCategories([productData.category]);
-        setExistingImageUrls(productData.images);
-        setImagePreviews(productData.images);
+        setDescription(productData.content);
+        setMinParticipants(productData.recruitMin.toString());
+        setMaxParticipants(productData.recruitMax.toString());
+        setDeadline(productData.endTime);
+        setSelectedLocation(productData.locationText);
+        setSelectedCategories([productData.categoryId]);
+        setExistingImageUrls(productData.images.map(img => img.imageUrl));
+        setImagePreviews(productData.images.map(img => img.imageUrl));
 
       } catch (error: any) {
         console.error('상품 로드 실패:', error);
@@ -315,7 +316,7 @@ const ProductEdit: React.FC = () => {
       const updateData: ProductUpdateRequest = {
         id,
         title,
-        description,
+        content: description,
         price: Number(price),
       };
 
@@ -357,7 +358,7 @@ const ProductEdit: React.FC = () => {
   if (loading) {
     return (
       <div className="product-edit">
-        <Header isLoggedIn={true} notificationCount={3} />
+        <Header notificationCount={3} />
         <div className="edit-container">
           <div className="loading-message">상품 정보를 불러오는 중...</div>
         </div>
@@ -368,7 +369,7 @@ const ProductEdit: React.FC = () => {
 
   return (
     <div className="product-edit">
-      <Header isLoggedIn={true} notificationCount={3} />
+      <Header notificationCount={3} />
 
       <div className="edit-container">
         <div className="edit-header">
