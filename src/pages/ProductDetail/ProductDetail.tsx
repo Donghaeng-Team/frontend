@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import './ProductDetail.css';
 import Header from '../../components/Header';
@@ -81,6 +81,11 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
   const [product, setProduct] = useState<MarketDetailResponse | null>(null);
   const [isWished, setIsWished] = useState(false);
   const [activeAccordion, setActiveAccordion] = useState<string[]>([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [currentX, setCurrentX] = useState(0);
+  const imageContainerRef = useRef<HTMLDivElement>(null);
 
   // 상품 데이터 로드
   useEffect(() => {
@@ -175,6 +180,45 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
     setIsWished(!isWished);
   };
 
+  // 이미지 캐러셀 핸들러
+  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+    setIsDragging(true);
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    setStartX(clientX);
+    setCurrentX(clientX);
+  };
+
+  const handleDragMove = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!isDragging) return;
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    setCurrentX(clientX);
+  };
+
+  const handleDragEnd = () => {
+    if (!isDragging) return;
+    setIsDragging(false);
+
+    const diff = startX - currentX;
+    const threshold = 50; // 최소 드래그 거리
+
+    if (Math.abs(diff) > threshold && product?.images) {
+      if (diff > 0 && currentImageIndex < product.images.length - 1) {
+        // 다음 이미지
+        setCurrentImageIndex(prev => prev + 1);
+      } else if (diff < 0 && currentImageIndex > 0) {
+        // 이전 이미지
+        setCurrentImageIndex(prev => prev - 1);
+      }
+    }
+
+    setStartX(0);
+    setCurrentX(0);
+  };
+
+  const handleDotClick = (index: number) => {
+    setCurrentImageIndex(index);
+  };
+
   const formatPrice = (price: number) => {
     return `₩${price.toLocaleString()}`;
   };
@@ -214,19 +258,52 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
       <main className="product-detail-container">
         {/* 상품 메인 섹션 */}
         <section className="product-main-section">
-          <div className="product-image-container">
+          <div 
+            className="product-image-container"
+            ref={imageContainerRef}
+            onMouseDown={handleDragStart}
+            onMouseMove={handleDragMove}
+            onMouseUp={handleDragEnd}
+            onMouseLeave={handleDragEnd}
+            onTouchStart={handleDragStart}
+            onTouchMove={handleDragMove}
+            onTouchEnd={handleDragEnd}
+            style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+          >
             {product.images && product.images.length > 0 ? (
-              <img
-                src={product.images[0].imageUrl}
-                alt={product.title}
-                className="product-image"
-                onError={(e) => {
-                  console.error('❌ 이미지 로드 실패:', product.images[0].imageUrl);
-                  e.currentTarget.style.display = 'none';
-                  e.currentTarget.parentElement!.innerHTML = '<div class="product-image-placeholder">📦 이미지를 불러올 수 없습니다</div>';
-                }}
-                onLoad={() => console.log('✅ 이미지 로드 성공:', product.images[0].imageUrl)}
-              />
+              <>
+                <div className="product-image-carousel">
+                  {product.images.map((image, index) => (
+                    <img
+                      key={index}
+                      src={image.imageUrl}
+                      alt={`${product.title} - ${index + 1}`}
+                      className={`product-image ${index === currentImageIndex ? 'active' : ''}`}
+                      style={{
+                        transform: `translateX(${(index - currentImageIndex) * 100}%)`,
+                        transition: isDragging ? 'none' : 'transform 0.3s ease-in-out'
+                      }}
+                      onError={(e) => {
+                        console.error('❌ 이미지 로드 실패:', image.imageUrl);
+                      }}
+                      onLoad={() => console.log('✅ 이미지 로드 성공:', image.imageUrl)}
+                      draggable={false}
+                    />
+                  ))}
+                </div>
+                {product.images.length > 1 && (
+                  <div className="product-image-indicators">
+                    {product.images.map((_, index) => (
+                      <button
+                        key={index}
+                        className={`indicator-dot ${index === currentImageIndex ? 'active' : ''}`}
+                        onClick={() => handleDotClick(index)}
+                        aria-label={`이미지 ${index + 1}로 이동`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
             ) : (
               <div className="product-image-placeholder">
                 📦 상품 이미지 없음
