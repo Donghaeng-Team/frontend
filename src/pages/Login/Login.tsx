@@ -20,6 +20,20 @@ const Login: React.FC<LoginProps> = ({
 }) => {
   const navigate = useNavigate();
 
+  const handleKakaoLogin = () => {
+    // 백엔드 OAuth 엔드포인트로 리다이렉트
+    const baseURL = import.meta.env.VITE_API_BASE_URL || '';
+    window.location.href = `${baseURL}/api/v1/user/public/oauth2/authorization/kakao`;
+    onKakaoLogin?.();
+  };
+
+  const handleGoogleLogin = () => {
+    // 백엔드 OAuth 엔드포인트로 리다이렉트
+    const baseURL = import.meta.env.VITE_API_BASE_URL || '';
+    window.location.href = `${baseURL}/api/v1/user/public/oauth2/authorization/google`;
+    onGoogleLogin?.();
+  };
+
   return (
     <div className="login-page">
       <div className="login-container">
@@ -45,7 +59,7 @@ const Login: React.FC<LoginProps> = ({
               variant="kakao" 
               size="large" 
               fullWidth
-              onClick={onKakaoLogin}
+              onClick={handleKakaoLogin}
             >
               💬  카카오로 시작하기
             </Button>
@@ -54,7 +68,7 @@ const Login: React.FC<LoginProps> = ({
               variant="google" 
               size="large" 
               fullWidth
-              onClick={onGoogleLogin}
+              onClick={handleGoogleLogin}
             >
               🔍  구글로 시작하기
             </Button>
