@@ -34,7 +34,7 @@ export const chatService = {
    * GET /api/v1/chat/private/{roomId}
    */
   getChatRoom: async (roomId: number): Promise<ApiResponse<ChatRoomResponse>> => {
-    const response = await apiClient.get(\`/api/v1/chat/private/\${roomId}\`);
+    const response = await apiClient.get(`/api/v1/chat/private/${roomId}`);
     return response.data;
   },
 
@@ -43,7 +43,7 @@ export const chatService = {
    * POST /api/v1/chat/private/{roomId}/join
    */
   joinChatRoom: async (roomId: number): Promise<ApiResponse<ChatRoomResponse>> => {
-    const response = await apiClient.post(\`/api/v1/chat/private/\${roomId}/join\`);
+    const response = await apiClient.post(`/api/v1/chat/private/${roomId}/join`);
     return response.data;
   },
 
@@ -52,7 +52,7 @@ export const chatService = {
    * POST /api/v1/chat/private/{roomId}/exit
    */
   leaveChatRoom: async (roomId: number): Promise<ApiResponse<string>> => {
-    const response = await apiClient.post(\`/api/v1/chat/private/\${roomId}/exit\`);
+    const response = await apiClient.post(`/api/v1/chat/private/${roomId}/exit`);
     return response.data;
   },
 
@@ -76,7 +76,7 @@ export const chatService = {
    * POST /api/v1/chat/private/{roomId}/participate
    */
   confirmBuyer: async (roomId: number): Promise<ApiResponse<BuyerConfirmResponse>> => {
-    const response = await apiClient.post(\`/api/v1/chat/private/\${roomId}/participate\`);
+    const response = await apiClient.post(`/api/v1/chat/private/${roomId}/participate`);
     return response.data;
   },
 
@@ -85,7 +85,7 @@ export const chatService = {
    * DELETE /api/v1/chat/private/{roomId}/participate
    */
   cancelBuyer: async (roomId: number): Promise<ApiResponse<BuyerConfirmResponse>> => {
-    const response = await apiClient.delete(\`/api/v1/chat/private/\${roomId}/participate\`);
+    const response = await apiClient.delete(`/api/v1/chat/private/${roomId}/participate`);
     return response.data;
   },
 
@@ -97,7 +97,7 @@ export const chatService = {
     roomId: number,
     targetUserId: number
   ): Promise<ApiResponse<string>> => {
-    const response = await apiClient.post(\`/api/v1/chat/private/\${roomId}/kick\`, null, {
+    const response = await apiClient.post(`/api/v1/chat/private/${roomId}/kick`, null, {
       params: { targetUserId },
     });
     return response.data;
@@ -115,7 +115,7 @@ export const chatService = {
     roomId: number,
     hours: number
   ): Promise<ApiResponse<ExtendDeadlineResponse>> => {
-    const response = await apiClient.patch(\`/api/v1/chat/private/\${roomId}/extend\`, null, {
+    const response = await apiClient.patch(`/api/v1/chat/private/${roomId}/extend`, null, {
       params: { hours },
     });
     return response.data;
@@ -128,7 +128,7 @@ export const chatService = {
   closeRecruitment: async (
     roomId: number
   ): Promise<ApiResponse<RecruitmentCloseResponse>> => {
-    const response = await apiClient.patch(\`/api/v1/chat/private/\${roomId}/close\`);
+    const response = await apiClient.patch(`/api/v1/chat/private/${roomId}/close`);
     return response.data;
   },
 
@@ -137,7 +137,7 @@ export const chatService = {
    * POST /api/v1/chat/private/{roomId}/complete
    */
   completePurchase: async (roomId: number): Promise<ApiResponse<string>> => {
-    const response = await apiClient.post(\`/api/v1/chat/private/\${roomId}/complete\`);
+    const response = await apiClient.post(`/api/v1/chat/private/${roomId}/complete`);
     return response.data;
   },
 
@@ -153,7 +153,7 @@ export const chatService = {
     roomId: number,
     params: Omit<ChatMessagePageRequest, 'roomId'>
   ): Promise<ApiResponse<ChatMessagePageResponse>> => {
-    const response = await apiClient.get(\`/api/v1/chat/private/\${roomId}/messages\`, {
+    const response = await apiClient.get(`/api/v1/chat/private/${roomId}/messages`, {
       params: { ...params, roomId },
     });
     return response.data;
@@ -166,7 +166,7 @@ export const chatService = {
   getParticipants: async (
     roomId: number
   ): Promise<ApiResponse<ParticipantListResponse>> => {
-    const response = await apiClient.get(\`/api/v1/chat/private/\${roomId}/participants\`);
+    const response = await apiClient.get(`/api/v1/chat/private/${roomId}/participants`);
     return response.data;
   },
 };
