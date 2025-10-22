@@ -1,14 +1,18 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ChatRoom from '../../components/ChatRoom';
 import type { ChatMessage } from '../../components/ChatRoom';
 import BottomNav from '../../components/BottomNav';
 import type { ChatRoom as ChatRoomType } from '../../components/ChatRoomListModal';
+import { useChatStore } from '../../stores/chatStore';
+import { useAuthStore } from '../../stores/authStore';
 import './ChatList.css';
 
 const ChatList: React.FC = () => {
   const navigate = useNavigate();
-  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+  const { chatRooms, chatRoomsLoading, fetchChatRooms, error } = useChatStore();
+  const { user } = useAuthStore();
+  const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
@@ -31,38 +35,12 @@ const ChatList: React.FC = () => {
     }
   ]);
 
-  // 샘플 채팅방 데이터
-  const sampleChatRooms: ChatRoomType[] = [
-    {
-      id: '1',
-      productName: '제주 감귤 10kg 공동구매',
-      productImage: '',
-      lastMessage: '판매자: 현재 7명 참여중입니다! ...',
-      lastMessageTime: '2시간 전',
-      unreadCount: 3,
-      participants: { current: 7, max: 10 },
-      status: 'active'
-    },
-    {
-      id: '2',
-      productName: '애플 에어팟 프로 공동구매',
-      lastMessage: '구매자: 배송은 언제쯤 받을 수...',
-      lastMessageTime: '30분 전',
-      unreadCount: 1,
-      participants: { current: 5, max: 8 },
-      status: 'active'
-    },
-    {
-      id: '3',
-      productName: '스타벅스 텀블러 공동구매',
-      lastMessage: '판매자: 마감 임박! 2명만 더 모집...',
-      lastMessageTime: '1시간 전',
-      participants: { current: 18, max: 20 },
-      status: 'closing'
-    }
-  ];
+  // 채팅방 목록 로드
+  useEffect(() => {
+    fetchChatRooms();
+  }, [fetchChatRooms]);
 
-  const handleRoomSelect = (roomId: string) => {
+  const handleRoomSelect = (roomId: number) => {
     setSelectedRoomId(roomId);
   };
 
@@ -84,19 +62,36 @@ const ChatList: React.FC = () => {
     setSelectedRoomId(null);
   };
 
-  const selectedRoom = sampleChatRooms.find(room => room.id === selectedRoomId);
+  const selectedRoom = chatRooms.find(room => room.id === selectedRoomId);
 
-  const getStatusInfo = (status: ChatRoomType['status']) => {
+  const getStatusInfo = (status: string) => {
     switch (status) {
-      case 'active':
+      case 'RECRUITING':
         return { label: '진행중', color: '#339933', bgColor: '#e5ffe5' };
-      case 'closing':
+      case 'RECRUITMENT_CLOSED':
         return { label: '마감임박', color: '#cc6633', bgColor: '#fff2e5' };
-      case 'closed':
-        return { label: '마감', color: '#fafafa', bgColor: '#666666' };
+      case 'COMPLETED':
+      case 'CANCELLED':
+        return { label: '마감', color: '#666666', bgColor: '#fafafa' };
       default:
         return { label: '진행중', color: '#339933', bgColor: '#e5ffe5' };
     }
+  };
+
+  const formatLastMessageTime = (timestamp: string | null) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return '방금 전';
+    if (diffMins < 60) return `${diffMins}분 전`;
+    if (diffHours < 24) return `${diffHours}시간 전`;
+    if (diffDays < 7) return `${diffDays}일 전`;
+    return date.toLocaleDateString('ko-KR');
   };
 
   return (
@@ -106,13 +101,13 @@ const ChatList: React.FC = () => {
           <ChatRoom
             role="buyer"
             productInfo={{
-              name: selectedRoom.productName,
+              name: selectedRoom.title,
               price: 15000,
-              image: selectedRoom.productImage
+              image: selectedRoom.thumbnailUrl
             }}
             recruitmentStatus={{
-              current: selectedRoom.participants.current,
-              max: selectedRoom.participants.max,
+              current: selectedRoom.currentBuyers,
+              max: selectedRoom.maxBuyers,
               timeRemaining: '2시간 30분',
               status: selectedRoom.status
             }}
@@ -131,14 +126,18 @@ const ChatList: React.FC = () => {
 
             {/* 채팅방 목록 */}
             <div className="chat-list-content">
-              {sampleChatRooms.length === 0 ? (
+              {chatRoomsLoading ? (
+                <div className="chat-list-empty">
+                  <p className="chat-empty-text">로딩중...</p>
+                </div>
+              ) : chatRooms.length === 0 ? (
                 <div className="chat-list-empty">
                   <span className="chat-empty-icon">💬</span>
                   <p className="chat-empty-text">참여중인 채팅방이 없습니다</p>
                 </div>
               ) : (
                 <div className="chat-list">
-                  {sampleChatRooms.map((room) => {
+                  {chatRooms.map((room) => {
                     const statusInfo = getStatusInfo(room.status);
 
                     return (
@@ -148,10 +147,10 @@ const ChatList: React.FC = () => {
                         onClick={() => handleRoomSelect(room.id)}
                       >
                         <div className="chat-image-wrapper">
-                          {room.productImage ? (
+                          {room.thumbnailUrl ? (
                             <img
-                              src={room.productImage}
-                              alt={room.productName}
+                              src={room.thumbnailUrl}
+                              alt={room.title}
                               className="chat-image"
                             />
                           ) : (
@@ -161,12 +160,12 @@ const ChatList: React.FC = () => {
 
                         <div className="chat-info">
                           <div className="chat-top-row">
-                            <h3 className="chat-product-name">{room.productName}</h3>
-                            <span className="chat-time">{room.lastMessageTime}</span>
+                            <h3 className="chat-product-name">{room.title}</h3>
+                            <span className="chat-time">{formatLastMessageTime(room.lastMessageAt)}</span>
                           </div>
 
                           <div className="chat-message-row">
-                            <p className="chat-last-message">{room.lastMessage}</p>
+                            <p className="chat-last-message">{room.lastMessage || '메시지 없음'}</p>
                             {room.unreadCount && room.unreadCount > 0 && (
                               <div className="chat-unread-badge">
                                 <span className="chat-unread-count">{room.unreadCount}</span>
@@ -177,7 +176,7 @@ const ChatList: React.FC = () => {
                           <div className="chat-bottom-row">
                             <div className="chat-participants-badge">
                               <span className="chat-participants-text">
-                                👥 {room.participants.current}/{room.participants.max}명
+                                👥 {room.currentBuyers}/{room.maxBuyers}명
                               </span>
                             </div>
                             <div
