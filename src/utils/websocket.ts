@@ -34,7 +34,7 @@ export class ChatWebSocketClient {
     this.client = new Client({
       webSocketFactory: () => {
         const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8086';
-        return new SockJS(\`\${baseURL}/ws-chat\`) as any;
+        return new SockJS(`${baseURL}/ws-chat`) as any;
       },
       
       debug: (str) => {
@@ -66,7 +66,7 @@ export class ChatWebSocketClient {
         // 재연결 시도
         if (this.reconnectAttempts < this.maxReconnectAttempts) {
           this.reconnectAttempts++;
-          console.log(\`[WebSocket] Reconnecting... (attempt \${this.reconnectAttempts}/\${this.maxReconnectAttempts})\`);
+          console.log(`[WebSocket] Reconnecting... (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
           setTimeout(() => this.connect(), this.reconnectDelay * this.reconnectAttempts);
         }
       },
@@ -111,13 +111,13 @@ export class ChatWebSocketClient {
 
     // 이미 구독 중이면 무시
     if (this.subscriptions.has(roomId)) {
-      console.log(\`[WebSocket] Already subscribed to room \${roomId}\`);
+      console.log(`[WebSocket] Already subscribed to room ${roomId}`);
       return;
     }
 
     // 채팅방 메시지 구독
     const subscription = this.client.subscribe(
-      \`/topic/chat/\${roomId}\`,
+      `/topic/chat/${roomId}`,
       (message) => {
         try {
           const data: WebSocketChatMessage = JSON.parse(message.body);
@@ -129,7 +129,7 @@ export class ChatWebSocketClient {
     );
 
     this.subscriptions.set(roomId, subscription);
-    console.log(\`[WebSocket] Subscribed to room \${roomId}\`);
+    console.log(`[WebSocket] Subscribed to room ${roomId}`);
   }
 
   /**
@@ -140,7 +140,7 @@ export class ChatWebSocketClient {
     if (subscription) {
       subscription.unsubscribe();
       this.subscriptions.delete(roomId);
-      console.log(\`[WebSocket] Unsubscribed from room \${roomId}\`);
+      console.log(`[WebSocket] Unsubscribed from room ${roomId}`);
     }
   }
 
@@ -162,7 +162,7 @@ export class ChatWebSocketClient {
     };
 
     this.client.publish({
-      destination: \`/app/chat/\${roomId}\`,
+      destination: `/app/chat/${roomId}`,
       body: JSON.stringify(payload),
     });
 
