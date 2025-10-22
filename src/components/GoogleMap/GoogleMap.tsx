@@ -20,45 +20,67 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
   useEffect(() => {
     let timeoutId: number;
 
-    if (navigator.geolocation) {
-      // 5초 타임아웃 설정
-      timeoutId = setTimeout(() => {
-        console.warn('위치 가져오기 타임아웃, 기본 위치 사용');
-        setCurrentAddress('서울특별시 중구 태평로1가');
-        reverseGeocode(initialCenter.lat, initialCenter.lng);
-        setIsLoadingLocation(false);
-      }, 5000);
-
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          clearTimeout(timeoutId);
-          const newCenter = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          };
-          setCenter(newCenter);
-          reverseGeocode(newCenter.lat, newCenter.lng);
-          setIsLoadingLocation(false);
-        },
-        (error) => {
-          clearTimeout(timeoutId);
-          console.error('위치 정보를 가져올 수 없습니다:', error);
+    const initializeLocation = async () => {
+      if (navigator.geolocation) {
+        // 5초 타임아웃 설정
+        timeoutId = setTimeout(() => {
+          console.warn('위치 가져오기 타임아웃, 기본 위치 사용');
           setCurrentAddress('서울특별시 중구 태평로1가');
-          reverseGeocode(initialCenter.lat, initialCenter.lng);
           setIsLoadingLocation(false);
-        },
-        {
-          timeout: 5000,
-          maximumAge: 0,
-          enableHighAccuracy: false // 빠른 응답을 위해 정확도 낮춤
+          if (onLocationChange) {
+            onLocationChange({ 
+              lat: initialCenter.lat, 
+              lng: initialCenter.lng, 
+              address: '서울특별시 중구 태평로1가' 
+            });
+          }
+        }, 5000);
+
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            clearTimeout(timeoutId);
+            const newCenter = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            };
+            setCenter(newCenter);
+            await reverseGeocode(newCenter.lat, newCenter.lng);
+            setIsLoadingLocation(false);
+          },
+          async (error) => {
+            clearTimeout(timeoutId);
+            console.error('위치 정보를 가져올 수 없습니다:', error);
+            setCurrentAddress('서울특별시 중구 태평로1가');
+            setIsLoadingLocation(false);
+            if (onLocationChange) {
+              onLocationChange({ 
+                lat: initialCenter.lat, 
+                lng: initialCenter.lng, 
+                address: '서울특별시 중구 태평로1가' 
+              });
+            }
+          },
+          {
+            timeout: 5000,
+            maximumAge: 0,
+            enableHighAccuracy: false // 빠른 응답을 위해 정확도 낮춤
+          }
+        );
+      } else {
+        console.error('Geolocation을 지원하지 않는 브라우저입니다.');
+        setCurrentAddress('서울특별시 중구 태평로1가');
+        setIsLoadingLocation(false);
+        if (onLocationChange) {
+          onLocationChange({ 
+            lat: initialCenter.lat, 
+            lng: initialCenter.lng, 
+            address: '서울특별시 중구 태평로1가' 
+          });
         }
-      );
-    } else {
-      console.error('Geolocation을 지원하지 않는 브라우저입니다.');
-      setCurrentAddress('서울특별시 중구 태평로1가');
-      reverseGeocode(initialCenter.lat, initialCenter.lng);
-      setIsLoadingLocation(false);
-    }
+      }
+    };
+
+    initializeLocation();
 
     return () => {
       if (timeoutId) clearTimeout(timeoutId);

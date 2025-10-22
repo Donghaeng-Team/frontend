@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import MobileHeader from '../../components/MobileHeader';
 import { communityService } from '../../api/services/community';
@@ -47,9 +47,10 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
   notificationCount = 3
 }) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const currentDivision = useLocationStore((state) => state.currentDivision);
   const [activeCategory, setActiveCategory] = useState('전체');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [posts, setPosts] = useState<Post[]>([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -143,7 +144,8 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
         
         const response = await communityService.getPosts({
           divisionCode: currentDivisionCode,
-          tag: 'all'
+          tag: 'all',
+          ...(searchQuery.trim() && { keyword: searchQuery.trim() })
         });
 
         console.log('✅ Community API Response:', response);
@@ -172,7 +174,7 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
     };
 
     loadInitialPosts();
-  }, [initialPosts, currentDivision]);
+  }, [initialPosts, currentDivision, searchQuery]);
 
   // 더 많은 게시글 로드
   const loadMorePosts = useCallback(async () => {
@@ -239,7 +241,8 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
       const tag = getCategoryTag(category);
       const response = await communityService.getPosts({
         divisionCode: divisionCode,
-        tag: tag
+        tag: tag,
+        ...(searchQuery.trim() && { keyword: searchQuery.trim() })
       });
 
       console.log(`✅ Category ${category} API Response:`, response);
@@ -261,6 +264,10 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    if (searchQuery.trim()) {
+      // URL 파라미터 업데이트
+      navigate(`/community?search=${encodeURIComponent(searchQuery)}`);
+    }
     onSearch?.(searchQuery);
   };
 
@@ -337,16 +344,23 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
           <div className="posts-container">
             {loading && posts.length === 0 ? (
               <div className="loading-message">게시글을 불러오는 중...</div>
-            ) : posts.length === 0 ? (
+) : posts.length === 0 ? (
               <div className="empty-state">
-                <div className="empty-icon">📭</div>
-                <h3 className="empty-title">아직 게시글이 없어요</h3>
-                <p className="empty-description">
-                  우리 동네의 첫 번째 이야기를 남겨보세요!
-                </p>
-                <button className="empty-action-button" onClick={handleWriteClick}>
-                  ✏️ 첫 글 작성하기
-                </button>
+                    <div className="empty-icon">🔍</div>
+                    <h3 className="empty-title">
+                      {searchQuery.trim() ? '검색 결과가 없어요' : '아직 게시글이 없어요'}
+                    </h3>
+                    <p className="empty-description">
+                      {searchQuery.trim() 
+                        ? '다른 검색어로 시도해보세요.'
+                        : '우리 동네의 첫 번째 이야기를 남겨보세요!'
+                      }
+                    </p>
+                    {!searchQuery.trim() && (
+                      <button className="empty-action-button" onClick={handleWriteClick}>
+                        ✏️ 첫 글 작성하기
+                      </button>
+                    )}
               </div>
             ) : posts.map(post => (
               <article
