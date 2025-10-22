@@ -255,23 +255,3 @@
       font-size: 13px;
     }
   }
-
-    .category-level-header {
-      padding: 7px 10px;
-    }
-
-    .category-level-title {
-      font-size: 12px;
-    }
-
-    .category-item {
-      padding: 8px 10px;
-      font-size: 12px;
-    }
-
-    .category-placeholder,
-    .category-loading {
-      padding: 10px;
-      font-size: 12px;
-    }
-  }

@@ -154,21 +154,3 @@
       font-size: 17px;
     }
   }
-  
-    .main-subtitle {
-      font-size: 16px;
-    }
-  
-    .main-hero {
-      padding: 40px 20px;
-      min-height: 300px;
-    }
-
-    .main-features {
-      padding: 40px 20px;
-    }
-
-    .main-features-container {
-      gap: 30px;
-    }
-  }
