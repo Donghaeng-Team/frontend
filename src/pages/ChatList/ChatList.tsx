@@ -1,9 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import ChatRoom from '../../components/ChatRoom';
-import type { ChatMessage } from '../../components/ChatRoom';
 import BottomNav from '../../components/BottomNav';
-import type { ChatRoom as ChatRoomType } from '../../components/ChatRoomListModal';
 import { useChatStore } from '../../stores/chatStore';
 import { useAuthStore } from '../../stores/authStore';
 import './ChatList.css';
@@ -12,28 +9,6 @@ const ChatList: React.FC = () => {
   const navigate = useNavigate();
   const { chatRooms, chatRoomsLoading, fetchChatRooms, error } = useChatStore();
   const { user } = useAuthStore();
-  const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: '1',
-      type: 'system',
-      content: '채팅방이 시작되었습니다.'
-    },
-    {
-      id: '2',
-      type: 'seller',
-      content: '안녕하세요! 공동구매에 참여해주셔서 감사합니다.',
-      sender: { name: '판매자', isSeller: true },
-      timestamp: '14:30'
-    },
-    {
-      id: '3',
-      type: 'buyer',
-      content: '언제 배송되나요?',
-      sender: { name: '구매자1' },
-      timestamp: '14:32'
-    }
-  ]);
 
   // 채팅방 목록 로드
   useEffect(() => {
@@ -41,28 +16,8 @@ const ChatList: React.FC = () => {
   }, [fetchChatRooms]);
 
   const handleRoomSelect = (roomId: number) => {
-    setSelectedRoomId(roomId);
+    navigate(`/chat/${roomId}`);
   };
-
-  const handleBackToList = () => {
-    setSelectedRoomId(null);
-  };
-
-  const handleSendMessage = (message: string) => {
-    const newMessage: ChatMessage = {
-      id: Date.now().toString(),
-      type: 'my',
-      content: message,
-      timestamp: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
-    };
-    setMessages([...messages, newMessage]);
-  };
-
-  const handleLeave = () => {
-    setSelectedRoomId(null);
-  };
-
-  const selectedRoom = chatRooms.find(room => room.id === selectedRoomId);
 
   const getStatusInfo = (status: string) => {
     switch (status) {
@@ -97,28 +52,7 @@ const ChatList: React.FC = () => {
   return (
     <>
       <div className="chat-list-page">
-        {selectedRoomId && selectedRoom ? (
-          <ChatRoom
-            role="buyer"
-            productInfo={{
-              name: selectedRoom.title,
-              price: 15000,
-              image: selectedRoom.thumbnailUrl
-            }}
-            recruitmentStatus={{
-              current: selectedRoom.currentBuyers,
-              max: selectedRoom.maxBuyers,
-              timeRemaining: '2시간 30분',
-              status: selectedRoom.status
-            }}
-            messages={messages}
-            onBack={handleBackToList}
-            onLeave={handleLeave}
-            onSendMessage={handleSendMessage}
-            onApply={() => console.log('구매 신청')}
-          />
-        ) : (
-          <div className="chat-list-container">
+        <div className="chat-list-container">
             {/* 헤더 */}
             <div className="chat-list-header">
               <h2 className="chat-list-title">💬 참여중인 채팅방</h2>
@@ -197,7 +131,6 @@ const ChatList: React.FC = () => {
               )}
             </div>
           </div>
-        )}
       </div>
       <BottomNav notificationCount={0} />
     </>
