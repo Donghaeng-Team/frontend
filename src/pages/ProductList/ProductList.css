@@ -273,27 +273,26 @@
   .error-icon {
     font-size: 64px;
     margin-bottom: 20px;
-    opacity: 0.8;
+    opacity: 0.6;
   }
 
   .error-container h3 {
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 600;
     color: #333333;
-    margin: 0 0 16px 0;
+    margin: 0 0 12px 0;
   }
 
-  .error-message-text {
-    font-size: 16px;
+  .error-description {
+    font-size: 15px;
     color: #666666;
-    margin: 0 0 8px 0;
-    max-width: 500px;
+    margin: 0 0 32px 0;
+    line-height: 1.6;
+    max-width: 400px;
   }
 
-  .error-hint {
-    font-size: 14px;
-    color: #999999;
-    margin: 0 0 32px 0;
+  .error-container button {
+    margin-top: 8px;
   }
 
   /* 반응형 */

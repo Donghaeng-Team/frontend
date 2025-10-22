@@ -575,20 +575,22 @@ const ProductList: React.FC = () => {
 
           {/* 상품 그리드 */}
           <div className="products-grid" onWheel={handleWheel}>
-  {error ? (
+{error ? (
               // 에러 표시
               <div className="error-container">
-                <div className="error-icon">⚠️</div>
-                <h3>문제가 발생했습니다</h3>
-                <p className="error-message-text">{error}</p>
+                <div className="error-icon">📭</div>
+                <h3>상품이 없습니다</h3>
+                <p className="error-description">
+                  동네 범위를 늘려서 검색해보세요.
+                </p>
                 <Button
-                  variant="primary"
+                  variant="outline"
                   onClick={() => {
-                    setError(null);
-                    window.location.reload();
+                    setTempDistanceRange(3);
+                    handleApplyFilters();
                   }}
                 >
-                  다시 시도
+                  동네 범위 넓히기
                 </Button>
               </div>
             ) : loading ? (
