@@ -1,6 +1,6 @@
 .login-page {
     min-height: 100vh;
-    background-color: #fafafa;
+    background-color: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -218,14 +218,5 @@
 
     .test-login-buttons button {
       font-size: 12px;
-    }
-  }
-  
-    .login-logo {
-      font-size: 28px;
-    }
-  
-    .login-title {
-      font-size: 20px;
     }
   }
