@@ -253,9 +253,7 @@ const MyPage: React.FC<MyPageProps> = () => {
       return;
     }
 
-    if (window.confirm('정말로 회원탈퇴를 진행하시겠습니까?
-
-탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다.')) {
+    if (window.confirm('정말로 회원탈퇴를 진행하시겠습니까?\n\n탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다.')) {
       try {
         await userService.deleteAccount(authUser.userId);
         alert('회원탈퇴가 완료되었습니다.');
