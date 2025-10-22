@@ -8,6 +8,9 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
+    define: {
+      global: 'globalThis',
+    },
     server: {
       port: 3000,  // 프론트엔드 개발 서버 포트
       hmr: true,  // HMR 활성화 (기본값)
