@@ -247,9 +247,24 @@ const MyPage: React.FC<MyPageProps> = () => {
     logout();
   };
 
-  const handleWithdrawal = () => {
-    if (window.confirm('정말로 회원탈퇴를 진행하시겠습니까?')) {
-      console.log('회원탈퇴');
+  const handleWithdrawal = async () => {
+    if (!authUser?.userId) {
+      alert('사용자 정보를 찾을 수 없습니다.');
+      return;
+    }
+
+    if (window.confirm('정말로 회원탈퇴를 진행하시겠습니까?
+
+탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다.')) {
+      try {
+        await userService.deleteAccount(authUser.userId);
+        alert('회원탈퇴가 완료되었습니다.');
+        // 로그아웃 처리 (자동으로 메인 페이지로 리다이렉트됨)
+        logout();
+      } catch (error: any) {
+        console.error('회원탈퇴 실패:', error);
+        alert(error.message || '회원탈퇴에 실패했습니다.');
+      }
     }
   };
 

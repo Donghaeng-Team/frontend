@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import MobileHeader from '../../components/MobileHeader';
 import CategorySelector from '../../components/CategorySelector';
@@ -106,6 +106,7 @@ type ApiProduct = MarketSimpleResponse;
 
 const ProductList: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const currentDivision = useLocationStore((state) => state.currentDivision);
 
   // 상태 관리
@@ -117,7 +118,7 @@ const ProductList: React.FC = () => {
   const [tempCategories, setTempCategories] = useState<string[]>([]);
   const [distanceRange, setDistanceRange] = useState(2);
   const [tempDistanceRange, setTempDistanceRange] = useState(2);
-  const [searchKeyword, setSearchKeyword] = useState('');
+  const [searchKeyword, setSearchKeyword] = useState(searchParams.get('keyword') || '');
   const [sortBy, setSortBy] = useState('latest');
   const [isFilterChanged, setIsFilterChanged] = useState(false);
   const [page, setPage] = useState(1);
@@ -164,9 +165,14 @@ const ProductList: React.FC = () => {
         setDivisionId(currentDivisionId);
 
         // 상품 데이터 로드 (Public API 사용)
+        const initialKeyword = searchParams.get('keyword') || '';
+        
         const response = await marketService.getMarketPosts({
           divisionId: currentDivisionId,
           depth: 1,
+          status: 'RECRUITING',
+          keyword: initialKeyword || undefined,
+          sort: 'LATEST',
           pageNum: 0,
           pageSize: ITEMS_PER_PAGE
         });
@@ -231,21 +237,14 @@ const ProductList: React.FC = () => {
       const nextPage = page + 1;
 
       // 정렬 기준 변환
-      let sortByApi: 'createdAt' | 'deadline' | 'price' | 'popularity' = 'createdAt';
-      let sortOrderApi: 'asc' | 'desc' = 'desc';
-
+      let sortType: 'LATEST' | 'ENDING_SOON' | 'CHEAPEST' | 'MOST_VIEWED' = 'LATEST';
+      
       if (sortBy === 'price-low') {
-        sortByApi = 'price';
-        sortOrderApi = 'asc';
-      } else if (sortBy === 'price-high') {
-        sortByApi = 'price';
-        sortOrderApi = 'desc';
+        sortType = 'CHEAPEST';
       } else if (sortBy === 'popular') {
-        sortByApi = 'popularity';
-        sortOrderApi = 'desc';
+        sortType = 'MOST_VIEWED';
       } else if (sortBy === 'closing') {
-        sortByApi = 'deadline';
-        sortOrderApi = 'asc';
+        sortType = 'ENDING_SOON';
       }
 
       // 현재 필터 적용
@@ -254,8 +253,10 @@ const ProductList: React.FC = () => {
       const response = await marketService.getMarketPosts({
         divisionId: divisionId,
         depth: distanceRange,
+        status: 'RECRUITING',
         categoryId: categoryId,
         keyword: searchKeyword || undefined,
+        sort: sortType,
         pageNum: nextPage,
         pageSize: ITEMS_PER_PAGE
       });
@@ -319,7 +320,9 @@ const ProductList: React.FC = () => {
       const response = await marketService.getMarketPosts({
         divisionId: divisionId,
         depth: tempDistanceRange,
+        status: 'RECRUITING',
         categoryId: categoryId,
+        sort: 'LATEST',
         pageNum: 0,
         pageSize: ITEMS_PER_PAGE
       });
@@ -351,6 +354,8 @@ const ProductList: React.FC = () => {
       const response = await marketService.getMarketPosts({
         divisionId: divisionId,
         depth: 1,
+        status: 'RECRUITING',
+        sort: 'LATEST',
         pageNum: 0,
         pageSize: ITEMS_PER_PAGE
       });
@@ -381,8 +386,10 @@ const ProductList: React.FC = () => {
       const response = await marketService.getMarketPosts({
         divisionId: divisionId,
         depth: distanceRange,
+        status: 'RECRUITING',
         categoryId: categoryId,
         keyword: keyword || undefined,
+        sort: 'LATEST',
         pageNum: 0,
         pageSize: ITEMS_PER_PAGE
       });
@@ -408,21 +415,14 @@ const ProductList: React.FC = () => {
       setLoadingMore(true);
 
       // 정렬 기준 변환
-      let sortByApi: 'createdAt' | 'deadline' | 'price' | 'popularity' = 'createdAt';
-      let sortOrderApi: 'asc' | 'desc' = 'desc';
-
+      let sortType: 'LATEST' | 'ENDING_SOON' | 'CHEAPEST' | 'MOST_VIEWED' = 'LATEST';
+      
       if (value === 'price-low') {
-        sortByApi = 'price';
-        sortOrderApi = 'asc';
-      } else if (value === 'price-high') {
-        sortByApi = 'price';
-        sortOrderApi = 'desc';
+        sortType = 'CHEAPEST';
       } else if (value === 'popular') {
-        sortByApi = 'popularity';
-        sortOrderApi = 'desc';
+        sortType = 'MOST_VIEWED';
       } else if (value === 'closing') {
-        sortByApi = 'deadline';
-        sortOrderApi = 'asc';
+        sortType = 'ENDING_SOON';
       }
 
       // 현재 필터 적용
@@ -431,8 +431,10 @@ const ProductList: React.FC = () => {
       const response = await marketService.getMarketPosts({
         divisionId: divisionId,
         depth: distanceRange,
+        status: 'RECRUITING',
         categoryId: categoryId,
         keyword: searchKeyword || undefined,
+        sort: sortType,
         pageNum: 0,
         pageSize: ITEMS_PER_PAGE
       });

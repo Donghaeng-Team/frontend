@@ -15,8 +15,13 @@ const Main: React.FC = () => {
   }, [navigate]);
 
   const handleSearch = (value: string) => {
-    console.log('검색:', value);
-    // 검색 로직 구현
+    if (value.trim()) {
+      // 공동구매 페이지로 이동하면서 검색어 전달
+      navigate(`/products?keyword=${encodeURIComponent(value.trim())}`);
+    } else {
+      // 검색어가 없으면 그냥 공동구매 페이지로 이동
+      navigate('/products');
+    }
   };
 
   // 모바일에서는 렌더링하지 않음
