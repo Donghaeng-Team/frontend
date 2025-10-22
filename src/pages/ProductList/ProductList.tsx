@@ -583,15 +583,6 @@ const ProductList: React.FC = () => {
                 <p className="error-description">
                   동네 범위를 늘려서 검색해보세요.
                 </p>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setTempDistanceRange(3);
-                    handleApplyFilters();
-                  }}
-                >
-                  동네 범위 넓히기
-                </Button>
               </div>
             ) : loading ? (
               // 초기 로딩 스켈레톤
