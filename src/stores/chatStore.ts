@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { chatService } from '../api/services/chat';
-import { ChatWebSocketClient, ConnectionStatus } from '../utils/websocket';
+import { ChatWebSocketClient } from '../utils/websocket';
+import type { ConnectionStatus } from '../utils/websocket';
 import type {
   ChatRoomResponse,
   ChatMessageResponse,
