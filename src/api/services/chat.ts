@@ -1,122 +1,172 @@
 import apiClient from '../client';
-import type { ApiResponse, PaginationResponse } from '../../types';
+import type {
+  ApiResponse,
+  ChatRoomResponse,
+  ChatRoomPageRequest,
+  ChatRoomPageResponse,
+  ChatMessagePageRequest,
+  ChatMessagePageResponse,
+  ParticipantListResponse,
+  BuyerConfirmResponse,
+  ExtendDeadlineResponse,
+  RecruitmentCloseResponse,
+  ChatRoomCreateRequest,
+} from '../../types';
 
-// 채팅 관련 타입 정의
-export interface ChatRoom {
-  id: string;
-  productId: string;
-  productName: string;
-  productImage?: string;
-  participants: ChatParticipant[];
-  lastMessage?: ChatMessage;
-  unreadCount: number;
-  status: 'active' | 'closed';
-  createdAt: string;
-  updatedAt: string;
-}
+// ========================================
+// 채팅방 관리 API
+// ========================================
 
-export interface ChatParticipant {
-  userId: string;
-  userName: string;
-  userProfileImage?: string;
-  role: 'seller' | 'buyer';
-  joinedAt: string;
-}
-
-export interface ChatMessage {
-  id: string;
-  chatRoomId: string;
-  senderId: string;
-  senderName: string;
-  senderProfileImage?: string;
-  content: string;
-  messageType: 'text' | 'image' | 'system';
-  isRead: boolean;
-  createdAt: string;
-}
-
-export interface SendMessageRequest {
-  content: string;
-  messageType?: 'text' | 'image';
-}
-
-// 채팅 API 서비스
 export const chatService = {
-  // 채팅방 목록 조회
-  getChatRooms: async (params: { page?: number; size?: number } = {}): Promise<ApiResponse<PaginationResponse<ChatRoom>>> => {
-    const response = await apiClient.get('/chat/rooms', { params });
+  /**
+   * 채팅방 목록 조회 (커서 기반 페이징)
+   * GET /api/v1/chat/private
+   */
+  getChatRoomList: async (
+    params: ChatRoomPageRequest = {}
+  ): Promise<ApiResponse<ChatRoomPageResponse>> => {
+    const response = await apiClient.get('/api/v1/chat/private', { params });
     return response.data;
   },
 
-  // 특정 상품의 채팅방 조회/생성
-  getOrCreateChatRoom: async (productId: string): Promise<ApiResponse<ChatRoom>> => {
-    const response = await apiClient.post(`/chat/rooms/product/${productId}`);
+  /**
+   * 채팅방 상세 조회 (입장)
+   * GET /api/v1/chat/private/{roomId}
+   */
+  getChatRoom: async (roomId: number): Promise<ApiResponse<ChatRoomResponse>> => {
+    const response = await apiClient.get(\`/api/v1/chat/private/\${roomId}\`);
     return response.data;
   },
 
-  // 채팅방 상세 조회
-  getChatRoom: async (roomId: string): Promise<ApiResponse<ChatRoom>> => {
-    const response = await apiClient.get(`/chat/rooms/${roomId}`);
+  /**
+   * 채팅방 참여
+   * POST /api/v1/chat/private/{roomId}/join
+   */
+  joinChatRoom: async (roomId: number): Promise<ApiResponse<ChatRoomResponse>> => {
+    const response = await apiClient.post(\`/api/v1/chat/private/\${roomId}/join\`);
     return response.data;
   },
 
-  // 채팅 메시지 목록 조회
+  /**
+   * 채팅방 나가기
+   * POST /api/v1/chat/private/{roomId}/exit
+   */
+  leaveChatRoom: async (roomId: number): Promise<ApiResponse<string>> => {
+    const response = await apiClient.post(\`/api/v1/chat/private/\${roomId}/exit\`);
+    return response.data;
+  },
+
+  /**
+   * 채팅방 생성 (Internal API)
+   * POST /internal/v1/chat/create
+   */
+  createChatRoom: async (
+    data: ChatRoomCreateRequest
+  ): Promise<ApiResponse<ChatRoomResponse>> => {
+    const response = await apiClient.post('/internal/v1/chat/create', data);
+    return response.data;
+  },
+
+  // ========================================
+  // 구매자 관리 API
+  // ========================================
+
+  /**
+   * 구매자 확정
+   * POST /api/v1/chat/private/{roomId}/participate
+   */
+  confirmBuyer: async (roomId: number): Promise<ApiResponse<BuyerConfirmResponse>> => {
+    const response = await apiClient.post(\`/api/v1/chat/private/\${roomId}/participate\`);
+    return response.data;
+  },
+
+  /**
+   * 구매자 취소
+   * DELETE /api/v1/chat/private/{roomId}/participate
+   */
+  cancelBuyer: async (roomId: number): Promise<ApiResponse<BuyerConfirmResponse>> => {
+    const response = await apiClient.delete(\`/api/v1/chat/private/\${roomId}/participate\`);
+    return response.data;
+  },
+
+  /**
+   * 참여자 강퇴
+   * POST /api/v1/chat/private/{roomId}/kick
+   */
+  kickParticipant: async (
+    roomId: number,
+    targetUserId: number
+  ): Promise<ApiResponse<string>> => {
+    const response = await apiClient.post(\`/api/v1/chat/private/\${roomId}/kick\`, null, {
+      params: { targetUserId },
+    });
+    return response.data;
+  },
+
+  // ========================================
+  // 채팅방 상태 관리 API
+  // ========================================
+
+  /**
+   * 마감 시간 연장
+   * PATCH /api/v1/chat/private/{roomId}/extend
+   */
+  extendDeadline: async (
+    roomId: number,
+    hours: number
+  ): Promise<ApiResponse<ExtendDeadlineResponse>> => {
+    const response = await apiClient.patch(\`/api/v1/chat/private/\${roomId}/extend\`, null, {
+      params: { hours },
+    });
+    return response.data;
+  },
+
+  /**
+   * 모집 마감
+   * PATCH /api/v1/chat/private/{roomId}/close
+   */
+  closeRecruitment: async (
+    roomId: number
+  ): Promise<ApiResponse<RecruitmentCloseResponse>> => {
+    const response = await apiClient.patch(\`/api/v1/chat/private/\${roomId}/close\`);
+    return response.data;
+  },
+
+  /**
+   * 구매 완료
+   * POST /api/v1/chat/private/{roomId}/complete
+   */
+  completePurchase: async (roomId: number): Promise<ApiResponse<string>> => {
+    const response = await apiClient.post(\`/api/v1/chat/private/\${roomId}/complete\`);
+    return response.data;
+  },
+
+  // ========================================
+  // 메시지 & 참여자 조회 API
+  // ========================================
+
+  /**
+   * 메시지 목록 조회 (커서 기반 페이징)
+   * GET /api/v1/chat/private/{roomId}/messages
+   */
   getMessages: async (
-    roomId: string,
-    params: { page?: number; size?: number; before?: string } = {}
-  ): Promise<ApiResponse<PaginationResponse<ChatMessage>>> => {
-    const response = await apiClient.get(`/chat/rooms/${roomId}/messages`, { params });
-    return response.data;
-  },
-
-  // 메시지 전송
-  sendMessage: async (roomId: string, data: SendMessageRequest): Promise<ApiResponse<ChatMessage>> => {
-    const response = await apiClient.post(`/chat/rooms/${roomId}/messages`, data);
-    return response.data;
-  },
-
-  // 이미지 메시지 전송
-  sendImageMessage: async (roomId: string, image: File): Promise<ApiResponse<ChatMessage>> => {
-    const formData = new FormData();
-    formData.append('image', image);
-    formData.append('messageType', 'image');
-
-    const response = await apiClient.post(`/chat/rooms/${roomId}/messages`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+    roomId: number,
+    params: Omit<ChatMessagePageRequest, 'roomId'>
+  ): Promise<ApiResponse<ChatMessagePageResponse>> => {
+    const response = await apiClient.get(\`/api/v1/chat/private/\${roomId}/messages\`, {
+      params: { ...params, roomId },
     });
     return response.data;
   },
 
-  // 메시지 읽음 처리
-  markAsRead: async (roomId: string, messageId?: string): Promise<ApiResponse<null>> => {
-    const response = await apiClient.put(`/chat/rooms/${roomId}/read`, {
-      messageId,
-    });
-    return response.data;
-  },
-
-  // 채팅방 나가기
-  leaveChatRoom: async (roomId: string): Promise<ApiResponse<null>> => {
-    const response = await apiClient.delete(`/chat/rooms/${roomId}/leave`);
-    return response.data;
-  },
-
-  // 읽지 않은 메시지 총 개수 조회
-  getUnreadCount: async (): Promise<ApiResponse<{ totalUnreadCount: number }>> => {
-    const response = await apiClient.get('/chat/unread-count');
-    return response.data;
-  },
-
-  // 채팅방 알림 설정
-  updateNotificationSettings: async (
-    roomId: string,
-    enabled: boolean
-  ): Promise<ApiResponse<null>> => {
-    const response = await apiClient.put(`/chat/rooms/${roomId}/notifications`, {
-      enabled,
-    });
+  /**
+   * 참여자 목록 조회
+   * GET /api/v1/chat/private/{roomId}/participants
+   */
+  getParticipants: async (
+    roomId: number
+  ): Promise<ApiResponse<ParticipantListResponse>> => {
+    const response = await apiClient.get(\`/api/v1/chat/private/\${roomId}/participants\`);
     return response.data;
   },
 };
