@@ -144,7 +144,8 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
         
         const response = await communityService.getPosts({
           divisionCode: currentDivisionCode,
-          tag: 'all'
+          tag: 'all',
+          ...(searchQuery.trim() && { keyword: searchQuery.trim() })
         });
 
         console.log('✅ Community API Response:', response);
@@ -173,7 +174,7 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
     };
 
     loadInitialPosts();
-  }, [initialPosts, currentDivision]);
+  }, [initialPosts, currentDivision, searchQuery]);
 
   // 더 많은 게시글 로드
   const loadMorePosts = useCallback(async () => {
@@ -240,7 +241,8 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
       const tag = getCategoryTag(category);
       const response = await communityService.getPosts({
         divisionCode: divisionCode,
-        tag: tag
+        tag: tag,
+        ...(searchQuery.trim() && { keyword: searchQuery.trim() })
       });
 
       console.log(`✅ Category ${category} API Response:`, response);
@@ -342,19 +344,8 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
           <div className="posts-container">
             {loading && posts.length === 0 ? (
               <div className="loading-message">게시글을 불러오는 중...</div>
-) : (() => {
-              // 검색어가 있으면 필터링
-              const filteredPosts = searchQuery.trim()
-                ? posts.filter(post => 
-                    post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    post.author.toLowerCase().includes(searchQuery.toLowerCase())
-                  )
-                : posts;
-              
-              if (filteredPosts.length === 0) {
-                return (
-                  <div className="empty-state">
+) : posts.length === 0 ? (
+              <div className="empty-state">
                     <div className="empty-icon">🔍</div>
                     <h3 className="empty-title">
                       {searchQuery.trim() ? '검색 결과가 없어요' : '아직 게시글이 없어요'}
@@ -370,11 +361,8 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
                         ✏️ 첫 글 작성하기
                       </button>
                     )}
-                  </div>
-                );
-              }
-              
-              return filteredPosts.map(post => (
+              </div>
+            ) : posts.map(post => (
               <article
                 key={post.id}
                 className="post-item"
@@ -417,8 +405,7 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
                   </div>
                 )}
               </article>
-            ));
-            })()}
+            ))}
             
             {/* 로딩 인디케이터 / 무한 스크롤 트리거 */}
             <div ref={loadMoreRef} className="load-more-trigger">
