@@ -270,7 +270,7 @@ const MyPage: React.FC<MyPageProps> = () => {
       id: 'my-posts',
       icon: '📝',
       label: '내가 작성한 글',
-      onClick: () => console.log('내가 작성한 글')
+      onClick: () => navigate(`/community?search=${encodeURIComponent(profile.name)}`)
     }
   ];
 
