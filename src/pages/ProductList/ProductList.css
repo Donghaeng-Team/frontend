@@ -202,14 +202,38 @@
   /* 검색 결과 없음 */
   .no-results {
     grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     text-align: center;
     padding: 80px 20px;
-    color: #999999;
+    min-height: 400px;
   }
-  
-  .no-results p {
-    font-size: 16px;
+
+  .no-results-icon {
+    font-size: 64px;
     margin-bottom: 20px;
+    opacity: 0.6;
+  }
+
+  .no-results h3 {
+    font-size: 22px;
+    font-weight: 600;
+    color: #333333;
+    margin: 0 0 12px 0;
+  }
+
+  .no-results-description {
+    font-size: 15px;
+    color: #666666;
+    margin: 0 0 32px 0;
+    line-height: 1.6;
+    max-width: 400px;
+  }
+
+  .no-results button {
+    margin-top: 8px;
   }
   
   /* 더보기 버튼 */

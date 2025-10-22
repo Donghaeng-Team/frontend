@@ -575,13 +575,12 @@ const ProductList: React.FC = () => {
 
           {/* 상품 그리드 */}
           <div className="products-grid" onWheel={handleWheel}>
-            {error ? (
+  {error ? (
               // 에러 표시
               <div className="error-container">
                 <div className="error-icon">⚠️</div>
-                <h3>상품 목록을 불러올 수 없습니다</h3>
+                <h3>문제가 발생했습니다</h3>
                 <p className="error-message-text">{error}</p>
-                <p className="error-hint">백엔드 서버 연결을 확인해주세요.</p>
                 <Button
                   variant="primary"
                   onClick={() => {
@@ -602,7 +601,7 @@ const ProductList: React.FC = () => {
                   animation="wave"
                 />
               ))
-            ) : displayedProducts.length > 0 ? (
+) : displayedProducts.length > 0 ? (
               // 상품 카드 목록
               displayedProducts.map(product => (
                 <ProductCard
@@ -628,16 +627,32 @@ const ProductList: React.FC = () => {
             ) : (
               // 검색 결과 없음
               <div className="no-results">
-                <p>검색 결과가 없습니다.</p>
-                <Button 
-                  variant="outline"
-                  onClick={() => {
-                    setSearchKeyword('');
-                    handleResetFilters();
-                  }}
-                >
-                  필터 초기화
-                </Button>
+                <div className="no-results-icon">🔍</div>
+                <h3>등록된 공동구매가 없습니다</h3>
+                <p className="no-results-description">
+                  {searchKeyword || selectedCategories.length > 0 
+                    ? '검색 조건을 변경하거나 필터를 초기화해보세요.'
+                    : '첫 번째 공동구매를 등록해보세요!'}
+                </p>
+                {(searchKeyword || selectedCategories.length > 0) && (
+                  <Button 
+                    variant="outline"
+                    onClick={() => {
+                      setSearchKeyword('');
+                      handleResetFilters();
+                    }}
+                  >
+                    필터 초기화
+                  </Button>
+                )}
+                {!searchKeyword && selectedCategories.length === 0 && (
+                  <Button 
+                    variant="primary"
+                    onClick={() => navigate('/products/register')}
+                  >
+                    공동구매 등록하기
+                  </Button>
+                )}
               </div>
             )}
           </div>
