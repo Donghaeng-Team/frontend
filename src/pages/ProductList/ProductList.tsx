@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import MobileHeader from '../../components/MobileHeader';
 import CategorySelector from '../../components/CategorySelector';
@@ -106,6 +106,7 @@ type ApiProduct = MarketSimpleResponse;
 
 const ProductList: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const currentDivision = useLocationStore((state) => state.currentDivision);
 
   // 상태 관리
@@ -117,7 +118,7 @@ const ProductList: React.FC = () => {
   const [tempCategories, setTempCategories] = useState<string[]>([]);
   const [distanceRange, setDistanceRange] = useState(2);
   const [tempDistanceRange, setTempDistanceRange] = useState(2);
-  const [searchKeyword, setSearchKeyword] = useState('');
+  const [searchKeyword, setSearchKeyword] = useState(searchParams.get('keyword') || '');
   const [sortBy, setSortBy] = useState('latest');
   const [isFilterChanged, setIsFilterChanged] = useState(false);
   const [page, setPage] = useState(1);
@@ -164,9 +165,14 @@ const ProductList: React.FC = () => {
         setDivisionId(currentDivisionId);
 
         // 상품 데이터 로드 (Public API 사용)
+        const initialKeyword = searchParams.get('keyword') || '';
+        
         const response = await marketService.getMarketPosts({
           divisionId: currentDivisionId,
           depth: 1,
+          status: 'RECRUITING',
+          keyword: initialKeyword || undefined,
+          sort: 'LATEST',
           pageNum: 0,
           pageSize: ITEMS_PER_PAGE
         });
@@ -231,21 +237,14 @@ const ProductList: React.FC = () => {
       const nextPage = page + 1;
 
       // 정렬 기준 변환
-      let sortByApi: 'createdAt' | 'deadline' | 'price' | 'popularity' = 'createdAt';
-      let sortOrderApi: 'asc' | 'desc' = 'desc';
-
+      let sortType: 'LATEST' | 'ENDING_SOON' | 'CHEAPEST' | 'MOST_VIEWED' = 'LATEST';
+      
       if (sortBy === 'price-low') {
-        sortByApi = 'price';
-        sortOrderApi = 'asc';
-      } else if (sortBy === 'price-high') {
-        sortByApi = 'price';
-        sortOrderApi = 'desc';
+        sortType = 'CHEAPEST';
       } else if (sortBy === 'popular') {
-        sortByApi = 'popularity';
-        sortOrderApi = 'desc';
+        sortType = 'MOST_VIEWED';
       } else if (sortBy === 'closing') {
-        sortByApi = 'deadline';
-        sortOrderApi = 'asc';
+        sortType = 'ENDING_SOON';
       }
 
       // 현재 필터 적용
@@ -254,8 +253,10 @@ const ProductList: React.FC = () => {
       const response = await marketService.getMarketPosts({
         divisionId: divisionId,
         depth: distanceRange,
+        status: 'RECRUITING',
         categoryId: categoryId,
         keyword: searchKeyword || undefined,
+        sort: sortType,
         pageNum: nextPage,
         pageSize: ITEMS_PER_PAGE
       });
@@ -319,7 +320,9 @@ const ProductList: React.FC = () => {
       const response = await marketService.getMarketPosts({
         divisionId: divisionId,
         depth: tempDistanceRange,
+        status: 'RECRUITING',
         categoryId: categoryId,
+        sort: 'LATEST',
         pageNum: 0,
         pageSize: ITEMS_PER_PAGE
       });
@@ -351,6 +354,8 @@ const ProductList: React.FC = () => {
       const response = await marketService.getMarketPosts({
         divisionId: divisionId,
         depth: 1,
+        status: 'RECRUITING',
+        sort: 'LATEST',
         pageNum: 0,
         pageSize: ITEMS_PER_PAGE
       });
@@ -381,8 +386,10 @@ const ProductList: React.FC = () => {
       const response = await marketService.getMarketPosts({
         divisionId: divisionId,
         depth: distanceRange,
+        status: 'RECRUITING',
         categoryId: categoryId,
         keyword: keyword || undefined,
+        sort: 'LATEST',
         pageNum: 0,
         pageSize: ITEMS_PER_PAGE
       });
@@ -408,21 +415,14 @@ const ProductList: React.FC = () => {
       setLoadingMore(true);
 
       // 정렬 기준 변환
-      let sortByApi: 'createdAt' | 'deadline' | 'price' | 'popularity' = 'createdAt';
-      let sortOrderApi: 'asc' | 'desc' = 'desc';
-
+      let sortType: 'LATEST' | 'ENDING_SOON' | 'CHEAPEST' | 'MOST_VIEWED' = 'LATEST';
+      
       if (value === 'price-low') {
-        sortByApi = 'price';
-        sortOrderApi = 'asc';
-      } else if (value === 'price-high') {
-        sortByApi = 'price';
-        sortOrderApi = 'desc';
+        sortType = 'CHEAPEST';
       } else if (value === 'popular') {
-        sortByApi = 'popularity';
-        sortOrderApi = 'desc';
+        sortType = 'MOST_VIEWED';
       } else if (value === 'closing') {
-        sortByApi = 'deadline';
-        sortOrderApi = 'asc';
+        sortType = 'ENDING_SOON';
       }
 
       // 현재 필터 적용
@@ -431,8 +431,10 @@ const ProductList: React.FC = () => {
       const response = await marketService.getMarketPosts({
         divisionId: divisionId,
         depth: distanceRange,
+        status: 'RECRUITING',
         categoryId: categoryId,
         keyword: searchKeyword || undefined,
+        sort: sortType,
         pageNum: 0,
         pageSize: ITEMS_PER_PAGE
       });
@@ -575,22 +577,14 @@ const ProductList: React.FC = () => {
 
           {/* 상품 그리드 */}
           <div className="products-grid" onWheel={handleWheel}>
-            {error ? (
+{error ? (
               // 에러 표시
               <div className="error-container">
-                <div className="error-icon">⚠️</div>
-                <h3>상품 목록을 불러올 수 없습니다</h3>
-                <p className="error-message-text">{error}</p>
-                <p className="error-hint">백엔드 서버 연결을 확인해주세요.</p>
-                <Button
-                  variant="primary"
-                  onClick={() => {
-                    setError(null);
-                    window.location.reload();
-                  }}
-                >
-                  다시 시도
-                </Button>
+                <div className="error-icon">📭</div>
+                <h3>상품이 없습니다</h3>
+                <p className="error-description">
+                  동네 범위를 늘려서 검색해보세요.
+                </p>
               </div>
             ) : loading ? (
               // 초기 로딩 스켈레톤
@@ -602,7 +596,7 @@ const ProductList: React.FC = () => {
                   animation="wave"
                 />
               ))
-            ) : displayedProducts.length > 0 ? (
+) : displayedProducts.length > 0 ? (
               // 상품 카드 목록
               displayedProducts.map(product => (
                 <ProductCard
@@ -628,16 +622,32 @@ const ProductList: React.FC = () => {
             ) : (
               // 검색 결과 없음
               <div className="no-results">
-                <p>검색 결과가 없습니다.</p>
-                <Button 
-                  variant="outline"
-                  onClick={() => {
-                    setSearchKeyword('');
-                    handleResetFilters();
-                  }}
-                >
-                  필터 초기화
-                </Button>
+                <div className="no-results-icon">🔍</div>
+                <h3>등록된 공동구매가 없습니다</h3>
+                <p className="no-results-description">
+                  {searchKeyword || selectedCategories.length > 0 
+                    ? '검색 조건을 변경하거나 필터를 초기화해보세요.'
+                    : '첫 번째 공동구매를 등록해보세요!'}
+                </p>
+                {(searchKeyword || selectedCategories.length > 0) && (
+                  <Button 
+                    variant="outline"
+                    onClick={() => {
+                      setSearchKeyword('');
+                      handleResetFilters();
+                    }}
+                  >
+                    필터 초기화
+                  </Button>
+                )}
+                {!searchKeyword && selectedCategories.length === 0 && (
+                  <Button 
+                    variant="primary"
+                    onClick={() => navigate('/products/register')}
+                  >
+                    공동구매 등록하기
+                  </Button>
+                )}
               </div>
             )}
           </div>

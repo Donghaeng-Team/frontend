@@ -177,6 +177,18 @@ export const userService = {
     return response.data;
   },
 
+  /**
+   * 회원탈퇴
+   */
+  deleteAccount: async (userId: number): Promise<ApiResponse<void>> => {
+    const response = await apiClient.delete('/api/v1/user/private/me', {
+      headers: {
+        'X-User-Id': userId.toString(),
+      },
+    });
+    return response.data;
+  },
+
   // ===== Internal API =====
 
   /**

@@ -123,6 +123,8 @@ export interface GetPostsListParams {
   divisionCode: string;
   /** 태그 필터 (기본값: 'all') */
   tag?: string;
+  /** 검색 키워드 (선택) */
+  keyword?: string;
 }
 
 /**
