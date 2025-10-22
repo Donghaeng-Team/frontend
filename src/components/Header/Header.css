@@ -107,6 +107,9 @@
     cursor: pointer;
     border-radius: 8px;
     transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .header-icon-btn:hover {
