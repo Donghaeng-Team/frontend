@@ -190,34 +190,23 @@ export const communityService = {
     post: PostCreateInitRequest & { title?: string; content?: string },
     files: File[]
   ): Promise<number> => {
-    const accessToken = getAccessToken();
-
     // ----------------------------
     // 1️⃣ 게시글 초기 생성
     // ----------------------------
-    const initHeaders: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-
-    if (accessToken) {
-      initHeaders['Authorization'] = `Bearer ${accessToken}`;
-    }
-
-    const initRes = await fetch('/api/v1/posts/private', {
-      method: 'POST',
-      headers: initHeaders,
-      credentials: 'include',
-      body: JSON.stringify({
-        region: post.region,
-        tag: post.tag,
-        title: post.title || '제목 없음',
-        content: post.content || '내용 없음',
-        images: [] // 초기 생성 시 빈 배열
-      }),
+    const initRes = await apiClient.post('/api/v1/posts/private', {
+      region: post.region,
+      tag: post.tag,
+      title: post.title || '제목 없음',
+      content: post.content || '내용 없음',
+      images: [] // 초기 생성 시 빈 배열
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-User-Id': userId.toString(),
+      },
     });
 
-    if (!initRes.ok) throw new Error('게시글 초기 생성 실패');
-    const initJson: ApiResponse<PostData> = await initRes.json();
+    const initJson: ApiResponse<PostData> = initRes.data;
     if (!initJson.success) throw new Error(initJson.message);
 
     const postId = initJson.data.id;
@@ -281,24 +270,14 @@ export const communityService = {
           images: images,
         };
 
-        const updateHeaders: Record<string, string> = {
-          'Content-Type': 'application/json',
-          'X-User-Id': String(userId),
-        };
-
-        if (accessToken) {
-          updateHeaders['Authorization'] = `Bearer ${accessToken}`;
-        }
-
-        const updateRes = await fetch(`/api/v1/posts/private/${postId}`, {
-          method: 'PUT',
-          headers: updateHeaders,
-          credentials: 'include',
-          body: JSON.stringify(updateBody),
+        const updateRes = await apiClient.put(`/api/v1/posts/private/${postId}`, updateBody, {
+          headers: {
+            'Content-Type': 'application/json',
+            'X-User-Id': userId.toString(),
+          },
         });
 
-        if (!updateRes.ok) throw new Error('게시글 최종 수정 실패');
-        const updateJson: ApiResponse<PostData> = await updateRes.json();
+        const updateJson: ApiResponse<PostData> = updateRes.data;
 
         // ----------------------------
         // ✅ 최종 결과 반환
@@ -319,25 +298,14 @@ export const communityService = {
         content: post.content || '내용 없음',
       };
 
-      const fallbackUpdateHeaders: Record<string, string> = {
-        'Content-Type': 'application/json',
-        'X-User-Id': String(userId),
-      };
-
-      if (accessToken) {
-        fallbackUpdateHeaders['Authorization'] = `Bearer ${accessToken}`;
-      }
-
-      const updateRes = await fetch(`/api/v1/posts/private/${postId}`, {
-        method: 'PUT',
-        headers: fallbackUpdateHeaders,
-        credentials: 'include',
-        body: JSON.stringify(updateBody),
+      const updateRes = await apiClient.put(`/api/v1/posts/private/${postId}`, updateBody, {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Id': userId.toString(),
+        },
       });
 
-      if (!updateRes.ok) throw new Error('게시글 최종 수정 실패');
-      const updateJson: ApiResponse<PostData> = await updateRes.json();
-
+      const updateJson: ApiResponse<PostData> = updateRes.data;
       return updateJson.data.id;
     }
 
