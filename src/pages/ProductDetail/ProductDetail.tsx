@@ -8,6 +8,7 @@ import Button from '../../components/Button';
 import Progress from '../../components/Progress';
 import Accordion from '../../components/Accordion';
 import type { AccordionItem } from '../../components/Accordion';
+import ChatModal from '../../components/ChatModal/ChatModal';
 import { useAuthStore } from '../../stores/authStore';
 import { getCategoryName } from '../../utils/categoryMapping';
 import { convertToCloudFrontUrl } from '../../utils/urlHelper';
@@ -86,6 +87,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [currentX, setCurrentX] = useState(0);
+  const [isChatModalOpen, setIsChatModalOpen] = useState(false);
   const imageContainerRef = useRef<HTMLDivElement>(null);
 
   // 상품 데이터 로드 및 좋아요 상태 확인
@@ -203,9 +205,18 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
       return;
     }
 
-    // 채팅방으로 이동
     console.log('✅ 채팅방 참여:', product.chatRoomId);
-    navigate(`/chat/${product.chatRoomId}`);
+
+    // PC에서는 모달로, 모바일에서는 페이지 이동
+    const isMobile = window.innerWidth <= 768;
+
+    if (isMobile) {
+      // 모바일: 전체 페이지로 이동
+      navigate(`/chat/${product.chatRoomId}`);
+    } else {
+      // PC: 모달 열기
+      setIsChatModalOpen(true);
+    }
   };
 
   const handleWish = async () => {
@@ -569,7 +580,29 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
           </div>
         </section>
       </main>
-      
+
+      {/* 채팅 모달 (PC 전용) */}
+      {isChatModalOpen && product && (
+        <ChatModal
+          isOpen={isChatModalOpen}
+          onClose={() => setIsChatModalOpen(false)}
+          chatRooms={[]}
+          initialRoomId={product.chatRoomId?.toString()}
+          initialProductInfo={{
+            name: product.title,
+            price: product.price,
+            image: product.images?.[0]?.imageUrl ? convertToCloudFrontUrl(product.images[0].imageUrl) : undefined
+          }}
+          initialRecruitmentStatus={{
+            current: product.recruitNow || 0,
+            max: product.recruitMax,
+            timeRemaining: '진행 중',
+            status: 'active'
+          }}
+          initialRole="buyer"
+        />
+      )}
+
       <Footer />
     </div>
   );

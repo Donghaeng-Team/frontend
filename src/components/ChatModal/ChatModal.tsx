@@ -2,7 +2,7 @@ import { type FC, useState, useEffect } from 'react';
 import ChatRoomListModal from '../ChatRoomListModal/ChatRoomListModal';
 import ChatRoom from '../ChatRoom';
 import type { ChatRoom as ChatRoomType } from '../ChatRoomListModal/ChatRoomListModal';
-import type { ChatMessage } from '../ChatRoom/ChatRoom';
+import type { ChatMessage, ProductInfo, RecruitmentStatus } from '../ChatRoom/ChatRoom';
 import './ChatModal.css';
 
 interface ChatModalProps {
@@ -10,15 +10,24 @@ interface ChatModalProps {
   onClose: () => void;
   chatRooms: ChatRoomType[];
   triggerRef?: React.RefObject<HTMLElement | null>;
+  // 특정 채팅방으로 직접 들어갈 때 사용
+  initialRoomId?: string;
+  initialProductInfo?: ProductInfo;
+  initialRecruitmentStatus?: RecruitmentStatus;
+  initialRole?: 'seller' | 'buyer';
 }
 
 const ChatModal: FC<ChatModalProps> = ({
   isOpen,
   onClose,
   chatRooms,
-  triggerRef
+  triggerRef,
+  initialRoomId,
+  initialProductInfo,
+  initialRecruitmentStatus,
+  initialRole = 'buyer'
 }) => {
-  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(initialRoomId || null);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
@@ -90,15 +99,15 @@ const ChatModal: FC<ChatModalProps> = ({
     setMessages([...messages, newMessage]);
   };
 
-  // 임시 상품 정보
-  const productInfo = {
+  // 상품 정보 (초기값 또는 기본값)
+  const productInfo = initialProductInfo || {
     name: '청송 사과 5kg (특)',
     price: 15000,
     image: undefined
   };
 
-  // 임시 모집 상태
-  const recruitmentStatus = {
+  // 모집 상태 (초기값 또는 기본값)
+  const recruitmentStatus = initialRecruitmentStatus || {
     current: 3,
     max: 10,
     timeRemaining: '2시간 30분',
@@ -122,7 +131,7 @@ const ChatModal: FC<ChatModalProps> = ({
           />
         ) : (
           <ChatRoom
-            role="buyer"
+            role={initialRole}
             productInfo={productInfo}
             recruitmentStatus={recruitmentStatus}
             messages={messages}
