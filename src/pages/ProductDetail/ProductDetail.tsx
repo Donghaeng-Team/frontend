@@ -10,6 +10,7 @@ import Accordion from '../../components/Accordion';
 import type { AccordionItem } from '../../components/Accordion';
 import ChatModal from '../../components/ChatModal/ChatModal';
 import { useAuthStore } from '../../stores/authStore';
+import { useChatStore } from '../../stores/chatStore';
 import { getCategoryName } from '../../utils/categoryMapping';
 import { convertToCloudFrontUrl } from '../../utils/urlHelper';
 import { productService } from '../../api/services/product';
@@ -78,10 +79,12 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const authUser = useAuthStore((state) => state.user);
+  const { chatRooms, fetchChatRooms } = useChatStore();
 
   const [loading, setLoading] = useState(true);
   const [product, setProduct] = useState<MarketDetailResponse | null>(null);
   const [isWished, setIsWished] = useState(false);
+  const [isJoinedChat, setIsJoinedChat] = useState(false);
   const [activeAccordion, setActiveAccordion] = useState<string[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -140,6 +143,34 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
 
     loadProduct();
   }, [id, navigate, authUser]);
+
+  // 채팅방 참여 상태 확인
+  useEffect(() => {
+    const checkChatJoinStatus = async () => {
+      if (!authUser || !product?.marketId) return;
+
+      try {
+        // 채팅방 목록 가져오기
+        await fetchChatRooms();
+
+        // 현재 상품(marketId)의 채팅방이 목록에 있는지 확인
+        const isJoined = chatRooms.some(room => room.marketId === product.marketId);
+        setIsJoinedChat(isJoined);
+      } catch (error) {
+        console.error('❌ 채팅방 상태 확인 실패:', error);
+      }
+    };
+
+    checkChatJoinStatus();
+  }, [authUser, product, fetchChatRooms]);
+
+  // chatRooms 변경 시 참여 상태 재확인
+  useEffect(() => {
+    if (product?.marketId && chatRooms.length > 0) {
+      const isJoined = chatRooms.some(room => room.marketId === product.marketId);
+      setIsJoinedChat(isJoined);
+    }
+  }, [chatRooms, product]);
 
   // 작성자 여부 확인
   const isAuthor = authUser && product && product.authorId === authUser.userId;
@@ -426,9 +457,9 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
                   <>
                     <button
                       onClick={handleJoinChat}
-                      className="chat-button"
+                      className={`chat-button ${isJoinedChat ? 'chat-button-joined' : ''}`}
                     >
-                      💬 채팅방 참여
+                      {isJoinedChat ? '💬 참여중' : '💬 채팅방 참여'}
                     </button>
                     <button
                       onClick={handleWish}
