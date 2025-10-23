@@ -613,7 +613,7 @@
 
     /* 버튼 액션 모바일 */
     .form-actions {
-      flex-direction: column;
+      flex-direction: column-reverse;
       gap: 10px;
       padding: 16px;
       margin-top: 24px;
