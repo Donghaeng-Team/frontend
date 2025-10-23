@@ -13,6 +13,7 @@ import { useAuthStore } from '../../stores/authStore';
 import { useChatStore } from '../../stores/chatStore';
 import { getCategoryName } from '../../utils/categoryMapping';
 import { convertToCloudFrontUrl } from '../../utils/urlHelper';
+import { transformChatRoomsForUI } from '../../utils/chatUtils';
 import { productService } from '../../api/services/product';
 import type { MarketDetailResponse } from '../../types/market';
 
@@ -617,7 +618,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
         <ChatModal
           isOpen={isChatModalOpen}
           onClose={() => setIsChatModalOpen(false)}
-          chatRooms={[]}
+          chatRooms={transformChatRoomsForUI(chatRooms)}
           initialRoomId={product.chatRoomId?.toString()}
           initialProductInfo={{
             name: product.title,
