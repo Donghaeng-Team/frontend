@@ -23,7 +23,8 @@ export function transformChatRoomForUI(room: ChatRoomResponse): ChatRoom {
     },
     status: room.status === 'RECRUITING' ? 'active'
           : room.status === 'RECRUITMENT_CLOSED' ? 'closing'
-          : 'closed'
+          : 'closed',
+    creator: room.creator
   };
 }
 

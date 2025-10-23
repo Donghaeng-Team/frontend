@@ -99,20 +99,34 @@ const ChatModal: FC<ChatModalProps> = ({
     setMessages([...messages, newMessage]);
   };
 
-  // 상품 정보 (초기값 또는 기본값)
-  const productInfo = initialProductInfo || {
+  // 선택된 채팅방 찾기
+  const selectedRoom = selectedRoomId
+    ? chatRooms.find(room => room.id === selectedRoomId)
+    : null;
+
+  // 상품 정보 (초기값 > 선택된 방 > 기본값)
+  const productInfo: ProductInfo = initialProductInfo || (selectedRoom ? {
+    name: selectedRoom.productName,
+    price: 0, // ChatRoom 타입에 price 정보 없음
+    image: selectedRoom.productImage
+  } : {
     name: '청송 사과 5kg (특)',
     price: 15000,
     image: undefined
-  };
+  });
 
-  // 모집 상태 (초기값 또는 기본값)
-  const recruitmentStatus = initialRecruitmentStatus || {
+  // 모집 상태 (초기값 > 선택된 방 > 기본값)
+  const recruitmentStatus: RecruitmentStatus = initialRecruitmentStatus || (selectedRoom ? {
+    current: selectedRoom.participants.current,
+    max: selectedRoom.participants.max,
+    timeRemaining: '진행 중',
+    status: selectedRoom.status
+  } : {
     current: 3,
     max: 10,
     timeRemaining: '2시간 30분',
     status: 'active' as const
-  };
+  });
 
   return (
     <div className="chat-modal-overlay" onClick={(e) => {
@@ -131,7 +145,7 @@ const ChatModal: FC<ChatModalProps> = ({
           />
         ) : (
           <ChatRoom
-            role={initialRole}
+            role={selectedRoom ? (selectedRoom.creator ? 'seller' : 'buyer') : initialRole}
             productInfo={productInfo}
             recruitmentStatus={recruitmentStatus}
             messages={messages}

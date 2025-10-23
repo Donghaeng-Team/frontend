@@ -14,6 +14,7 @@ export interface ChatRoom {
     max: number;
   };
   status: 'active' | 'closing' | 'closed';
+  creator: boolean; // 채팅방 생성자인지 여부
 }
 
 interface ChatRoomListModalProps {
