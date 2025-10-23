@@ -483,7 +483,9 @@ const CommunityPostDetail: React.FC = () => {
             ) : (
               <>
                 <div className="comments-list">
-                  {comments.map((comment) => (
+                  {comments.map((comment) => {
+                    const displayName = comment.userName || (comment.userId === authUser?.userId ? authUser?.nickName : '익명');
+                    return (
                     <div key={comment.commentId} className="comment-item">
                       <div className="comment-author-info">
                         <div
@@ -491,11 +493,11 @@ const CommunityPostDetail: React.FC = () => {
                           style={{ backgroundColor: '#ff5e2f' }}
                         >
                           <span className="comment-initial">
-                            {getInitials(comment.userName)}
+                            {getInitials(displayName)}
                           </span>
                         </div>
                         <div className="comment-meta">
-                          <div className="comment-author">{comment.userName}</div>
+                          <div className="comment-author">{displayName}</div>
                           <div className="comment-time">
                             {getTimeAgo(comment.createdAt)}
                           </div>
