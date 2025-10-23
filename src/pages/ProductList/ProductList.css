@@ -442,8 +442,8 @@
     
     .products-grid,
     .products-loading-more {
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 20px 15px;
+      grid-template-columns: 1fr;
+      gap: 20px;
     }
     
     /* 모바일 카드 크기 조정 */
