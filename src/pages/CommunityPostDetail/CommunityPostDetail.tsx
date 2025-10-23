@@ -254,7 +254,8 @@ const CommunityPostDetail: React.FC = () => {
     window.history.back();
   };
 
-  const getInitials = (name: string) => {
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return '익명';
     return name.slice(0, 2);
   };
 
