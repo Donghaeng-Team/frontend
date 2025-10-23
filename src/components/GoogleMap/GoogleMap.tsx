@@ -89,37 +89,66 @@ const GoogleMap: React.FC<GoogleMapProps> = ({
 
   // Reverse Geocoding: 좌표 → 주소
   const reverseGeocode = async (lat: number, lng: number) => {
+    console.log('🗺️ reverseGeocode 호출:', { lat, lng });
+
+    // 좌표는 항상 부모 컴포넌트로 전달 (Geocoding 실패해도 좌표는 업데이트)
+    const fallbackAddress = `위도: ${lat.toFixed(6)}, 경도: ${lng.toFixed(6)}`;
+
     try {
       const response = await fetch(
         `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}&language=ko`
       );
       const data = await response.json();
+      console.log('🗺️ Google API 응답:', data);
 
       if (data.results && data.results.length > 0) {
         const address = data.results[0].formatted_address;
+        console.log('✅ 주소 변환 성공:', address);
         setCurrentAddress(address);
 
         if (onLocationChange) {
+          console.log('✅ onLocationChange 호출 (주소 포함):', { lat, lng, address });
           onLocationChange({ lat, lng, address });
+        }
+      } else {
+        console.warn('⚠️ Google API 결과 없음:', data);
+        setCurrentAddress(fallbackAddress);
+
+        // Geocoding 실패해도 좌표는 전달
+        if (onLocationChange) {
+          console.log('✅ onLocationChange 호출 (좌표만):', { lat, lng, address: fallbackAddress });
+          onLocationChange({ lat, lng, address: fallbackAddress });
         }
       }
     } catch (error) {
-      console.error('Reverse Geocoding 실패:', error);
-      setCurrentAddress('주소를 가져올 수 없습니다');
+      console.error('❌ Reverse Geocoding 실패:', error);
+      setCurrentAddress(fallbackAddress);
+
+      // 에러 발생해도 좌표는 전달
+      if (onLocationChange) {
+        console.log('✅ onLocationChange 호출 (에러 후 좌표):', { lat, lng, address: fallbackAddress });
+        onLocationChange({ lat, lng, address: fallbackAddress });
+      }
     }
   };
 
   // 지도 중심이 변경될 때 호출
   const handleCenterChanged = useCallback((event: any) => {
+    console.log('🗺️ handleCenterChanged 이벤트 발생:', event);
     const map = event.map;
     if (map) {
       const newCenter = map.getCenter();
       if (newCenter) {
         const lat = newCenter.lat();
         const lng = newCenter.lng();
+        console.log('🗺️ 지도 중심 변경됨:', { lat, lng });
         setCenter({ lat, lng });
         reverseGeocode(lat, lng);
+      } else {
+        console.warn('⚠️ newCenter가 null입니다');
       }
+    } else {
+      console.warn('⚠️ map이 null입니다');
     }
   }, []);
 

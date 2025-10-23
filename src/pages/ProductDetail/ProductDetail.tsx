@@ -173,8 +173,23 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
   ];
 
   const handleJoinChat = () => {
-    // 채팅방 참여 로직
-    console.log('채팅방 참여');
+    // 인증 확인
+    if (!authUser) {
+      alert('로그인이 필요한 기능입니다.');
+      navigate('/login');
+      return;
+    }
+
+    // 채팅방 ID 확인
+    if (!product?.chatRoomId) {
+      alert('채팅방 정보를 불러올 수 없습니다.');
+      console.error('❌ chatRoomId is missing');
+      return;
+    }
+
+    // 채팅방으로 이동
+    console.log('✅ 채팅방 참여:', product.chatRoomId);
+    navigate(`/chat/${product.chatRoomId}`);
   };
 
   const handleWish = () => {

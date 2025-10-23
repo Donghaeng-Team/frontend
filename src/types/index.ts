@@ -51,5 +51,8 @@ export * from './image';
 // 장바구니 관련
 export * from './cart';
 
+// 채팅 관련
+export * from './chat';
+
 // 사용 예시:
 // import { User, MarketPost, ButtonVariant, ApiResponse } from '@/types';

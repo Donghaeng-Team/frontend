@@ -22,8 +22,8 @@ export interface CommentResponse {
   commentId: number;
   /** 작성자 ID */
   userId: number;
-  /** 작성자 이름 */
-  userName: string;
+  /** 작성자 이름 (nullable) */
+  userName: string | null;
   /** 댓글 내용 */
   content: string;
   /** 생성일시 */
