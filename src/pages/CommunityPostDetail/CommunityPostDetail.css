@@ -301,6 +301,7 @@
     border-radius: 8px;
     font-size: 14px;
     background-color: #ffffff;
+    color: #333333;
     transition: all 0.2s;
     font-family: 'Inter', -apple-system, sans-serif;
   }
