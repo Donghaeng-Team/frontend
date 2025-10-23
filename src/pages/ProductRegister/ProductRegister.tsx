@@ -766,13 +766,250 @@ const ProductRegister: React.FC = () => {
 
           <div className="form-group">
             <label className="form-label">모집 마감일자 *</label>
-            <input
-              type="datetime-local"
-              className={`form-input deadline-input ${errors.deadline ? 'error' : ''}`}
-              value={deadline}
-              onChange={(e) => setDeadline(e.target.value)}
-              onBlur={() => handleBlur('deadline', deadline)}
-            />
+            <div className="deadline-selector">
+              {/* 빠른 선택 버튼 */}
+              <div className="quick-deadline-buttons" style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(4, 1fr)',
+                gap: '8px',
+                marginBottom: '16px'
+              }}>
+                {[
+                  { label: '1시간 후', hours: 1 },
+                  { label: '3시간 후', hours: 3 },
+                  { label: '6시간 후', hours: 6 },
+                  { label: '12시간 후', hours: 12 },
+                  { label: '1일 후', hours: 24 },
+                  { label: '2일 후', hours: 48 },
+                  { label: '3일 후', hours: 72 },
+                  { label: '1주일 후', hours: 168 }
+                ].map(({ label, hours }) => (
+                  <button
+                    key={hours}
+                    type="button"
+                    className="quick-deadline-btn"
+                    style={{
+                      padding: '10px 12px',
+                      fontSize: '13px',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '6px',
+                      backgroundColor: '#ffffff',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      fontWeight: '500',
+                      color: '#334155'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#f1f5f9';
+                      e.currentTarget.style.borderColor = '#0ea5e9';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#ffffff';
+                      e.currentTarget.style.borderColor = '#e2e8f0';
+                    }}
+                    onClick={() => {
+                      const now = new Date();
+                      now.setHours(now.getHours() + hours);
+                      const year = now.getFullYear();
+                      const month = String(now.getMonth() + 1).padStart(2, '0');
+                      const day = String(now.getDate()).padStart(2, '0');
+                      const hour = String(now.getHours()).padStart(2, '0');
+                      const minute = String(now.getMinutes()).padStart(2, '0');
+                      const formatted = `${year}-${month}-${day}T${hour}:${minute}`;
+                      setDeadline(formatted);
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              {/* 날짜 선택 버튼 */}
+              <div style={{ marginBottom: '12px' }}>
+                <div style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px', color: '#64748b' }}>
+                  또는 날짜 직접 선택
+                </div>
+{/* 요일 헤더 */}
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(7, 1fr)', 
+                  gap: '6px', 
+                  marginBottom: '4px',
+                  fontSize: '11px',
+                  fontWeight: '600',
+                  color: '#94a3b8',
+                  textAlign: 'center'
+                }}>
+                  {['일', '월', '화', '수', '목', '금', '토'].map(day => (
+                    <div key={day}>{day}</div>
+                  ))}
+                </div>
+                {/* 30일 달력 뷰 */}
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(7, 1fr)', 
+                  gap: '6px', 
+                  marginBottom: '8px',
+                  maxHeight: '240px',
+                  overflowY: 'auto',
+                  padding: '4px'
+                }}>
+                  {(() => {
+                    const today = new Date();
+                    const currentDeadline = deadline ? new Date(deadline) : null;
+                    
+                    return Array.from({ length: 30 }, (_, i) => {
+                      const date = new Date(today);
+                      date.setDate(today.getDate() + i);
+                      const isToday = i === 0;
+                      const isSelected = currentDeadline && 
+                        date.getFullYear() === currentDeadline.getFullYear() &&
+                        date.getMonth() === currentDeadline.getMonth() &&
+                        date.getDate() === currentDeadline.getDate();
+                      
+                      return (
+                        <button
+                          key={i}
+                          type="button"
+                          style={{
+                            padding: '8px 4px',
+                            fontSize: '13px',
+                            border: isSelected ? '2px solid #0ea5e9' : '1px solid #e2e8f0',
+                            borderRadius: '6px',
+                            backgroundColor: isSelected ? '#e0f2fe' : isToday ? '#f0f9ff' : '#ffffff',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '2px',
+                            transition: 'all 0.2s',
+                            fontWeight: isSelected ? '700' : '600',
+                            color: isSelected ? '#0369a1' : '#1e293b',
+                            minHeight: '36px'
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isSelected) {
+                              e.currentTarget.style.backgroundColor = '#f1f5f9';
+                              e.currentTarget.style.borderColor = '#94a3b8';
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isSelected) {
+                              e.currentTarget.style.backgroundColor = isToday ? '#f0f9ff' : '#ffffff';
+                              e.currentTarget.style.borderColor = '#e2e8f0';
+                            }
+                          }}
+                          onClick={() => {
+                            const selectedDate = new Date(date);
+                            if (deadline) {
+                              const currentDeadline = new Date(deadline);
+                              selectedDate.setHours(currentDeadline.getHours());
+                              selectedDate.setMinutes(currentDeadline.getMinutes());
+                            } else {
+                              selectedDate.setHours(23, 59);
+                            }
+                            const year = selectedDate.getFullYear();
+                            const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+                            const day = String(selectedDate.getDate()).padStart(2, '0');
+                            const hour = String(selectedDate.getHours()).padStart(2, '0');
+                            const minute = String(selectedDate.getMinutes()).padStart(2, '0');
+                            const formatted = `${year}-${month}-${day}T${hour}:${minute}`;
+                            setDeadline(formatted);
+                          }}
+                        >
+                          <span style={{ fontSize: '13px' }}>
+                            {date.getDate()}
+                          </span>
+                        </button>
+                      );
+                    });
+                  })()}
+                </div>
+              </div>
+
+              {/* 시간 선택 버튼 */}
+              <div style={{ marginBottom: '12px' }}>
+                <div style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px', color: '#64748b' }}>
+                  시간 선택
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '6px' }}>
+                  {[9, 12, 15, 18, 21, 23].map((hour) => {
+                    const currentDeadline = deadline ? new Date(deadline) : null;
+                    const isSelected = currentDeadline && currentDeadline.getHours() === hour;
+                    
+                    return (
+                      <button
+                        key={hour}
+                        type="button"
+                        style={{
+                          padding: '10px 8px',
+                          fontSize: '13px',
+                          border: isSelected ? '2px solid #0ea5e9' : '1px solid #e2e8f0',
+                          borderRadius: '6px',
+                          backgroundColor: isSelected ? '#e0f2fe' : '#ffffff',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          fontWeight: isSelected ? '700' : '500',
+                          color: isSelected ? '#0369a1' : '#334155'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isSelected) {
+                            e.currentTarget.style.backgroundColor = '#f1f5f9';
+                            e.currentTarget.style.borderColor = '#94a3b8';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isSelected) {
+                            e.currentTarget.style.backgroundColor = '#ffffff';
+                            e.currentTarget.style.borderColor = '#e2e8f0';
+                          }
+                        }}
+                        onClick={() => {
+                          let selectedDate: Date;
+                          if (deadline) {
+                            selectedDate = new Date(deadline);
+                          } else {
+                            selectedDate = new Date();
+                          }
+                          selectedDate.setHours(hour, 0, 0, 0);
+                          const year = selectedDate.getFullYear();
+                          const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+                          const day = String(selectedDate.getDate()).padStart(2, '0');
+                          const h = String(selectedDate.getHours()).padStart(2, '0');
+                          const m = String(selectedDate.getMinutes()).padStart(2, '0');
+                          const formatted = `${year}-${month}-${day}T${h}:${m}`;
+                          setDeadline(formatted);
+                        }}
+                      >
+                        {hour}:00
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 선택된 마감일 미리보기 */}
+              {deadline && (
+                <div style={{
+                  padding: '12px 16px',
+                  backgroundColor: '#f0f9ff',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  color: '#0369a1',
+                  fontWeight: '600',
+                  textAlign: 'center'
+                }}>
+                  📅 {new Date(deadline).toLocaleString('ko-KR', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    weekday: 'short'
+                  })} 마감
+                </div>
+              )}
+            </div>
             {errors.deadline && <div className="error-message">{errors.deadline}</div>}
           </div>
         </section>
