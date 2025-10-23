@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from '../../components/Header';
-import Footer from '../../components/Footer';
+import Layout from '../../components/Layout';
 import CategorySelector from '../../components/CategorySelector';
 import type { CategoryItem } from '../../components/CategorySelector';
 import Button from '../../components/Button';
@@ -10,6 +9,7 @@ import GoogleMap from '../../components/GoogleMap';
 import { useAuthStore } from '../../stores/authStore';
 import { productService } from '../../api/services/product';
 import { imageService } from '../../api/services/image';
+import { divisionApi } from '../../api/divisionApi';
 import './ProductRegister.css';
 
 // 샘플 카테고리 데이터 (fallback용)
@@ -113,6 +113,7 @@ const ProductRegister: React.FC = () => {
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [mapAddress, setMapAddress] = useState(''); // 지도에서 선택한 주소 (참고용)
+  const [currentDivisionName, setCurrentDivisionName] = useState('위치를 선택해주세요'); // Division API로 받아온 동네 이름
   const [detailLocation, setDetailLocation] = useState(''); // 사용자가 입력하는 상세 거래 위치
   const [locationCoords, setLocationCoords] = useState<{ lat: number; lng: number }>({ lat: 37.5665, lng: 126.9780 });
   const [categoryData, setCategoryData] = useState<CategoryItem[]>([]);
@@ -436,9 +437,28 @@ const ProductRegister: React.FC = () => {
   };
 
   // 지도 위치 변경 핸들러
-  const handleLocationChange = (location: { lat: number; lng: number; address: string }) => {
+  const handleLocationChange = async (location: { lat: number; lng: number; address: string }) => {
+    console.log('📍 ProductRegister - handleLocationChange 호출됨:', location);
     setLocationCoords({ lat: location.lat, lng: location.lng });
     setMapAddress(location.address);
+    console.log('📍 ProductRegister - locationCoords 업데이트:', { lat: location.lat, lng: location.lng });
+
+    // Division API 호출하여 행정구역 정보 가져오기
+    try {
+      const division = await divisionApi.getDivisionByCoord({
+        coordinate: {
+          latitude: location.lat,
+          longitude: location.lng
+        }
+      });
+      console.log('✅ Division API 응답:', division);
+      const divisionName = divisionApi.formatDivisionShortName(division);
+      setCurrentDivisionName(divisionName);
+      console.log('✅ 동네 이름 업데이트:', divisionName);
+    } catch (error) {
+      console.error('❌ Division API 호출 실패:', error);
+      setCurrentDivisionName('동네 정보를 가져올 수 없습니다');
+    }
   };
 
   const handleSubmit = async () => {
@@ -568,10 +588,9 @@ const ProductRegister: React.FC = () => {
   };
 
   return (
-    <div className="product-register">
-      <Header notificationCount={3} />
-      
-      <div className="register-container">
+    <Layout>
+      <div className="product-register">
+        <div className="register-container">
         <div className="register-header">
           <h1 className="register-title">📝 공동구매 상품 등록</h1>
           {lastSaved && (
@@ -745,13 +764,250 @@ const ProductRegister: React.FC = () => {
 
           <div className="form-group">
             <label className="form-label">모집 마감일자 *</label>
-            <input
-              type="datetime-local"
-              className={`form-input deadline-input ${errors.deadline ? 'error' : ''}`}
-              value={deadline}
-              onChange={(e) => setDeadline(e.target.value)}
-              onBlur={() => handleBlur('deadline', deadline)}
-            />
+            <div className="deadline-selector">
+              {/* 빠른 선택 버튼 */}
+              <div className="quick-deadline-buttons" style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(4, 1fr)',
+                gap: '8px',
+                marginBottom: '16px'
+              }}>
+                {[
+                  { label: '1시간 후', hours: 1 },
+                  { label: '3시간 후', hours: 3 },
+                  { label: '6시간 후', hours: 6 },
+                  { label: '12시간 후', hours: 12 },
+                  { label: '1일 후', hours: 24 },
+                  { label: '2일 후', hours: 48 },
+                  { label: '3일 후', hours: 72 },
+                  { label: '1주일 후', hours: 168 }
+                ].map(({ label, hours }) => (
+                  <button
+                    key={hours}
+                    type="button"
+                    className="quick-deadline-btn"
+                    style={{
+                      padding: '10px 12px',
+                      fontSize: '13px',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '6px',
+                      backgroundColor: '#ffffff',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      fontWeight: '500',
+                      color: '#334155'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#f1f5f9';
+                      e.currentTarget.style.borderColor = '#0ea5e9';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#ffffff';
+                      e.currentTarget.style.borderColor = '#e2e8f0';
+                    }}
+                    onClick={() => {
+                      const now = new Date();
+                      now.setHours(now.getHours() + hours);
+                      const year = now.getFullYear();
+                      const month = String(now.getMonth() + 1).padStart(2, '0');
+                      const day = String(now.getDate()).padStart(2, '0');
+                      const hour = String(now.getHours()).padStart(2, '0');
+                      const minute = String(now.getMinutes()).padStart(2, '0');
+                      const formatted = `${year}-${month}-${day}T${hour}:${minute}`;
+                      setDeadline(formatted);
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              {/* 날짜 선택 버튼 */}
+              <div style={{ marginBottom: '12px' }}>
+                <div style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px', color: '#64748b' }}>
+                  또는 날짜 직접 선택
+                </div>
+{/* 요일 헤더 */}
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(7, 1fr)', 
+                  gap: '6px', 
+                  marginBottom: '4px',
+                  fontSize: '11px',
+                  fontWeight: '600',
+                  color: '#94a3b8',
+                  textAlign: 'center'
+                }}>
+                  {['일', '월', '화', '수', '목', '금', '토'].map(day => (
+                    <div key={day}>{day}</div>
+                  ))}
+                </div>
+                {/* 30일 달력 뷰 */}
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(7, 1fr)', 
+                  gap: '6px', 
+                  marginBottom: '8px',
+                  maxHeight: '240px',
+                  overflowY: 'auto',
+                  padding: '4px'
+                }}>
+                  {(() => {
+                    const today = new Date();
+                    const currentDeadline = deadline ? new Date(deadline) : null;
+                    
+                    return Array.from({ length: 30 }, (_, i) => {
+                      const date = new Date(today);
+                      date.setDate(today.getDate() + i);
+                      const isToday = i === 0;
+                      const isSelected = currentDeadline && 
+                        date.getFullYear() === currentDeadline.getFullYear() &&
+                        date.getMonth() === currentDeadline.getMonth() &&
+                        date.getDate() === currentDeadline.getDate();
+                      
+                      return (
+                        <button
+                          key={i}
+                          type="button"
+                          style={{
+                            padding: '8px 4px',
+                            fontSize: '13px',
+                            border: isSelected ? '2px solid #0ea5e9' : '1px solid #e2e8f0',
+                            borderRadius: '6px',
+                            backgroundColor: isSelected ? '#e0f2fe' : isToday ? '#f0f9ff' : '#ffffff',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '2px',
+                            transition: 'all 0.2s',
+                            fontWeight: isSelected ? '700' : '600',
+                            color: isSelected ? '#0369a1' : '#1e293b',
+                            minHeight: '36px'
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isSelected) {
+                              e.currentTarget.style.backgroundColor = '#f1f5f9';
+                              e.currentTarget.style.borderColor = '#94a3b8';
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isSelected) {
+                              e.currentTarget.style.backgroundColor = isToday ? '#f0f9ff' : '#ffffff';
+                              e.currentTarget.style.borderColor = '#e2e8f0';
+                            }
+                          }}
+                          onClick={() => {
+                            const selectedDate = new Date(date);
+                            if (deadline) {
+                              const currentDeadline = new Date(deadline);
+                              selectedDate.setHours(currentDeadline.getHours());
+                              selectedDate.setMinutes(currentDeadline.getMinutes());
+                            } else {
+                              selectedDate.setHours(23, 59);
+                            }
+                            const year = selectedDate.getFullYear();
+                            const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+                            const day = String(selectedDate.getDate()).padStart(2, '0');
+                            const hour = String(selectedDate.getHours()).padStart(2, '0');
+                            const minute = String(selectedDate.getMinutes()).padStart(2, '0');
+                            const formatted = `${year}-${month}-${day}T${hour}:${minute}`;
+                            setDeadline(formatted);
+                          }}
+                        >
+                          <span style={{ fontSize: '13px' }}>
+                            {date.getDate()}
+                          </span>
+                        </button>
+                      );
+                    });
+                  })()}
+                </div>
+              </div>
+
+              {/* 시간 선택 버튼 */}
+              <div style={{ marginBottom: '12px' }}>
+                <div style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px', color: '#64748b' }}>
+                  시간 선택
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '6px' }}>
+                  {[9, 12, 15, 18, 21, 23].map((hour) => {
+                    const currentDeadline = deadline ? new Date(deadline) : null;
+                    const isSelected = currentDeadline && currentDeadline.getHours() === hour;
+                    
+                    return (
+                      <button
+                        key={hour}
+                        type="button"
+                        style={{
+                          padding: '10px 8px',
+                          fontSize: '13px',
+                          border: isSelected ? '2px solid #0ea5e9' : '1px solid #e2e8f0',
+                          borderRadius: '6px',
+                          backgroundColor: isSelected ? '#e0f2fe' : '#ffffff',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          fontWeight: isSelected ? '700' : '500',
+                          color: isSelected ? '#0369a1' : '#334155'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isSelected) {
+                            e.currentTarget.style.backgroundColor = '#f1f5f9';
+                            e.currentTarget.style.borderColor = '#94a3b8';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isSelected) {
+                            e.currentTarget.style.backgroundColor = '#ffffff';
+                            e.currentTarget.style.borderColor = '#e2e8f0';
+                          }
+                        }}
+                        onClick={() => {
+                          let selectedDate: Date;
+                          if (deadline) {
+                            selectedDate = new Date(deadline);
+                          } else {
+                            selectedDate = new Date();
+                          }
+                          selectedDate.setHours(hour, 0, 0, 0);
+                          const year = selectedDate.getFullYear();
+                          const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+                          const day = String(selectedDate.getDate()).padStart(2, '0');
+                          const h = String(selectedDate.getHours()).padStart(2, '0');
+                          const m = String(selectedDate.getMinutes()).padStart(2, '0');
+                          const formatted = `${year}-${month}-${day}T${h}:${m}`;
+                          setDeadline(formatted);
+                        }}
+                      >
+                        {hour}:00
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 선택된 마감일 미리보기 */}
+              {deadline && (
+                <div style={{
+                  padding: '12px 16px',
+                  backgroundColor: '#f0f9ff',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  color: '#0369a1',
+                  fontWeight: '600',
+                  textAlign: 'center'
+                }}>
+                  📅 {new Date(deadline).toLocaleString('ko-KR', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    weekday: 'short'
+                  })} 마감
+                </div>
+              )}
+            </div>
             {errors.deadline && <div className="error-message">{errors.deadline}</div>}
           </div>
         </section>
@@ -785,12 +1041,39 @@ const ProductRegister: React.FC = () => {
         <section className="register-section location-section">
           <h2 className="section-title">🚩 거래 희망 장소</h2>
           <p className="section-description">
-            지도에서 대략적인 위치를 선택하고, 정확한 거래 장소를 입력해주세요.
+            지도를 드래그하여 대략적인 위치를 선택하고, 정확한 거래 장소를 입력해주세요.
           </p>
+          <div className="map-instruction-box" style={{
+            backgroundColor: '#f0f9ff',
+            border: '1px solid #0ea5e9',
+            borderRadius: '8px',
+            padding: '12px 16px',
+            marginBottom: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <span style={{ fontSize: '20px' }}>🖱️</span>
+            <span style={{ fontSize: '14px', color: '#0369a1' }}>
+              지도를 드래그하여 원하는 위치로 이동하세요. 중앙의 핀이 선택한 위치를 표시합니다.
+            </span>
+          </div>
           <GoogleMap
             onLocationChange={handleLocationChange}
             initialCenter={locationCoords}
           />
+          <div className="current-location-info" style={{
+            backgroundColor: '#f8fafc',
+            border: '1px solid #e2e8f0',
+            borderRadius: '8px',
+            padding: '12px 16px',
+            marginTop: '12px',
+            fontSize: '14px',
+            color: '#64748b'
+          }}>
+            <div style={{ fontWeight: '600', marginBottom: '4px', color: '#334155' }}>📍 현재 선택된 동네</div>
+            <div style={{ fontSize: '15px', color: '#1e293b', fontWeight: '500' }}>{currentDivisionName}</div>
+          </div>
           <div className="form-group" style={{ marginTop: '20px' }}>
             <label className="form-label">상세 거래 위치 *</label>
             <input
@@ -842,10 +1125,9 @@ const ProductRegister: React.FC = () => {
             {isSubmitting ? '등록 중...' : '등록'}
           </button>
         </div>
+        </div>
       </div>
-      
-      <Footer />
-    </div>
+    </Layout>
   );
 };
 

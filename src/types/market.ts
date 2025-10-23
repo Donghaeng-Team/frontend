@@ -62,6 +62,7 @@ export interface MarketDetailResponse {
   updatedAt: string;
   views: number;
   images: ImageResponse[];
+  chatRoomId?: number; // 채팅방 ID (백엔드에서 제공)
 }
 
 /**

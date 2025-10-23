@@ -1,59 +1,83 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import ChatRoom from '../../components/ChatRoom';
 import type { ChatMessage } from '../../components/ChatRoom/ChatRoom';
+import { useChatStore } from '../../stores/chatStore';
+import { useAuthStore } from '../../stores/authStore';
 import './ChatRoomPage.css';
 
 const ChatRoomPage = () => {
   const navigate = useNavigate();
   const { roomId } = useParams<{ roomId: string }>();
+  
+  const {
+    initializeWebSocket,
+    disconnectWebSocket,
+    wsStatus,
+    currentRoom,
+    messages,
+    fetchChatRoom,
+    joinChatRoom,
+    sendMessage,
+    addMessage,
+    confirmBuyer,
+  } = useChatStore();
+  const { user } = useAuthStore();
 
-  // 임시 데이터 - 추후 API로 대체
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: '1',
-      type: 'system',
-      content: '채팅방이 개설되었습니다.',
-      timestamp: '2024-01-15 10:00'
-    },
-    {
-      id: '2',
-      type: 'seller',
-      content: '안녕하세요! 신선한 사과 공동구매 진행합니다.',
-      sender: {
-        name: '판매자',
-        isSeller: true
-      },
-      timestamp: '2024-01-15 10:05'
-    },
-    {
-      id: '3',
-      type: 'buyer',
-      content: '참여하고 싶습니다!',
-      sender: {
-        name: '구매자1'
-      },
-      timestamp: '2024-01-15 10:10'
+  // WebSocket 초기화
+  useEffect(() => {
+    initializeWebSocket();
+    return () => {
+      disconnectWebSocket();
+    };
+  }, [initializeWebSocket, disconnectWebSocket]);
+
+  // 채팅방 입장
+  useEffect(() => {
+    if (roomId && user) {
+      const numericRoomId = parseInt(roomId, 10);
+      joinChatRoom(numericRoomId);
     }
-  ]);
+  }, [roomId, user, joinChatRoom]);
 
-  // 임시 상품 정보 - 추후 API로 대체
-  const productInfo = {
-    name: '청송 사과 5kg (특)',
-    price: 15000,
+  // 채팅 메시지를 ChatRoom 컴포넌트 형식으로 변환
+  const formattedMessages: ChatMessage[] = messages.map((msg) => ({
+    id: msg.id.toString(),
+    type: msg.senderId === user?.id ? 'my' : msg.messageType === 'SYSTEM' ? 'system' : 'buyer',
+    content: msg.messageContent,
+    sender: msg.senderId === user?.id ? undefined : {
+      name: msg.senderNickname,
+      isSeller: msg.senderId === currentRoom?.creatorUserId
+    },
+    timestamp: new Date(msg.sentAt).toLocaleTimeString('ko-KR', {
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }));
+
+  const productInfo = currentRoom ? {
+    name: currentRoom.title,
+    price: 15000, // API에서 가격 정보가 없으므로 임시값
+    image: currentRoom.thumbnailUrl
+  } : {
+    name: '로딩중...',
+    price: 0,
     image: undefined
   };
 
-  // 임시 모집 상태 - 추후 API로 대체
-  const recruitmentStatus = {
-    current: 3,
-    max: 10,
-    timeRemaining: '2시간 30분',
-    status: 'active' as const
+  const recruitmentStatus = currentRoom ? {
+    current: currentRoom.currentBuyers,
+    max: currentRoom.maxBuyers,
+    timeRemaining: '2시간 30분', // TODO: 실제 남은 시간 계산
+    status: currentRoom.status
+  } : {
+    current: 0,
+    max: 0,
+    timeRemaining: '0분',
+    status: 'RECRUITING' as const
   };
 
-  // 임시 역할 - 추후 API나 인증 정보로 대체
-  const userRole = 'buyer' as 'seller' | 'buyer';
+  const userRole = (currentRoom && user?.id === currentRoom.creatorUserId) ? 'seller' : 'buyer';
 
   const handleBack = () => {
     navigate(-1);
@@ -66,28 +90,35 @@ const ChatRoomPage = () => {
   };
 
   const handleExtendTime = () => {
-    alert('시간 연장 기능 (구현 예정)');
+    if (roomId && currentRoom) {
+      // TODO: 시간 연장 API 호출
+      alert('시간 연장 기능 (구현 예정)');
+    }
   };
 
-  const handleConfirm = () => {
-    alert('모집 확정 기능 (구현 예정)');
+  const handleConfirm = async () => {
+    if (roomId && currentRoom) {
+      try {
+        await confirmBuyer(parseInt(roomId, 10));
+        alert('구매자가 확정되었습니다.');
+      } catch (error) {
+        alert('구매자 확정에 실패했습니다.');
+      }
+    }
   };
 
   const handleApply = () => {
-    alert('구매 신청 기능 (구현 예정)');
+    if (roomId) {
+      // TODO: 구매 신청 API 호출
+      alert('구매 신청 기능 (구현 예정)');
+    }
   };
 
   const handleSendMessage = (message: string) => {
-    const newMessage: ChatMessage = {
-      id: `${Date.now()}`,
-      type: 'my',
-      content: message,
-      timestamp: new Date().toLocaleTimeString('ko-KR', {
-        hour: '2-digit',
-        minute: '2-digit'
-      })
-    };
-    setMessages([...messages, newMessage]);
+    if (roomId && user) {
+      const numericRoomId = parseInt(roomId, 10);
+      sendMessage(numericRoomId, message, user.id, user.nickname);
+    }
   };
 
   return (
@@ -96,7 +127,7 @@ const ChatRoomPage = () => {
         role={userRole}
         productInfo={productInfo}
         recruitmentStatus={recruitmentStatus}
-        messages={messages}
+        messages={formattedMessages}
         onBack={handleBack}
         onLeave={handleLeave}
         onExtendTime={handleExtendTime}
