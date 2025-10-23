@@ -486,50 +486,51 @@ const CommunityPostDetail: React.FC = () => {
                   {comments.map((comment) => {
                     const displayName = comment.userName || (comment.userId === authUser?.userId ? authUser?.nickName : '익명');
                     return (
-                    <div key={comment.commentId} className="comment-item">
-                      <div className="comment-author-info">
-                        <div
-                          className="comment-profile"
-                          style={{ backgroundColor: '#ff5e2f' }}
-                        >
-                          <span className="comment-initial">
-                            {getInitials(displayName)}
-                          </span>
-                        </div>
-                        <div className="comment-meta">
-                          <div className="comment-author">{displayName}</div>
-                          <div className="comment-time">
-                            {getTimeAgo(comment.createdAt)}
-                          </div>
-                        </div>
-                        {authUser && comment.userId === authUser.userId && (
-                          <button
-                            onClick={() => handleCommentDelete(comment.commentId)}
-                            style={{
-                              marginLeft: 'auto',
-                              padding: '4px 12px',
-                              fontSize: '12px',
-                              color: '#ff5e2f',
-                              backgroundColor: 'transparent',
-                              border: '1px solid #ff5e2f',
-                              borderRadius: '4px',
-                              cursor: 'pointer',
-                              transition: 'all 0.2s ease'
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.backgroundColor = '#fff5f0';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.backgroundColor = 'transparent';
-                            }}
+                      <div key={comment.commentId} className="comment-item">
+                        <div className="comment-author-info">
+                          <div
+                            className="comment-profile"
+                            style={{ backgroundColor: '#ff5e2f' }}
                           >
-                            삭제
-                          </button>
-                        )}
+                            <span className="comment-initial">
+                              {getInitials(displayName)}
+                            </span>
+                          </div>
+                          <div className="comment-meta">
+                            <div className="comment-author">{displayName}</div>
+                            <div className="comment-time">
+                              {getTimeAgo(comment.createdAt)}
+                            </div>
+                          </div>
+                          {authUser && comment.userId === authUser.userId && (
+                            <button
+                              onClick={() => handleCommentDelete(comment.commentId)}
+                              style={{
+                                marginLeft: 'auto',
+                                padding: '4px 12px',
+                                fontSize: '12px',
+                                color: '#ff5e2f',
+                                backgroundColor: 'transparent',
+                                border: '1px solid #ff5e2f',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = '#fff5f0';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = 'transparent';
+                              }}
+                            >
+                              삭제
+                            </button>
+                          )}
+                        </div>
+                        <div className="comment-content">{comment.content}</div>
                       </div>
-                      <div className="comment-content">{comment.content}</div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {/* 더보기 버튼 */}
