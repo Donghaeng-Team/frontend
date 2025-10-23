@@ -299,7 +299,7 @@ const CommunityPostEdit: React.FC = () => {
           s3Key: result.s3Key,
           order: existingImageUrls.length + index,
           caption: '',
-          isThumbnail: index === 0,
+          thumbnail: index === 0,
           contentType: result.file.type,
           size: result.file.size
         }));

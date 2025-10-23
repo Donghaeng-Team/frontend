@@ -37,7 +37,7 @@ export interface ImageMeta {
   s3Key: string;
   order: number;
   caption: string;
-  isThumbnail: boolean;
+  thumbnail: boolean;
   contentType: string;
   size: number;
 }
@@ -49,10 +49,10 @@ export interface PostUpdateRequest {
   region: string;
   /** 태그 (필수) */
   tag: string;
-  /** 제목 */
-  title?: string;
-  /** 내용 */
-  content?: string;
+  /** 제목 (필수) */
+  title: string;
+  /** 내용 (필수) */
+  content: string;
   /** 이미지 S3 키 목록 */
   images?: ImageMeta[];
 }

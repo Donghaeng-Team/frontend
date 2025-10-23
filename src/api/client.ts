@@ -1,6 +1,6 @@
 import axios from 'axios';
 import type { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
-import { getAccessToken, setAccessToken, getRefreshToken, clearAuth } from '../utils/token';
+import { getAccessToken, setAccessToken, getRefreshToken, clearAuth, getUser } from '../utils/token';
 
 // 토큰 재발급 중인지 추적
 let isRefreshing = false;
@@ -24,7 +24,7 @@ const processQueue = (error: any, token: string | null = null) => {
 // API 클라이언트 인스턴스 생성
 const apiClient: AxiosInstance = axios.create({
   // baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080', // 개발 환경에서는 Vite proxy 사용
-  timeout: Number(import.meta.env.VITE_API_TIMEOUT) || 10000,
+  timeout: Number(import.meta.env.VITE_API_TIMEOUT) || 30000, // 기본값을 30초로 증가
   headers: {
     'Content-Type': 'application/json',
   },
@@ -50,13 +50,21 @@ if (import.meta.env.VITE_DEBUG === 'true') {
   );
 }
 
-// 요청 인터셉터: 토큰 자동 추가
+// 요청 인터셉터: 토큰 및 사용자 ID 자동 추가
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = getAccessToken();
+    const user = getUser();
+
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // X-User-Id 헤더 추가 (백엔드 Market/Cart API 요구사항)
+    if (user?.userId && config.headers) {
+      config.headers['X-User-Id'] = user.userId.toString();
+    }
+
     return config;
   },
   (error) => {

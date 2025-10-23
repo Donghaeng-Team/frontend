@@ -88,7 +88,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
   const [currentX, setCurrentX] = useState(0);
   const imageContainerRef = useRef<HTMLDivElement>(null);
 
-  // 상품 데이터 로드
+  // 상품 데이터 로드 및 좋아요 상태 확인
   useEffect(() => {
     const loadProduct = async () => {
       if (!id) {
@@ -108,6 +108,22 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
         console.log('✅ 상품 데이터:', response.data);
         console.log('📸 이미지 정보:', response.data.images);
         setProduct(response.data);
+
+        // 좋아요 상태 확인 (로그인 사용자만)
+        if (authUser) {
+          try {
+            const wishlistResponse = await productService.getWishlistedProducts({ pageSize: 100 });
+            if (wishlistResponse.success && wishlistResponse.data) {
+              const isInWishlist = wishlistResponse.data.content.some(
+                (item: any) => item.marketId === response.data.marketId
+              );
+              setIsWished(isInWishlist);
+            }
+          } catch (wishlistError) {
+            console.error('좋아요 상태 확인 실패:', wishlistError);
+            // 좋아요 상태 확인 실패는 치명적이지 않으므로 무시
+          }
+        }
       } catch (error: any) {
         console.error('❌ 상품 로드 실패:', error);
         console.warn('⚠️ Using fallback mock product data');
@@ -121,7 +137,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
     };
 
     loadProduct();
-  }, [id, navigate]);
+  }, [id, navigate, authUser]);
 
   // 작성자 여부 확인
   const isAuthor = authUser && product && product.authorId === authUser.userId;
@@ -192,8 +208,23 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
     navigate(`/chat/${product.chatRoomId}`);
   };
 
-  const handleWish = () => {
-    setIsWished(!isWished);
+  const handleWish = async () => {
+    if (!authUser || !product) return;
+
+    try {
+      if (isWished) {
+        // 좋아요 취소
+        await productService.removeWishlist(product.marketId);
+        setIsWished(false);
+      } else {
+        // 좋아요 추가
+        await productService.addWishlist(product.marketId);
+        setIsWished(true);
+      }
+    } catch (error) {
+      console.error('좋아요 처리 실패:', error);
+      alert('좋아요 처리에 실패했습니다.');
+    }
   };
 
   // 이미지 캐러셀 핸들러
@@ -369,24 +400,18 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
 
               <div className="action-buttons">
                 {isAuthor ? (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="large"
-                      onClick={() => navigate(`/products/${product.marketId}/edit`)}
-                      className="edit-button"
-                    >
-                      ✏️ 수정
-                    </Button>
-                    <button
-                      onClick={handleWish}
-                      className="wish-button"
-                      data-variant={isWished ? "primary" : "outline"}
-                    >
-                      ♥
-                    </button>
-                  </>
+                  // 작성자일 때: 수정 버튼만 표시
+                  <Button
+                    variant="primary"
+                    size="large"
+                    onClick={() => navigate(`/products/${product.marketId}/edit`)}
+                    className="edit-button"
+                    style={{ width: '100%' }}
+                  >
+                    ✏️ 수정하기
+                  </Button>
                 ) : (
+                  // 일반 사용자일 때: 채팅방 참여 + 좋아요 버튼
                   <>
                     <button
                       onClick={handleJoinChat}
@@ -399,7 +424,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
                       className="wish-button"
                       data-variant={isWished ? "primary" : "outline"}
                     >
-                      ♥
+                      {isWished ? '❤️' : '🤍'}
                     </button>
                   </>
                 )}

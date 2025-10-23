@@ -11,6 +11,7 @@ import type {
   ExtendDeadlineResponse,
   RecruitmentCloseResponse,
   ChatRoomCreateRequest,
+  MyPurchaseStatsResponse,
 } from '../../types';
 
 // ========================================
@@ -167,6 +168,15 @@ export const chatService = {
     roomId: number
   ): Promise<ApiResponse<ParticipantListResponse>> => {
     const response = await apiClient.get(`/api/v1/chat/private/${roomId}/participants`);
+    return response.data;
+  },
+
+  /**
+   * 내 공동구매 통계 조회
+   * GET /api/v1/chat/private/me
+   */
+  getMyPurchaseStats: async (): Promise<ApiResponse<MyPurchaseStatsResponse>> => {
+    const response = await apiClient.get('/api/v1/chat/private/me');
     return response.data;
   },
 };

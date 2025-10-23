@@ -210,6 +210,9 @@ export const communityService = {
       body: JSON.stringify({
         region: post.region,
         tag: post.tag,
+        title: post.title || '제목 없음',
+        content: post.content || '내용 없음',
+        images: [] // 초기 생성 시 빈 배열
       }),
     });
 
@@ -265,7 +268,7 @@ export const communityService = {
           s3Key: urlRes.urls[idx].s3Key,
           order: idx,
           caption: idx === 0 ? "메인 사진" : `사진 ${idx + 1}`,
-          isThumbnail: idx === 0,
+          thumbnail: idx === 0,
           contentType: file.type,
           size: file.size,
         }));
@@ -273,8 +276,8 @@ export const communityService = {
         const updateBody: PostUpdateRequest = {
           region: post.region,
           tag: post.tag,
-          title: post.title,
-          content: post.content,
+          title: post.title || '제목 없음',
+          content: post.content || '내용 없음',
           images: images,
         };
 
@@ -312,8 +315,8 @@ export const communityService = {
       const updateBody: PostUpdateRequest = {
         region: post.region,
         tag: post.tag,
-        title: post.title,
-        content: post.content,
+        title: post.title || '제목 없음',
+        content: post.content || '내용 없음',
       };
 
       const fallbackUpdateHeaders: Record<string, string> = {

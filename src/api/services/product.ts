@@ -233,6 +233,13 @@ export const productService = {
     return response.data;
   },
 
+  // 좋아요한 상품 개수만 조회 (효율적)
+  getWishlistCount: async (): Promise<ApiResponse<number>> => {
+    // GET /api/v1/market/private/cart/my/count
+    const response = await apiClient.get('/api/v1/market/private/cart/my/count');
+    return response.data;
+  },
+
   // 카테고리 목록 조회
   getCategories: async (): Promise<ApiResponse<string[]>> => {
     const response = await apiClient.get('/products/categories');
