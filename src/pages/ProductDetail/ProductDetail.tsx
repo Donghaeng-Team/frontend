@@ -15,6 +15,7 @@ import { getCategoryName } from '../../utils/categoryMapping';
 import { convertToCloudFrontUrl } from '../../utils/urlHelper';
 import { transformChatRoomsForUI } from '../../utils/chatUtils';
 import { productService } from '../../api/services/product';
+import { chatService } from '../../api/services/chat';
 import type { MarketDetailResponse } from '../../types/market';
 
 interface ProductDetailProps {
@@ -86,6 +87,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
   const [product, setProduct] = useState<MarketDetailResponse | null>(null);
   const [isWished, setIsWished] = useState(false);
   const [isJoinedChat, setIsJoinedChat] = useState(false);
+  const [isBuyer, setIsBuyer] = useState(false);
   const [activeAccordion, setActiveAccordion] = useState<string[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -125,8 +127,11 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
               );
               setIsWished(isInWishlist);
             }
-          } catch (wishlistError) {
-            console.error('좋아요 상태 확인 실패:', wishlistError);
+          } catch (wishlistError: any) {
+            // 404는 위시리스트가 비어있는 정상 상태이므로 무시
+            if (wishlistError?.response?.status !== 404) {
+              console.error('좋아요 상태 확인 실패:', wishlistError);
+            }
             // 좋아요 상태 확인 실패는 치명적이지 않으므로 무시
           }
         }
@@ -145,36 +150,66 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
     loadProduct();
   }, [id, navigate, authUser]);
 
-  // 채팅방 참여 상태 확인
+  // 채팅방 목록 가져오기 (초기 로드)
   useEffect(() => {
-    const checkChatJoinStatus = async () => {
-      if (!authUser || !product?.marketId) return;
+    const loadChatRooms = async () => {
+      if (!authUser) return;
 
       try {
-        // 채팅방 목록 가져오기
         await fetchChatRooms();
-
-        // 현재 상품(marketId)의 채팅방이 목록에 있는지 확인
-        const isJoined = chatRooms.some(room => room.marketId === product.marketId);
-        setIsJoinedChat(isJoined);
       } catch (error) {
-        console.error('❌ 채팅방 상태 확인 실패:', error);
+        console.error('❌ 채팅방 목록 로드 실패:', error);
       }
     };
 
-    checkChatJoinStatus();
-  }, [authUser, product, fetchChatRooms]);
+    loadChatRooms();
+  }, [authUser, fetchChatRooms]);
 
   // chatRooms 변경 시 참여 상태 재확인
   useEffect(() => {
-    if (product?.marketId && chatRooms.length > 0) {
-      const isJoined = chatRooms.some(room => room.marketId === product.marketId);
-      setIsJoinedChat(isJoined);
+    console.log('🔄 useEffect 실행:', {
+      hasProduct: !!product,
+      chatRoomsLength: chatRooms.length,
+      productChatRoomId: product?.chatRoomId
+    });
+
+    if (product && chatRooms.length > 0) {
+      console.log('📊 채팅방 매칭 시작');
+      console.log('  - chatRooms:', chatRooms.map(r => ({ id: r.id, type: typeof r.id, buyer: r.buyer })));
+      console.log('  - product.chatRoomId:', product.chatRoomId, typeof product.chatRoomId);
+
+      // chatRoomId가 있으면 그걸로 우선 매칭, 없으면 marketId로 매칭
+      const joinedRoom = product.chatRoomId
+        ? chatRooms.find(room => {
+            const match = Number(room.id) === product.chatRoomId;
+            console.log(`  - room.id ${room.id} === chatRoomId ${product.chatRoomId}? ${match}`);
+            return match;
+          })
+        : chatRooms.find(room => room.marketId === product.marketId);
+
+      console.log('  - 찾은 채팅방:', joinedRoom);
+      console.log('  - buyer 값:', joinedRoom?.buyer);
+
+      setIsJoinedChat(!!joinedRoom);
+      setIsBuyer(joinedRoom?.buyer || false);
+
+      console.log('✅ 상태 업데이트 완료:', {
+        isJoinedChat: !!joinedRoom,
+        isBuyer: joinedRoom?.buyer || false
+      });
     }
   }, [chatRooms, product]);
 
   // 작성자 여부 확인
   const isAuthor = authUser && product && product.authorId === authUser.userId;
+
+  // 렌더링 시 상태 로그
+  console.log('🎨 렌더링 시점 상태:', {
+    isJoinedChat,
+    isBuyer,
+    chatRoomsLength: chatRooms.length,
+    productChatRoomId: product?.chatRoomId
+  });
 
   // TODO: 백엔드 참여자 목록 API 구현 후 실제 데이터로 대체
   const participants: Participant[] = [];
@@ -222,7 +257,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
     }
   ];
 
-  const handleJoinChat = () => {
+  const handleJoinChat = async () => {
     // 인증 확인
     if (!authUser) {
       alert('로그인이 필요한 기능입니다.');
@@ -237,17 +272,43 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
       return;
     }
 
-    console.log('✅ 채팅방 참여:', product.chatRoomId);
+    try {
+      // 아직 참여하지 않은 경우에만 joinChatRoom API 호출
+      if (!isJoinedChat) {
+        console.log('✅ 채팅방 참여 API 호출:', product.chatRoomId);
+        try {
+          await chatService.joinChatRoom(product.chatRoomId);
+          console.log('✅ 채팅방 참여 성공');
+        } catch (joinError: any) {
+          // "이미 참여중인 채팅방입니다" 에러는 정상 케이스로 처리
+          if (joinError?.response?.data?.message === '이미 참여중인 채팅방입니다') {
+            console.log('✅ 이미 참여중인 채팅방');
+          } else {
+            // 다른 에러는 상위로 전파
+            throw joinError;
+          }
+        }
 
-    // PC에서는 모달로, 모바일에서는 페이지 이동
-    const isMobile = window.innerWidth <= 768;
+        // 즉시 UI 업데이트
+        setIsJoinedChat(true);
 
-    if (isMobile) {
-      // 모바일: 전체 페이지로 이동
-      navigate(`/chat/${product.chatRoomId}`);
-    } else {
-      // PC: 모달 열기
-      setIsChatModalOpen(true);
+        // 채팅방 목록 새로고침 (백그라운드에서)
+        fetchChatRooms();
+      }
+
+      // PC에서는 모달로, 모바일에서는 페이지 이동
+      const isMobile = window.innerWidth <= 768;
+
+      if (isMobile) {
+        // 모바일: 전체 페이지로 이동
+        navigate(`/chat/${product.chatRoomId}`);
+      } else {
+        // PC: 모달 열기
+        setIsChatModalOpen(true);
+      }
+    } catch (error) {
+      console.error('❌ 채팅방 참여 실패:', error);
+      alert('채팅방 참여에 실패했습니다.');
     }
   };
 
@@ -460,7 +521,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
                       onClick={handleJoinChat}
                       className={`chat-button ${isJoinedChat ? 'chat-button-joined' : ''}`}
                     >
-                      {isJoinedChat ? '💬 참여중' : '💬 채팅방 참여'}
+                      {isBuyer ? '💳 구매중' : isJoinedChat ? '💬 참여중' : '💬 채팅방 참여'}
                     </button>
                     <button
                       onClick={handleWish}
@@ -617,7 +678,11 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
       {isChatModalOpen && product && (
         <ChatModal
           isOpen={isChatModalOpen}
-          onClose={() => setIsChatModalOpen(false)}
+          onClose={() => {
+            setIsChatModalOpen(false);
+            // 모달 닫을 때 채팅방 목록 새로고침 (구매 상태 업데이트 반영)
+            fetchChatRooms();
+          }}
           chatRooms={transformChatRoomsForUI(chatRooms)}
           initialRoomId={product.chatRoomId?.toString()}
           initialProductInfo={{

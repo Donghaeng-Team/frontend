@@ -116,9 +116,16 @@ export const chatService = {
     roomId: number,
     hours: number
   ): Promise<ApiResponse<ExtendDeadlineResponse>> => {
-    const response = await apiClient.patch(`/api/v1/chat/private/${roomId}/extend`, null, {
-      params: { hours },
-    });
+    const response = await apiClient.patch(
+      `/api/v1/chat/private/${roomId}/extend`,
+      {},
+      {
+        params: { hours },
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
     return response.data;
   },
 
@@ -129,7 +136,32 @@ export const chatService = {
   closeRecruitment: async (
     roomId: number
   ): Promise<ApiResponse<RecruitmentCloseResponse>> => {
-    const response = await apiClient.patch(`/api/v1/chat/private/${roomId}/close`);
+    const response = await apiClient.patch(
+      `/api/v1/chat/private/${roomId}/close`,
+      {},
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    return response.data;
+  },
+
+  /**
+   * 모집 취소
+   * PATCH /api/v1/chat/private/{roomId}/cancel
+   */
+  cancelRecruitment: async (roomId: number): Promise<ApiResponse<string>> => {
+    const response = await apiClient.patch(
+      `/api/v1/chat/private/${roomId}/cancel`,
+      {},
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
     return response.data;
   },
 
