@@ -260,6 +260,17 @@
     transform: translateY(1px);
   }
 
+  .chat-button-joined {
+    background-color: #10b981;
+    border: 2px solid #10b981;
+  }
+
+  .chat-button-joined:hover {
+    background-color: #059669;
+    border-color: #059669;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+  }
+
   .edit-button {
     flex: 1;
     font-size: 16px;

@@ -30,7 +30,12 @@ export const commentService = {
     postId: number,
     data: CommentCreateRequest
   ): Promise<ApiResponse<CommentResponse>> => {
-    const response = await apiClient.post(`/api/v1/comments/private/${postId}`, data);
+    const response = await apiClient.post(`/api/v1/comments/private/${postId}`, data, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-User-Id': data.userId.toString(),
+      },
+    });
     return response.data;
   },
 

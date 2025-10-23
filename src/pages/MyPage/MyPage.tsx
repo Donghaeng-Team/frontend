@@ -9,6 +9,7 @@ import { canChangePassword } from '../../utils/auth';
 import { useAuthStore } from '../../stores/authStore';
 import { userService } from '../../api/services/user';
 import { productService } from '../../api/services/product';
+import { chatService } from '../../api/services/chat';
 import './MyPage.css';
 
 interface UserProfile {
@@ -71,39 +72,31 @@ const MyPage: React.FC<MyPageProps> = () => {
       if (!authUser) return;
 
       try {
-        // 주최한 상품
-        const hostingResponse = await productService.getMyProducts();
-        const hostingCount = hostingResponse.success && hostingResponse.data
-          ? hostingResponse.data.content.filter(p => p.status === 'active').length
+        // 채팅 API를 통한 공동구매 통계 조회
+        const purchaseStatsResponse = await chatService.getMyPurchaseStats();
+
+        // 좋아요한 상품 개수 (효율적인 API 사용)
+        const likedCountResponse = await productService.getWishlistCount();
+        const likedCount = likedCountResponse.success && likedCountResponse.data
+          ? likedCountResponse.data
           : 0;
 
-        // 참여중인 상품
-        const participatingResponse = await productService.getMyJoinedProducts();
-        const participatingCount = participatingResponse.success && participatingResponse.data
-          ? participatingResponse.data.content.filter(p => p.status === 'active').length
-          : 0;
-
-        // 완료된 상품 (주최 + 참여)
-        const myCompleted = hostingResponse.success && hostingResponse.data
-          ? hostingResponse.data.content.filter(p => p.status === 'completed').length
-          : 0;
-
-        const joinedCompleted = participatingResponse.success && participatingResponse.data
-          ? participatingResponse.data.content.filter(p => p.status === 'completed').length
-          : 0;
-
-        // 좋아요한 상품
-        const likedResponse = await productService.getWishlistedProducts();
-        const likedCount = likedResponse.success && likedResponse.data
-          ? likedResponse.data.content.length
-          : 0;
-
-        setStats({
-          hosting: hostingCount,
-          participating: participatingCount,
-          completed: myCompleted + joinedCompleted,
-          liked: likedCount
-        });
+        if (purchaseStatsResponse.success && purchaseStatsResponse.data) {
+          setStats({
+            hosting: purchaseStatsResponse.data.activeAsCreator,
+            participating: purchaseStatsResponse.data.activeAsBuyer,
+            completed: purchaseStatsResponse.data.completed,
+            liked: likedCount
+          });
+        } else {
+          // API 실패 시 기본값
+          setStats({
+            hosting: 0,
+            participating: 0,
+            completed: 0,
+            liked: likedCount
+          });
+        }
       } catch (error) {
         console.error('통계 데이터 로드 실패:', error);
         // Fallback to default values
