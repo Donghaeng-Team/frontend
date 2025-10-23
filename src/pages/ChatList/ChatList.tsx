@@ -99,12 +99,8 @@ const ChatList: React.FC = () => {
                           </div>
 
                           <div className="chat-message-row">
-                            <p className="chat-last-message">{room.lastMessage || '메시지 없음'}</p>
-                            {room.unreadCount && room.unreadCount > 0 && (
-                              <div className="chat-unread-badge">
-                                <span className="chat-unread-count">{room.unreadCount}</span>
-                              </div>
-                            )}
+                            <p className="chat-last-message">최근 메시지</p>
+                            {/* TODO: 백엔드에서 lastMessage와 unreadCount API 지원 필요 */}
                           </div>
 
                           <div className="chat-bottom-row">

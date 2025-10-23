@@ -4,6 +4,7 @@ import ChatRoom from '../../components/ChatRoom';
 import type { ChatMessage } from '../../components/ChatRoom/ChatRoom';
 import { useChatStore } from '../../stores/chatStore';
 import { useAuthStore } from '../../stores/authStore';
+import type { ChatRoomStatus } from '../../types/chat';
 import './ChatRoomPage.css';
 
 const ChatRoomPage = () => {
@@ -40,12 +41,27 @@ const ChatRoomPage = () => {
     }
   }, [roomId, user, joinChatRoom]);
 
+  // ChatRoomStatus를 RecruitmentStatus의 status 타입으로 변환
+  const convertChatRoomStatus = (status: ChatRoomStatus): 'active' | 'closing' | 'closed' => {
+    switch (status) {
+      case 'RECRUITING':
+        return 'active';
+      case 'RECRUITMENT_CLOSED':
+        return 'closing';
+      case 'COMPLETED':
+      case 'CANCELLED':
+        return 'closed';
+      default:
+        return 'active';
+    }
+  };
+
   // 채팅 메시지를 ChatRoom 컴포넌트 형식으로 변환
   const formattedMessages: ChatMessage[] = messages.map((msg) => ({
     id: msg.id.toString(),
-    type: msg.senderId === user?.id ? 'my' : msg.messageType === 'SYSTEM' ? 'system' : 'buyer',
+    type: msg.senderId === user?.userId ? 'my' : msg.messageType === 'SYSTEM' ? 'system' : 'buyer',
     content: msg.messageContent,
-    sender: msg.senderId === user?.id ? undefined : {
+    sender: msg.senderId === user?.userId ? undefined : {
       name: msg.senderNickname,
       isSeller: msg.senderId === currentRoom?.creatorUserId
     },
@@ -69,15 +85,15 @@ const ChatRoomPage = () => {
     current: currentRoom.currentBuyers,
     max: currentRoom.maxBuyers,
     timeRemaining: '2시간 30분', // TODO: 실제 남은 시간 계산
-    status: currentRoom.status
+    status: convertChatRoomStatus(currentRoom.status)
   } : {
     current: 0,
     max: 0,
     timeRemaining: '0분',
-    status: 'RECRUITING' as const
+    status: 'active' as const
   };
 
-  const userRole = (currentRoom && user?.id === currentRoom.creatorUserId) ? 'seller' : 'buyer';
+  const userRole = (currentRoom && user?.userId === currentRoom.creatorUserId) ? 'seller' : 'buyer';
 
   const handleBack = () => {
     navigate(-1);
@@ -115,9 +131,9 @@ const ChatRoomPage = () => {
   };
 
   const handleSendMessage = (message: string) => {
-    if (roomId && user) {
+    if (roomId && user && user.userId) {
       const numericRoomId = parseInt(roomId, 10);
-      sendMessage(numericRoomId, message, user.id, user.nickname);
+      sendMessage(numericRoomId, message, user.userId, user.nickName);
     }
   };
 
