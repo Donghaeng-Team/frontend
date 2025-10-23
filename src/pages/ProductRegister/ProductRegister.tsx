@@ -10,6 +10,7 @@ import GoogleMap from '../../components/GoogleMap';
 import { useAuthStore } from '../../stores/authStore';
 import { productService } from '../../api/services/product';
 import { imageService } from '../../api/services/image';
+import { divisionApi } from '../../api/divisionApi';
 import './ProductRegister.css';
 
 // 샘플 카테고리 데이터 (fallback용)
@@ -113,6 +114,7 @@ const ProductRegister: React.FC = () => {
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [mapAddress, setMapAddress] = useState(''); // 지도에서 선택한 주소 (참고용)
+  const [currentDivisionName, setCurrentDivisionName] = useState('위치를 선택해주세요'); // Division API로 받아온 동네 이름
   const [detailLocation, setDetailLocation] = useState(''); // 사용자가 입력하는 상세 거래 위치
   const [locationCoords, setLocationCoords] = useState<{ lat: number; lng: number }>({ lat: 37.5665, lng: 126.9780 });
   const [categoryData, setCategoryData] = useState<CategoryItem[]>([]);
@@ -436,9 +438,28 @@ const ProductRegister: React.FC = () => {
   };
 
   // 지도 위치 변경 핸들러
-  const handleLocationChange = (location: { lat: number; lng: number; address: string }) => {
+  const handleLocationChange = async (location: { lat: number; lng: number; address: string }) => {
+    console.log('📍 ProductRegister - handleLocationChange 호출됨:', location);
     setLocationCoords({ lat: location.lat, lng: location.lng });
     setMapAddress(location.address);
+    console.log('📍 ProductRegister - locationCoords 업데이트:', { lat: location.lat, lng: location.lng });
+
+    // Division API 호출하여 행정구역 정보 가져오기
+    try {
+      const division = await divisionApi.getDivisionByCoord({
+        coordinate: {
+          latitude: location.lat,
+          longitude: location.lng
+        }
+      });
+      console.log('✅ Division API 응답:', division);
+      const divisionName = divisionApi.formatDivisionShortName(division);
+      setCurrentDivisionName(divisionName);
+      console.log('✅ 동네 이름 업데이트:', divisionName);
+    } catch (error) {
+      console.error('❌ Division API 호출 실패:', error);
+      setCurrentDivisionName('동네 정보를 가져올 수 없습니다');
+    }
   };
 
   const handleSubmit = async () => {
@@ -785,12 +806,39 @@ const ProductRegister: React.FC = () => {
         <section className="register-section location-section">
           <h2 className="section-title">🚩 거래 희망 장소</h2>
           <p className="section-description">
-            지도에서 대략적인 위치를 선택하고, 정확한 거래 장소를 입력해주세요.
+            지도를 드래그하여 대략적인 위치를 선택하고, 정확한 거래 장소를 입력해주세요.
           </p>
+          <div className="map-instruction-box" style={{
+            backgroundColor: '#f0f9ff',
+            border: '1px solid #0ea5e9',
+            borderRadius: '8px',
+            padding: '12px 16px',
+            marginBottom: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <span style={{ fontSize: '20px' }}>🖱️</span>
+            <span style={{ fontSize: '14px', color: '#0369a1' }}>
+              지도를 드래그하여 원하는 위치로 이동하세요. 중앙의 핀이 선택한 위치를 표시합니다.
+            </span>
+          </div>
           <GoogleMap
             onLocationChange={handleLocationChange}
             initialCenter={locationCoords}
           />
+          <div className="current-location-info" style={{
+            backgroundColor: '#f8fafc',
+            border: '1px solid #e2e8f0',
+            borderRadius: '8px',
+            padding: '12px 16px',
+            marginTop: '12px',
+            fontSize: '14px',
+            color: '#64748b'
+          }}>
+            <div style={{ fontWeight: '600', marginBottom: '4px', color: '#334155' }}>📍 현재 선택된 동네</div>
+            <div style={{ fontSize: '15px', color: '#1e293b', fontWeight: '500' }}>{currentDivisionName}</div>
+          </div>
           <div className="form-group" style={{ marginTop: '20px' }}>
             <label className="form-label">상세 거래 위치 *</label>
             <input
