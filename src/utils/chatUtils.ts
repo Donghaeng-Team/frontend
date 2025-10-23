@@ -23,7 +23,10 @@ export function transformChatRoomForUI(room: ChatRoomResponse): ChatRoom {
     },
     status: room.status === 'RECRUITING' ? 'active'
           : room.status === 'RECRUITMENT_CLOSED' ? 'closing'
-          : 'closed'
+          : 'closed',
+    creator: room.creator,
+    buyer: room.buyer,
+    marketId: room.marketId
   };
 }
 
@@ -32,4 +35,49 @@ export function transformChatRoomForUI(room: ChatRoomResponse): ChatRoom {
  */
 export function transformChatRoomsForUI(rooms: ChatRoomResponse[]): ChatRoom[] {
   return rooms.map(transformChatRoomForUI);
+}
+
+/**
+ * 마감 시간까지 남은 시간을 계산해서 문자열로 반환
+ * @param endTime ISO 8601 형식의 마감 시간
+ * @returns "2시간 30분", "30분", "5분", "마감됨" 등
+ */
+export function calculateTimeRemaining(endTime: string): string {
+  const now = new Date();
+  const end = new Date(endTime);
+  const diffMs = end.getTime() - now.getTime();
+
+  // 이미 마감된 경우
+  if (diffMs <= 0) {
+    return '마감됨';
+  }
+
+  const diffMinutes = Math.floor(diffMs / (1000 * 60));
+  const diffHours = Math.floor(diffMinutes / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  // 1일 이상 남은 경우
+  if (diffDays >= 1) {
+    const remainingHours = diffHours % 24;
+    if (remainingHours > 0) {
+      return `${diffDays}일 ${remainingHours}시간`;
+    }
+    return `${diffDays}일`;
+  }
+
+  // 1시간 이상 남은 경우
+  if (diffHours >= 1) {
+    const remainingMinutes = diffMinutes % 60;
+    if (remainingMinutes > 0) {
+      return `${diffHours}시간 ${remainingMinutes}분`;
+    }
+    return `${diffHours}시간`;
+  }
+
+  // 1시간 미만인 경우
+  if (diffMinutes > 0) {
+    return `${diffMinutes}분`;
+  }
+
+  return '곧 마감';
 }

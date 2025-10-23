@@ -105,6 +105,12 @@ export interface ChatMessagePageResponse {
   nextCursor: number | null;
 }
 
+export interface MyPurchaseStatsResponse {
+  activeAsCreator: number;    // 자신이 개설자 + 현재 활성화 상태인 채팅방 숫자
+  activeAsBuyer: number;       // 자신이 개설자가 아닌 구매자 + 현재 활성화 상태인 채팅방 숫자
+  completed: number;           // 자신이 개설자 또는 구매자 + 현재 종료 상태인 채팅방 숫자
+}
+
 // ========================================
 // Request Types
 // ========================================

@@ -204,7 +204,8 @@ const ComponentShowcase = () => {
       lastMessageTime: '2시간 전',
       unreadCount: 3,
       participants: { current: 7, max: 10 },
-      status: 'active' as const
+      status: 'active' as const,
+      creator: true
     },
     {
       id: '2',
@@ -213,7 +214,8 @@ const ComponentShowcase = () => {
       lastMessageTime: '30분 전',
       unreadCount: 1,
       participants: { current: 5, max: 8 },
-      status: 'active' as const
+      status: 'active' as const,
+      creator: false
     },
     {
       id: '3',
@@ -221,7 +223,8 @@ const ComponentShowcase = () => {
       lastMessage: '판매자: 마감 임박! 2명만 더 모집...',
       lastMessageTime: '1시간 전',
       participants: { current: 18, max: 20 },
-      status: 'closing' as const
+      status: 'closing' as const,
+      creator: false
     }
   ];
 

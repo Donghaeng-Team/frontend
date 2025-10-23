@@ -33,11 +33,13 @@ interface ChatRoomProps {
   productInfo: ProductInfo;
   recruitmentStatus: RecruitmentStatus;
   messages: ChatMessage[];
+  isBuyer?: boolean;  // 구매 확정 여부
   onBack: () => void;
   onLeave: () => void;
   onExtendTime?: () => void;
   onConfirm?: () => void;
   onApply?: () => void;
+  onCancel?: () => void;  // 구매 취소
   onSendMessage: (message: string) => void;
   className?: string;
 }
@@ -47,11 +49,13 @@ const ChatRoom: FC<ChatRoomProps> = ({
   productInfo,
   recruitmentStatus,
   messages,
+  isBuyer = false,
   onBack,
   onLeave,
   onExtendTime,
   onConfirm,
   onApply,
+  onCancel,
   onSendMessage,
   className = ''
 }) => {
@@ -141,18 +145,23 @@ const ChatRoom: FC<ChatRoomProps> = ({
             <button className="chat-room-action-btn confirm" onClick={onConfirm}>
               ✅ 모집 확정
             </button>
-            <button className="chat-room-action-btn leave" onClick={onLeave}>
-              🚪 채팅방 나가기
-            </button>
           </>
         ) : (
           <>
-            <button className="chat-room-action-btn apply" onClick={onApply}>
-              ✅ 구매 신청
-            </button>
-            <button className="chat-room-action-btn leave" onClick={onLeave}>
-              🚪 채팅방 나가기
-            </button>
+            {isBuyer ? (
+              <button className="chat-room-action-btn cancel" onClick={onCancel}>
+                ❌ 구매 취소
+              </button>
+            ) : (
+              <>
+                <button className="chat-room-action-btn apply" onClick={onApply}>
+                  ✅ 구매 신청
+                </button>
+                <button className="chat-room-action-btn leave" onClick={onLeave}>
+                  🚪 채팅방 나가기
+                </button>
+              </>
+            )}
           </>
         )}
       </div>
