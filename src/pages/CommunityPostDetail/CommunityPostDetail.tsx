@@ -32,6 +32,33 @@ const CommunityPostDetail: React.FC = () => {
   const [displayedCommentsCount, setDisplayedCommentsCount] = useState(10);
   const [commentsLoading, setCommentsLoading] = useState(false);
   const [relatedPosts, setRelatedPosts] = useState<RelatedPost[]>([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
+
+  // 터치 이벤트 핸들러
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!post?.imageUrls) return;
+
+    const minSwipeDistance = 50;
+    const distance = touchStart - touchEnd;
+
+    if (distance > minSwipeDistance) {
+      // 왼쪽으로 스와이프 - 다음 이미지
+      setCurrentImageIndex((prev) => (prev === post.imageUrls!.length - 1 ? 0 : prev + 1));
+    } else if (distance < -minSwipeDistance) {
+      // 오른쪽으로 스와이프 - 이전 이미지
+      setCurrentImageIndex((prev) => (prev === 0 ? post.imageUrls!.length - 1 : prev - 1));
+    }
+  };
 
   // 게시글 데이터 로드
   useEffect(() => {
@@ -242,10 +269,23 @@ const CommunityPostDetail: React.FC = () => {
     }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
+    if (!authUser || !authUser.userId || !post) return;
+
     if (window.confirm('정말 삭제하시겠습니까?')) {
-      // 삭제 로직
-      console.log('Delete post');
+      try {
+        const response = await communityService.deletePost(authUser.userId, post.postId);
+
+        if (response.success) {
+          alert('게시글이 삭제되었습니다.');
+          navigate('/community');
+        } else {
+          alert('게시글 삭제에 실패했습니다.');
+        }
+      } catch (error) {
+        console.error('게시글 삭제 실패:', error);
+        alert('게시글 삭제 중 오류가 발생했습니다.');
+      }
     }
   };
 
@@ -418,25 +458,69 @@ const CommunityPostDetail: React.FC = () => {
             {/* 작성자 정보 */}
             <div className="post-author-info">
                 <div className="author-profile" style={{ backgroundColor: '#ff5e2f' }}>
-                <span className="author-initial">익명</span>
+                  <span className="author-initial">
+                    {getInitials(post.userDto?.name || '익명')}
+                  </span>
                 </div>
                 <div className="author-details">
-                <div className="author-name">익명</div>
-                <div className="author-meta">
+                  <div className="author-name">
+                    {post.userDto?.name || '익명'}
+                  </div>
+                  <div className="author-meta">
                     {formatDate(post.createdAt)} • {post.region} • 조회 {post.viewCount}
-                </div>
+                  </div>
                 </div>
             </div>
 
-            {/* 이미지 갤러리 */}
+            {/* 이미지 갤러리 (PC: 타일형, 모바일: 캐러셀) */}
             {post.imageUrls && post.imageUrls.length > 0 && (
-              <div className="post-images">
-                {post.imageUrls.map((url, index) => (
-                  <div key={index} className="post-image-item">
-                    <img src={url} alt={`게시글 이미지 ${index + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <>
+                {/* PC 타일형 이미지 갤러리 */}
+                <div className="post-images-grid desktop-only">
+                  {post.imageUrls.map((url, index) => (
+                    <div key={index} className="post-image-item">
+                      <img src={url} alt={`게시글 이미지 ${index + 1}`} />
+                    </div>
+                  ))}
+                </div>
+
+                {/* 모바일 캐러셀 */}
+                <div className="post-carousel mobile-only">
+                  <div
+                    className="carousel-image-container"
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                  >
+                    <img
+                      src={post.imageUrls[currentImageIndex]}
+                      alt={`게시글 이미지 ${currentImageIndex + 1}`}
+                      className="carousel-image"
+                    />
+
+                    {/* 이미지 카운터 */}
+                    {post.imageUrls.length > 1 && (
+                      <div className="carousel-counter">
+                        {currentImageIndex + 1} / {post.imageUrls.length}
+                      </div>
+                    )}
                   </div>
-                ))}
-              </div>
+
+                  {/* 이미지 인디케이터 */}
+                  {post.imageUrls.length > 1 && (
+                    <div className="carousel-indicators">
+                      {post.imageUrls.map((_, index) => (
+                        <button
+                          key={index}
+                          className={`carousel-indicator ${index === currentImageIndex ? 'active' : ''}`}
+                          onClick={() => setCurrentImageIndex(index)}
+                          aria-label={`이미지 ${index + 1}로 이동`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </>
             )}
 
             {/* 본문 내용 */}
@@ -484,7 +568,7 @@ const CommunityPostDetail: React.FC = () => {
               <>
                 <div className="comments-list">
                   {comments.map((comment) => {
-                    const displayName = comment.userName || (comment.userId === authUser?.userId ? authUser?.nickName : '익명');
+                    const displayName = comment.userName || '익명';
                     return (
                       <div key={comment.commentId} className="comment-item">
                         <div className="comment-author-info">

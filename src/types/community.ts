@@ -84,6 +84,18 @@ export interface PostListResponse {
 }
 
 /**
+ * 사용자 정보 DTO
+ */
+export interface UserDto {
+  /** 사용자 ID */
+  id: number;
+  /** 사용자 이름 */
+  name: string;
+  /** 프로필 썸네일 이미지 URL */
+  profileThumbnailImageUrl: string | null;
+}
+
+/**
  * 게시글 상세 응답
  */
 export interface PostDetailResponse {
@@ -107,6 +119,8 @@ export interface PostDetailResponse {
   createdAt: string;
   /** 수정일시 */
   updatedAt: string;
+  /** 작성자 정보 */
+  userDto: UserDto | null;
   /** 좋아요 수 */
   likeCount: number;
   /** 댓글 수 */
