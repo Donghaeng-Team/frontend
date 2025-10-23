@@ -486,7 +486,7 @@
 
     /* Bottom Nav를 위한 여백 확보 */
     .product-register {
-      padding-bottom: 80px;
+      padding-bottom: 96px;
     }
 
     .register-container {
@@ -613,18 +613,10 @@
 
     /* 버튼 액션 모바일 */
     .form-actions {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background-color: #ffffff;
-      border-top: 1px solid #e6e6e6;
-      padding: 12px 16px;
-      margin: 0;
+      flex-direction: column;
       gap: 10px;
-      flex-direction: row;
-      z-index: 100;
-      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+      padding: 16px;
+      margin-top: 24px;
     }
 
     .btn {
@@ -634,20 +626,10 @@
       border-radius: 6px;
     }
 
-    .btn-cancel {
-      flex: 0 0 auto;
-      width: auto;
-      min-width: 70px;
-    }
-
-    .btn-save {
-      flex: 0 0 auto;
-      width: auto;
-      min-width: 90px;
-    }
-
+    .btn-cancel,
+    .btn-save,
     .btn-submit {
-      flex: 1;
+      width: 100%;
     }
 
     /* 마감일 선택기 모바일 최적화 */
