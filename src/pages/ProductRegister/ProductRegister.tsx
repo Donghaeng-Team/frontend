@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from '../../components/Header';
-import Footer from '../../components/Footer';
+import Layout from '../../components/Layout';
 import CategorySelector from '../../components/CategorySelector';
 import type { CategoryItem } from '../../components/CategorySelector';
 import Button from '../../components/Button';
@@ -589,10 +588,9 @@ const ProductRegister: React.FC = () => {
   };
 
   return (
-    <div className="product-register">
-      <Header notificationCount={3} />
-      
-      <div className="register-container">
+    <Layout>
+      <div className="product-register">
+        <div className="register-container">
         <div className="register-header">
           <h1 className="register-title">📝 공동구매 상품 등록</h1>
           {lastSaved && (
@@ -1127,10 +1125,9 @@ const ProductRegister: React.FC = () => {
             {isSubmitting ? '등록 중...' : '등록'}
           </button>
         </div>
+        </div>
       </div>
-      
-      <Footer />
-    </div>
+    </Layout>
   );
 };
 

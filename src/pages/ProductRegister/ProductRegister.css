@@ -479,20 +479,49 @@
 
   /* 반응형 */
   @media (max-width: 768px) {
+    /* 모바일에서 Header 숨기기 */
+    .product-register > .header {
+      display: none;
+    }
+
+    /* Bottom Nav를 위한 여백 확보 */
+    .product-register {
+      padding-bottom: 80px;
+    }
+
     .register-container {
-      padding: 20px 16px;
+      padding: 16px;
+      padding-bottom: 20px;
+    }
+
+    .register-header {
+      margin-bottom: 20px;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
     }
 
     .register-section {
-      padding: 24px 20px;
+      padding: 20px 16px;
+      margin-bottom: 16px;
+      border-radius: 8px;
     }
 
     .register-title {
-      font-size: 24px;
+      font-size: 20px;
     }
 
     .section-title {
-      font-size: 18px;
+      font-size: 16px;
+      margin-bottom: 16px;
+    }
+
+    .section-description {
+      font-size: 13px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
     }
 
     .form-row {
@@ -500,18 +529,136 @@
       gap: 0;
     }
 
-    .image-preview {
-      width: 150px;
-      height: 150px;
+    .form-label {
+      font-size: 14px;
+      margin-bottom: 8px;
     }
 
-    .form-actions {
-      flex-direction: column;
+    .form-input {
+      height: 44px;
+      font-size: 14px;
+    }
+
+    .form-textarea {
+      min-height: 200px;
+      font-size: 14px;
+    }
+
+    /* 이미지 업로드 모바일 최적화 */
+    .image-upload-container {
+      min-height: 150px;
+      padding: 15px;
       gap: 10px;
     }
 
+    .image-preview {
+      width: calc(50% - 5px);
+      height: 120px;
+    }
+
+    .upload-more-hint {
+      width: calc(50% - 5px);
+      height: 120px;
+    }
+
+    .upload-prompt {
+      min-height: 150px;
+      padding: 20px;
+    }
+
+    .upload-icon {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    .upload-text,
+    .upload-link {
+      font-size: 12px;
+    }
+
+    /* 가격 계산 모바일 */
+    .price-calculation {
+      padding: 15px;
+      gap: 10px;
+    }
+
+    .calculation-item {
+      padding: 10px;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+    }
+
+    .calculation-label {
+      font-size: 12px;
+    }
+
+    .calculation-value {
+      font-size: 16px;
+    }
+
+    /* 주의사항 모바일 */
+    .notice-section {
+      padding: 20px 16px;
+      margin-bottom: 20px;
+    }
+
+    .notice-title {
+      font-size: 14px;
+    }
+
+    .notice-list li {
+      font-size: 12px;
+    }
+
+    /* 버튼 액션 모바일 */
+    .form-actions {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: #ffffff;
+      border-top: 1px solid #e6e6e6;
+      padding: 12px 16px;
+      margin: 0;
+      gap: 10px;
+      flex-direction: row;
+      z-index: 100;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+    }
+
     .btn {
-      width: 100%;
+      height: 48px;
+      padding: 0 20px;
+      font-size: 14px;
+      border-radius: 6px;
+    }
+
+    .btn-cancel {
+      flex: 0 0 auto;
+      width: auto;
+      min-width: 70px;
+    }
+
+    .btn-save {
+      flex: 0 0 auto;
+      width: auto;
+      min-width: 90px;
+    }
+
+    .btn-submit {
+      flex: 1;
+    }
+
+    /* 마감일 선택기 모바일 최적화 */
+    .deadline-selector .quick-deadline-buttons {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 6px !important;
+    }
+
+    .deadline-selector .quick-deadline-btn {
+      padding: 8px 10px !important;
+      font-size: 12px !important;
     }
   }
 
