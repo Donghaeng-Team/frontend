@@ -35,9 +35,6 @@ export const authService = {
   login: async (data: LoginRequest): Promise<ApiResponse<LoginResponse>> => {
     const response = await apiClient.post<ApiResponse<User>>('/api/v1/user/public/login', data);
     
-    console.log('로그인 응답:', response.data);
-    console.log('응답 헤더:', response.headers);
-    
     // 백엔드가 토큰을 헤더로 전달 (Axios는 헤더를 소문자로 정규화)
     const accessToken = (response.headers['authorization'] || response.headers['Authorization'])?.replace('Bearer ', '');
     // refreshToken은 쿠키로 전달되므로 브라우저가 자동 관리
@@ -62,36 +59,30 @@ export const authService = {
       try {
         // JWT 토큰 디코딩 (payload 부분)
         const tokenPayload = JSON.parse(atob(accessToken.split('.')[1]));
-        console.log('🔍 JWT payload:', tokenPayload);
-        
+
         // JWT에서 userId 찾기 (sub 필드에 있을 가능성이 높음)
         if (tokenPayload.sub) {
           user.userId = parseInt(tokenPayload.sub, 10);
-          console.log('✅ JWT sub에서 userId 추출:', user.userId);
         } else if (tokenPayload.userId) {
           user.userId = tokenPayload.userId;
-          console.log('✅ JWT에서 userId 추출:', user.userId);
         } else if (tokenPayload.id) {
           user.userId = tokenPayload.id;
-          console.log('✅ JWT id에서 userId 추출:', user.userId);
         }
       } catch (jwtError) {
-        console.error('❌ JWT 디코딩 실패:', jwtError);
+        // JWT 디코딩 실패 시 무시
       }
     }
-    
+
     // 여전히 userId가 없으면 getProfile API 호출
     if (!user.userId) {
-      console.log('⚠️ JWT에도 userId 없음, getProfile API 호출');
       try {
         const profileResponse = await apiClient.get<ApiResponse<User>>('/api/v1/user/private/me');
         if (profileResponse.data.success && profileResponse.data.data) {
           const profileUser = profileResponse.data.data;
           user = { ...user, ...profileUser };
-          console.log('✅ 완전한 사용자 정보:', user);
         }
       } catch (profileError) {
-        console.error('❌ 프로필 정보 조회 실패:', profileError);
+        // 프로필 조회 실패 시 무시
       }
     }
     
@@ -114,9 +105,7 @@ export const authService = {
   // 회원가입 (이메일 인증 필요)
   register: async (data: RegisterRequest): Promise<ApiResponse<RegisterResponse>> => {
     const response = await apiClient.post<ApiResponse<RegisterResponse>>('/api/v1/user/public/register', data);
-    
-    console.log('회원가입 응답:', response.data);
-    
+
     // 회원가입 성공 시 이메일 인증이 필요하므로 자동 로그인하지 않음
     return response.data;
   },
@@ -157,8 +146,6 @@ export const authService = {
   // 내 정보 조회
   getProfile: async (): Promise<ApiResponse<User>> => {
     const response = await apiClient.get('/api/v1/user/private/me');
-    console.log('🔍 getProfile RAW API Response:', response.data);
-    console.log('🔍 getProfile User Data:', response.data.data);
     return response.data;
   },
 

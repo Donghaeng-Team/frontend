@@ -77,12 +77,10 @@ apiClient.interceptors.request.use(
 // 응답 인터셉터: 에러 처리 및 토큰 재발급
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => {
-    console.log('✅ API Response:', response.status, response.config.url, response.data);
-    console.log(response.headers.Authorization);
-    
-    console.log('📋 응답 헤더:', response.headers);
-    console.log('🔑 Authorization 헤더:', response.headers['authorization']);
-    console.log('🔑 Authorization 헤더:', response.headers['Authorization']);
+    // 개발 환경에서만 상세 로그 출력
+    if (import.meta.env.DEV) {
+      console.log('✅ API Response:', response.status, response.config.url);
+    }
     return response;
   },
   async (error) => {
