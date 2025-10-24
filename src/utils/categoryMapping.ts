@@ -1,6 +1,9 @@
 // 카테고리 ID를 읽기 쉬운 이름으로 매핑
 // 계층적 카테고리 코드 (8자리): 대분류(2) + 중분류(2) + 소분류(2) + 세분류(2)
 
+// Vite는 JSON 파일을 직접 import 가능
+import categoryDataImport from '../data/category.json';
+
 interface CategoryInfo {
   id: string;
   name: string;
@@ -20,12 +23,11 @@ let categoriesCache: FoodCategory[] | null = null;
 // foodCategories.json 로드
 const loadCategories = async (): Promise<FoodCategory[]> => {
   if (categoriesCache) return categoriesCache;
-  
+
   try {
-    const response = await fetch('/category.json');
-    const data = await response.json();
-    categoriesCache = data;
-    return data;
+    // Vite import를 사용하여 JSON 직접 로드
+    categoriesCache = categoryDataImport as FoodCategory[];
+    return categoriesCache;
   } catch (error) {
     console.error('Failed to load categories:', error);
     return [];
