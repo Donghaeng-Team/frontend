@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import ChatRoom from '../../components/ChatRoom';
 import type { ChatMessage } from '../../components/ChatRoom/ChatRoom';
@@ -10,7 +10,8 @@ import './ChatRoomPage.css';
 const ChatRoomPage = () => {
   const navigate = useNavigate();
   const { roomId } = useParams<{ roomId: string }>();
-  
+  const hasJoinedRef = useRef(false);
+
   const {
     initializeWebSocket,
     disconnectWebSocket,
@@ -33,13 +34,19 @@ const ChatRoomPage = () => {
     };
   }, [initializeWebSocket, disconnectWebSocket]);
 
-  // 채팅방 입장
+  // 채팅방 입장 (중복 방지)
   useEffect(() => {
-    if (roomId && user) {
+    if (roomId && user && !hasJoinedRef.current) {
+      hasJoinedRef.current = true;
       const numericRoomId = parseInt(roomId, 10);
       joinChatRoom(numericRoomId);
     }
-  }, [roomId, user, joinChatRoom]);
+
+    // cleanup: 컴포넌트 언마운트 시 초기화
+    return () => {
+      hasJoinedRef.current = false;
+    };
+  }, [roomId, user]);
 
   // ChatRoomStatus를 RecruitmentStatus의 status 타입으로 변환
   const convertChatRoomStatus = (status: ChatRoomStatus): 'active' | 'closing' | 'closed' => {

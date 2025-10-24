@@ -2,6 +2,7 @@ import { Client } from '@stomp/stompjs';
 import type { StompSubscription } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import type { WebSocketChatMessage } from '../types';
+import { getAccessToken, getRefreshToken } from './token';
 
 // WebSocket 연결 상태
 export type ConnectionStatus = 'connected' | 'disconnected' | 'connecting' | 'error';
@@ -32,12 +33,26 @@ export class ChatWebSocketClient {
 
     this.updateStatus('connecting');
 
+    const accessToken = getAccessToken();
+    const refreshToken = getRefreshToken();
+
     // STOMP 클라이언트 생성
     this.client = new Client({
       webSocketFactory: () => {
-        const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8086';
-        return new SockJS(`${baseURL}/ws/v1/chat/private`) as any;
+        const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+        // SockJS 생성 시 토큰을 쿼리 파라미터로 전달
+        let url = `${baseURL}/ws/v1/chat/private`;
+        if (accessToken) {
+          url += `?token=${encodeURIComponent(accessToken)}`;
+        }
+        return new SockJS(url) as any;
       },
+
+      // STOMP 연결 헤더에도 토큰 추가
+      connectHeaders: accessToken ? {
+        'Authorization': `Bearer ${accessToken}`,
+        'X-Refresh-Token': refreshToken || '',
+      } : {},
       
       debug: (str) => {
         if (import.meta.env.DEV) {
