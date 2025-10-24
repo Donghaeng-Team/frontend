@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import ChatRoom from '../../components/ChatRoom';
+import BottomNav from '../../components/BottomNav';
 import type { ChatMessage } from '../../components/ChatRoom/ChatRoom';
 import { useChatStore } from '../../stores/chatStore';
 import { useAuthStore } from '../../stores/authStore';
@@ -169,6 +170,7 @@ const ChatRoomPage = () => {
         onApply={handleApply}
         onSendMessage={handleSendMessage}
       />
+      <BottomNav notificationCount={3} />
     </div>
   );
 };

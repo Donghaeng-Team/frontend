@@ -405,8 +405,20 @@
 
 /* 반응형 */
 @media (max-width: 768px) {
+  /* 모바일에서 헤더/푸터 숨기기 */
+  .product-edit .desktop-header,
+  .product-edit .desktop-footer {
+    display: none;
+  }
+
+  /* BottomNav를 위한 padding */
+  .product-edit {
+    padding-bottom: calc(60px + env(safe-area-inset-bottom));
+  }
+
   .edit-container {
     padding: 20px 16px;
+    padding-bottom: 20px;
   }
 
   .edit-section {
