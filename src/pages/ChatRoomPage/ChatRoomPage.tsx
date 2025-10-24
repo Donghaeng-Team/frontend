@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import ChatRoom from '../../components/ChatRoom';
+import BottomNav from '../../components/BottomNav';
 import type { ChatMessage } from '../../components/ChatRoom/ChatRoom';
 import { useChatStore } from '../../stores/chatStore';
 import { useAuthStore } from '../../stores/authStore';
@@ -10,7 +11,8 @@ import './ChatRoomPage.css';
 const ChatRoomPage = () => {
   const navigate = useNavigate();
   const { roomId } = useParams<{ roomId: string }>();
-  
+  const hasJoinedRef = useRef(false);
+
   const {
     initializeWebSocket,
     disconnectWebSocket,
@@ -33,13 +35,19 @@ const ChatRoomPage = () => {
     };
   }, [initializeWebSocket, disconnectWebSocket]);
 
-  // 채팅방 입장
+  // 채팅방 입장 (중복 방지)
   useEffect(() => {
-    if (roomId && user) {
+    if (roomId && user && !hasJoinedRef.current) {
+      hasJoinedRef.current = true;
       const numericRoomId = parseInt(roomId, 10);
       joinChatRoom(numericRoomId);
     }
-  }, [roomId, user, joinChatRoom]);
+
+    // cleanup: 컴포넌트 언마운트 시 초기화
+    return () => {
+      hasJoinedRef.current = false;
+    };
+  }, [roomId, user]);
 
   // ChatRoomStatus를 RecruitmentStatus의 status 타입으로 변환
   const convertChatRoomStatus = (status: ChatRoomStatus): 'active' | 'closing' | 'closed' => {
@@ -57,19 +65,30 @@ const ChatRoomPage = () => {
   };
 
   // 채팅 메시지를 ChatRoom 컴포넌트 형식으로 변환
-  const formattedMessages: ChatMessage[] = messages.map((msg) => ({
-    id: msg.id.toString(),
-    type: msg.senderId === user?.userId ? 'my' : msg.messageType === 'SYSTEM' ? 'system' : 'buyer',
-    content: msg.messageContent,
-    sender: msg.senderId === user?.userId ? undefined : {
-      name: msg.senderNickname,
-      isSeller: msg.senderId === currentRoom?.creatorUserId
-    },
-    timestamp: new Date(msg.sentAt).toLocaleTimeString('ko-KR', {
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }));
+  const formattedMessages: ChatMessage[] = messages.map((msg) => {
+    const messageType = msg.senderId === user?.userId ? 'my' : msg.messageType === 'SYSTEM' ? 'system' : 'buyer';
+
+    // 시스템 메시지의 경우 숫자(userId)를 닉네임으로 교체
+    let messageContent = msg.messageContent;
+    if (messageType === 'system' && msg.senderNickname) {
+      // "1님이 참가했습니다" → "홍길동님이 참가했습니다"
+      messageContent = messageContent.replace(/^\d+/, msg.senderNickname);
+    }
+
+    return {
+      id: msg.id.toString(),
+      type: messageType,
+      content: messageContent,
+      sender: msg.senderId === user?.userId ? undefined : {
+        name: msg.senderNickname,
+        isSeller: msg.senderId === currentRoom?.creatorUserId
+      },
+      timestamp: new Date(msg.sentAt).toLocaleTimeString('ko-KR', {
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    };
+  });
 
   const productInfo = currentRoom ? {
     name: currentRoom.title,
@@ -151,6 +170,7 @@ const ChatRoomPage = () => {
         onApply={handleApply}
         onSendMessage={handleSendMessage}
       />
+      <BottomNav notificationCount={3} />
     </div>
   );
 };

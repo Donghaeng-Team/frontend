@@ -2,8 +2,10 @@
     background-color: #ffffff;
     border-bottom: 1px solid #f2f2f2;
     height: 80px;
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
+    right: 0;
     z-index: 100;
   }
   
@@ -214,6 +216,7 @@
   @media (max-width: 768px) {
     .header {
       height: 60px;
+      position: sticky; /* 모바일에서는 sticky로 변경 */
     }
 
     .header-container {

@@ -14,6 +14,7 @@
   width: 100%;
   overflow-x: hidden;
   padding: 0;
+  padding-top: 80px; /* 헤더 높이만큼 상단 여백 */
 }
 
 .layout-content {
@@ -41,6 +42,7 @@
 
   /* 하단 네비게이션을 위한 여백 추가 */
   .layout-main {
+    padding-top: 0; /* 모바일에서는 헤더가 없으므로 상단 여백 제거 */
     padding-bottom: calc(60px + env(safe-area-inset-bottom));
   }
 

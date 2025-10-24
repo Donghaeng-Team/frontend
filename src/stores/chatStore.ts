@@ -87,19 +87,65 @@ export const useChatStore = create<ChatState>((set, get) => ({
         const { wsClient } = get();
         if (wsClient?.isConnected()) {
           wsClient.subscribeToRoom(roomId, (message: WebSocketChatMessage) => {
+            // WebSocket 메시지 타입에 따라 messageType 결정
+            let messageType: 'TEXT' | 'SYSTEM' | 'DEADLINE_EXTEND' = 'TEXT';
+            if (message.type === 'SYSTEM' || message.type === 'JOIN' || message.type === 'LEAVE') {
+              messageType = 'SYSTEM';
+            }
+
+            // 시스템 메시지의 경우 숫자를 닉네임으로 교체
+            let messageContent = message.message;
+            if (messageType === 'SYSTEM' && message.senderNickname) {
+              messageContent = messageContent.replace(/^\d+/, message.senderNickname);
+            }
+
             get().addMessage({
               id: Date.now(),
               senderId: message.senderId,
               senderNickname: message.senderNickname,
-              messageContent: message.message,
-              messageType: 'TEXT',
+              messageContent: messageContent,
+              messageType: messageType,
               sentAt: message.timestamp,
             });
           });
         }
       }
     } catch (error: any) {
-      set({ error: '채팅방 참여에 실패했습니다.' });
+      const errorMessage = error?.response?.data?.message;
+
+      // "이미 참여중인 채팅방입니다" 에러는 무시 (이미 참여중이면 정상)
+      if (errorMessage === '이미 참여중인 채팅방입니다') {
+        console.log('[Chat] Already joined, fetching room info instead');
+        // 채팅방 정보만 조회
+        get().fetchChatRoom(roomId);
+
+        // WebSocket 구독은 설정
+        const { wsClient } = get();
+        if (wsClient?.isConnected()) {
+          wsClient.subscribeToRoom(roomId, (message: WebSocketChatMessage) => {
+            let messageType: 'TEXT' | 'SYSTEM' | 'DEADLINE_EXTEND' = 'TEXT';
+            if (message.type === 'SYSTEM' || message.type === 'JOIN' || message.type === 'LEAVE') {
+              messageType = 'SYSTEM';
+            }
+
+            let messageContent = message.message;
+            if (messageType === 'SYSTEM' && message.senderNickname) {
+              messageContent = messageContent.replace(/^\d+/, message.senderNickname);
+            }
+
+            get().addMessage({
+              id: Date.now(),
+              senderId: message.senderId,
+              senderNickname: message.senderNickname,
+              messageContent: messageContent,
+              messageType: messageType,
+              sentAt: message.timestamp,
+            });
+          });
+        }
+      } else {
+        set({ error: '채팅방 참여에 실패했습니다.' });
+      }
     }
   },
 
