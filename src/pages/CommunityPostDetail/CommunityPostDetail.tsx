@@ -568,7 +568,7 @@ const CommunityPostDetail: React.FC = () => {
               <>
                 <div className="comments-list">
                   {comments.map((comment) => {
-                    const displayName = comment.userName || '익명';
+                    const displayName = comment.user?.name || '익명';
                     return (
                       <div key={comment.commentId} className="comment-item">
                         <div className="comment-author-info">

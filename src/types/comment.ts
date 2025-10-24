@@ -1,4 +1,5 @@
 // 댓글 관련 타입 정의
+import type { UserDto } from './community';
 
 /**
  * 댓글 생성 요청
@@ -22,14 +23,14 @@ export interface CommentResponse {
   commentId: number;
   /** 작성자 ID */
   userId: number;
-  /** 작성자 이름 (nullable) */
-  userName: string | null;
+  /** 작성자 정보 */
+  user: UserDto;
   /** 댓글 내용 */
   content: string;
   /** 생성일시 */
   createdAt: string;
-  /** 수정일시 */
-  updatedAt: string;
+  /** 수정일시 (nullable) */
+  updatedAt: string | null;
 }
 
 /**
@@ -58,9 +59,18 @@ export interface CommentDeleteParams {
  * 페이지네이션 정렬 객체
  */
 export interface SortObject {
-  empty: boolean;
-  sorted: boolean;
-  unsorted: boolean;
+  /** 정렬 방향 (ASC, DESC) */
+  direction: string;
+  /** 정렬 속성 */
+  property: string;
+  /** 대소문자 무시 여부 */
+  ignoreCase: boolean;
+  /** null 처리 방식 */
+  nullHandling: string;
+  /** 오름차순 여부 */
+  ascending: boolean;
+  /** 내림차순 여부 */
+  descending: boolean;
 }
 
 /**
@@ -68,7 +78,7 @@ export interface SortObject {
  */
 export interface PageableObject {
   offset: number;
-  sort: SortObject;
+  sort: SortObject[];
   paged: boolean;
   pageSize: number;
   pageNumber: number;
@@ -90,7 +100,7 @@ export interface PageCommentResponse {
   /** 현재 페이지 번호 */
   number: number;
   /** 정렬 정보 */
-  sort: SortObject;
+  sort: SortObject[];
   /** 첫 페이지 여부 */
   first: boolean;
   /** 마지막 페이지 여부 */
