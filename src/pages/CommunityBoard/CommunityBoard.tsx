@@ -152,6 +152,12 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
 
         if (response.success && response.data && response.data.length > 0) {
           const convertedPosts = response.data.map(convertApiPostToPost);
+          console.log('📊 Converted Posts with counts:', convertedPosts.map(p => ({
+            title: p.title,
+            viewCount: p.viewCount,
+            commentCount: p.commentCount,
+            likeCount: p.likeCount
+          })));
           setPosts(convertedPosts);
         } else {
           console.warn('⚠️ API returned no data');
