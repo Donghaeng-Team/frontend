@@ -104,7 +104,7 @@ export interface NicknameCheckRequest {
 }
 
 export interface ChangeNicknameRequest {
-  newNickname: string;
+  nickname: string;
 }
 
 // 인증 코드 관련

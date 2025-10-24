@@ -148,7 +148,7 @@ const MyPage: React.FC<MyPageProps> = () => {
         // 닉네임 변경
         if (hasNicknameChange) {
           await userService.changeNickname(authUser.userId, {
-            newNickname: editName
+            nickname: editName
           });
         }
 
