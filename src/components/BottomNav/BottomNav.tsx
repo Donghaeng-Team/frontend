@@ -5,10 +5,9 @@ import './BottomNav.css';
 
 interface BottomNavProps {
   onChatClick?: () => void;
-  notificationCount?: number;
 }
 
-const BottomNav: React.FC<BottomNavProps> = ({ onChatClick, notificationCount = 0 }) => {
+const BottomNav: React.FC<BottomNavProps> = ({ onChatClick }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -47,12 +46,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ onChatClick, notificationCount = 
         className={`bottom-nav-item ${isActive('/chat') ? 'active' : ''}`}
         onClick={handleChatClick}
       >
-        <span className="bottom-nav-icon">
-          💭
-          {notificationCount > 0 && (
-            <span className="bottom-nav-badge">{notificationCount}</span>
-          )}
-        </span>
+        <span className="bottom-nav-icon">💭</span>
         <span className="bottom-nav-label">채팅</span>
       </button>
 

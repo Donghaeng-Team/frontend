@@ -427,7 +427,7 @@ const CommunityPostDetail: React.FC = () => {
   // 로딩 중
   if (loading) {
     return (
-      <Layout isLoggedIn={true} notificationCount={3}>
+      <Layout isLoggedIn={true}>
         <div className="community-post-detail">
           <div style={{ textAlign: 'center', padding: '100px 20px', fontSize: '18px', color: '#666' }}>
             게시글을 불러오는 중...
@@ -440,7 +440,7 @@ const CommunityPostDetail: React.FC = () => {
   // 게시글 없음
   if (!post) {
     return (
-      <Layout isLoggedIn={true} notificationCount={3}>
+      <Layout isLoggedIn={true}>
         <div className="community-post-detail">
           <div style={{ textAlign: 'center', padding: '100px 20px', fontSize: '18px', color: '#666' }}>
             게시글을 찾을 수 없습니다.
@@ -451,7 +451,7 @@ const CommunityPostDetail: React.FC = () => {
   }
 
   return (
-    <Layout isLoggedIn={true} notificationCount={3}>
+    <Layout isLoggedIn={true}>
         <div className="community-post-detail">
         {/* 게시글 본문 섹션 */}
         <section className="post-section">

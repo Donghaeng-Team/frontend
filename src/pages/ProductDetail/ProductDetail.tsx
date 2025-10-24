@@ -441,7 +441,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
           <div className="loading-message">상품 정보를 불러오는 중...</div>
         </div>
         <Footer className="desktop-footer" />
-        <BottomNav notificationCount={3} />
+        <BottomNav />
       </div>
     );
   }
@@ -455,7 +455,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
           <div className="loading-message">상품을 찾을 수 없습니다.</div>
         </div>
         <Footer className="desktop-footer" />
-        <BottomNav notificationCount={3} />
+        <BottomNav />
       </div>
     );
   }
@@ -764,7 +764,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
       )}
 
       <Footer className="desktop-footer" />
-      <BottomNav notificationCount={3} />
+      <BottomNav />
     </div>
   );
 };

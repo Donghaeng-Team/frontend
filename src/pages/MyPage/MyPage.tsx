@@ -281,7 +281,7 @@ const MyPage: React.FC<MyPageProps> = () => {
   ];
 
   return (
-    <Layout isLoggedIn={true} notificationCount={3}>
+    <Layout isLoggedIn={true}>
       <div className="mypage-container">
         {/* 프로필 섹션 */}
         <section className="profile-section">

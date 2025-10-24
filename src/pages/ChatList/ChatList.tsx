@@ -128,7 +128,7 @@ const ChatList: React.FC = () => {
             </div>
           </div>
       </div>
-      <BottomNav notificationCount={0} />
+      <BottomNav />
     </>
   );
 };

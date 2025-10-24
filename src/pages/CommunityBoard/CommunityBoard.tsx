@@ -330,7 +330,7 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
   return (
     <>
       <MobileHeader />
-      <Layout isLoggedIn={isLoggedIn} notificationCount={notificationCount}>
+      <Layout isLoggedIn={isLoggedIn}>
       <div className="community-board">
         {/* 배너 섹션 */}
         <section className="community-banner">
