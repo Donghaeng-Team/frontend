@@ -29,6 +29,7 @@ const CommunityPostDetail: React.FC = () => {
   const [commentText, setCommentText] = useState('');
   const [comments, setComments] = useState<CommentResponse[]>([]);
   const [allComments, setAllComments] = useState<CommentResponse[]>([]);
+  const [totalComments, setTotalComments] = useState(0);
   const [displayedCommentsCount, setDisplayedCommentsCount] = useState(10);
   const [commentsLoading, setCommentsLoading] = useState(false);
   const [relatedPosts, setRelatedPosts] = useState<RelatedPost[]>([]);
@@ -125,14 +126,16 @@ const CommunityPostDetail: React.FC = () => {
 
         console.log('✅ Comments API Response:', response);
 
-        if (response.success && response.data) {
-          setAllComments(response.data);
-          setComments(response.data.slice(0, 10));
+        if (response.success && response.data && response.data.content) {
+          setAllComments(response.data.content);
+          setComments(response.data.content.slice(0, 10));
+          setTotalComments(response.data.totalElements);
         }
       } catch (error) {
         console.error('❌ 댓글 로드 실패:', error);
         setAllComments([]);
         setComments([]);
+        setTotalComments(0);
       } finally {
         setCommentsLoading(false);
       }
@@ -187,9 +190,34 @@ const CommunityPostDetail: React.FC = () => {
 
 
 
-  const handleLike = () => {
-    setLiked(!liked);
-    setLikeCount(liked ? likeCount - 1 : likeCount + 1);
+  const handleLike = async () => {
+    // 로그인 체크
+    if (!authUser || !authUser.userId) {
+      alert('좋아요를 누르려면 로그인이 필요합니다.');
+      return;
+    }
+
+    if (!post) return;
+
+    try {
+      // 좋아요 API 호출
+      await communityService.increaseLike(authUser.userId, post.postId);
+
+      // 낙관적 업데이트
+      setLiked(!liked);
+      setLikeCount(liked ? likeCount - 1 : likeCount + 1);
+
+      // 게시글 정보 새로고침하여 정확한 좋아요 수 반영
+      const response = await communityService.getPost(post.postId);
+      if (response.success && response.data) {
+        setLikeCount(response.data.likeCount);
+      }
+    } catch (error) {
+      console.error('❌ 좋아요 처리 실패:', error);
+      // 에러 시 원래 상태로 롤백
+      setLiked(liked);
+      alert('좋아요 처리에 실패했습니다.');
+    }
   };
 
   const handleCommentSubmit = async () => {
@@ -205,9 +233,10 @@ const CommunityPostDetail: React.FC = () => {
       if (response.success && response.data) {
         // 댓글 목록 새로고침
         const updatedComments = await commentService.getComments(post.postId);
-        if (updatedComments.success && updatedComments.data) {
-          setAllComments(updatedComments.data);
-          setComments(updatedComments.data.slice(0, displayedCommentsCount));
+        if (updatedComments.success && updatedComments.data && updatedComments.data.content) {
+          setAllComments(updatedComments.data.content);
+          setComments(updatedComments.data.content.slice(0, displayedCommentsCount));
+          setTotalComments(updatedComments.data.totalElements);
         }
         setCommentText('');
       }
@@ -231,9 +260,10 @@ const CommunityPostDetail: React.FC = () => {
       // 댓글 목록 새로고침
       if (post) {
         const updatedComments = await commentService.getComments(post.postId);
-        if (updatedComments.success && updatedComments.data) {
-          setAllComments(updatedComments.data);
-          setComments(updatedComments.data.slice(0, displayedCommentsCount));
+        if (updatedComments.success && updatedComments.data && updatedComments.data.content) {
+          setAllComments(updatedComments.data.content);
+          setComments(updatedComments.data.content.slice(0, displayedCommentsCount));
+          setTotalComments(updatedComments.data.totalElements);
         }
       }
     } catch (error) {
@@ -536,8 +566,10 @@ const CommunityPostDetail: React.FC = () => {
             {/* 액션 버튼 섹션 */}
             <div className="post-actions">
                 <button
-                className={`action-btn ${liked ? 'liked' : ''}`}
+                className={`action-btn ${liked ? 'liked' : ''} ${!authUser ? 'disabled' : ''}`}
                 onClick={handleLike}
+                disabled={!authUser}
+                title={!authUser ? '로그인이 필요합니다' : ''}
                 >
                 <span className="action-icon">❤️</span>
                 <span className="action-text">좋아요 {likeCount}</span>
@@ -553,7 +585,7 @@ const CommunityPostDetail: React.FC = () => {
         {/* 댓글 섹션 */}
         <section className="comments-section">
             <div className="comments-container">
-            <h2 className="comments-title">댓글 {allComments.length}개</h2>
+            <h2 className="comments-title">댓글 {totalComments}개</h2>
 
             {/* 댓글 목록 */}
             {commentsLoading ? (
@@ -568,7 +600,7 @@ const CommunityPostDetail: React.FC = () => {
               <>
                 <div className="comments-list">
                   {comments.map((comment) => {
-                    const displayName = comment.userName || '익명';
+                    const displayName = comment.user?.name || '익명';
                     return (
                       <div key={comment.commentId} className="comment-item">
                         <div className="comment-author-info">
@@ -649,23 +681,31 @@ const CommunityPostDetail: React.FC = () => {
               </>
             )}
 
-            {/* 댓글 입력 폼 */}
-            <div className="comment-form">
-                <input
-                type="text"
-                className="comment-input"
-                placeholder="댓글을 입력하세요..."
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleCommentSubmit()}
-                />
-                <button 
-                className="comment-submit-btn"
-                onClick={handleCommentSubmit}
-                >
-                등록
-                </button>
-            </div>
+            {/* 댓글 입력 폼 (로그인한 사용자만) */}
+            {authUser ? (
+              <div className="comment-form">
+                  <input
+                  type="text"
+                  className="comment-input"
+                  placeholder="댓글을 입력하세요..."
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleCommentSubmit()}
+                  />
+                  <button
+                  className="comment-submit-btn"
+                  onClick={handleCommentSubmit}
+                  >
+                  등록
+                  </button>
+              </div>
+            ) : (
+              <div className="comment-form-disabled">
+                <p style={{ textAlign: 'center', color: '#999', padding: '20px 0' }}>
+                  댓글을 작성하려면 로그인이 필요합니다.
+                </p>
+              </div>
+            )}
             </div>
         </section>
 

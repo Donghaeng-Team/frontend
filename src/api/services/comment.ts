@@ -4,6 +4,7 @@ import type {
   CommentCreateRequest,
   CommentResponse,
   CommentDeleteParams,
+  PageCommentResponse,
 } from '../../types/comment';
 
 /**
@@ -13,9 +14,9 @@ export const commentService = {
   /**
    * 댓글 목록 조회 (Public)
    * @param postId 게시글 ID
-   * @returns 댓글 목록
+   * @returns 댓글 페이지네이션 응답
    */
-  getComments: async (postId: number): Promise<ApiResponse<CommentResponse[]>> => {
+  getComments: async (postId: number): Promise<ApiResponse<PageCommentResponse>> => {
     const response = await apiClient.get(`/api/v1/comments/public/${postId}`);
     return response.data;
   },
