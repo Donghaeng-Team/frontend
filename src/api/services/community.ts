@@ -197,6 +197,25 @@ export const communityService = {
   },
 
   /**
+   * 게시글 조회수 증가 (Private)
+   * @param userId 사용자 ID (헤더로 전송)
+   * @param postId 게시글 ID
+   * @returns 조회수 증가 결과
+   */
+  increaseViewCount: async (userId: number, postId: number): Promise<ApiResponse<unknown>> => {
+    const response = await apiClient.post(
+      `/api/v1/posts/private/${postId}/views`,
+      {},
+      {
+        headers: {
+          'X-User-Id': userId.toString(),
+        },
+      }
+    );
+    return response.data;
+  },
+
+  /**
    * 이미지와 함께 게시글 생성 (통합 함수) - fetch 사용
    * @param userId 사용자 ID
    * @param post 게시글 초기 데이터

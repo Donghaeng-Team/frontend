@@ -26,6 +26,10 @@ const CommunityPostDetail: React.FC = () => {
   const [post, setPost] = useState<PostDetailResponse | null>(null);
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
+
+  // localStorage 키 생성 함수
+  const getLikeStorageKey = (postId: number, userId: number) =>
+    `post_liked_${postId}_${userId}`;
   const [commentText, setCommentText] = useState('');
   const [comments, setComments] = useState<CommentResponse[]>([]);
   const [allComments, setAllComments] = useState<CommentResponse[]>([]);
@@ -82,8 +86,22 @@ const CommunityPostDetail: React.FC = () => {
 
         setPost(response.data);
         setLikeCount(response.data.likeCount);
-        // 서버에서 받은 liked 상태로 초기화 (없으면 false)
-        setLiked(response.data.liked || false);
+
+        // 좋아요 상태 초기화: 서버 > localStorage > false 순서로 확인
+        if (authUser?.userId) {
+          const storageKey = getLikeStorageKey(response.data.postId, authUser.userId);
+          const storedLiked = localStorage.getItem(storageKey);
+          const initialLiked = response.data.liked ?? (storedLiked === 'true') ?? false;
+          setLiked(initialLiked);
+
+          // 조회수 증가 API 호출 (비동기, 에러 무시)
+          communityService
+            .increaseViewCount(authUser.userId, response.data.postId)
+            .then(() => console.log('✅ 조회수 증가 완료'))
+            .catch((err) => console.warn('⚠️ 조회수 증가 실패 (무시):', err));
+        } else {
+          setLiked(response.data.liked || false);
+        }
       } catch (error: any) {
         // 500 에러는 백엔드 이슈이므로 조용히 처리 (BACKEND_HANDOFF.md 참조)
         if (error.response?.status === 500) {
@@ -204,11 +222,16 @@ const CommunityPostDetail: React.FC = () => {
     // 현재 상태 백업 (롤백용)
     const prevLiked = liked;
     const prevLikeCount = likeCount;
+    const storageKey = getLikeStorageKey(post.postId, authUser.userId);
 
     try {
       // 낙관적 업데이트 (UI 즉시 반영)
-      setLiked(!liked);
-      setLikeCount(liked ? likeCount - 1 : likeCount + 1);
+      const newLiked = !liked;
+      setLiked(newLiked);
+      setLikeCount(newLiked ? likeCount + 1 : likeCount - 1);
+
+      // localStorage에 저장
+      localStorage.setItem(storageKey, String(newLiked));
 
       // 좋아요 토글 API 호출
       if (liked) {
@@ -217,21 +240,48 @@ const CommunityPostDetail: React.FC = () => {
         console.log('✅ 좋아요 취소 완료');
       } else {
         // 좋아요 안 한 상태 → 추가
-        await communityService.increaseLike(authUser.userId, post.postId);
-        console.log('✅ 좋아요 추가 완료');
+        try {
+          await communityService.increaseLike(authUser.userId, post.postId);
+          console.log('✅ 좋아요 추가 완료');
+        } catch (error: any) {
+          // "이미 좋아요를 누른 상태" 에러인 경우 → 상태를 true로 수정하고 취소로 전환
+          const errorMessage = error?.response?.data?.message || '';
+          if (
+            errorMessage.includes('이미') ||
+            errorMessage.includes('already') ||
+            error?.response?.status === 409
+          ) {
+            console.log('⚠️ 이미 좋아요를 누른 상태 → 취소로 전환');
+            // 상태를 true로 수정
+            setLiked(true);
+            localStorage.setItem(storageKey, 'true');
+            // 취소 API 호출
+            await communityService.decreaseLike(authUser.userId, post.postId);
+            console.log('✅ 좋아요 취소 완료 (전환)');
+            // UI는 취소 상태로 (false)
+            setLiked(false);
+            setLikeCount(likeCount - 1);
+            localStorage.setItem(storageKey, 'false');
+          } else {
+            throw error; // 다른 에러는 그대로 throw
+          }
+        }
       }
 
       // 게시글 정보 새로고침하여 정확한 좋아요 수와 상태 동기화
       const response = await communityService.getPost(post.postId);
       if (response.success && response.data) {
         setLikeCount(response.data.likeCount);
-        setLiked(response.data.liked || false);
+        const serverLiked = response.data.liked ?? (localStorage.getItem(storageKey) === 'true');
+        setLiked(serverLiked);
+        localStorage.setItem(storageKey, String(serverLiked));
       }
     } catch (error: any) {
       console.error('❌ 좋아요 처리 실패:', error);
       // 에러 시 원래 상태로 롤백
       setLiked(prevLiked);
       setLikeCount(prevLikeCount);
+      localStorage.setItem(storageKey, String(prevLiked));
       alert('좋아요 처리에 실패했습니다.');
     }
   };
