@@ -7,6 +7,7 @@ import type { CategoryItem } from '../../components/CategorySelector';
 import { productService, type ProductUpdateRequest } from '../../api/services/product';
 import type { MarketDetailResponse } from '../../types/market';
 import { useAuthStore } from '../../stores/authStore';
+import categoryDataImport from '../../data/category.json';
 import './ProductEdit.css';
 
 // foodCategories.json 데이터 타입
@@ -28,11 +29,8 @@ const transformFoodCategories = (categories: FoodCategoryData[]): CategoryItem[]
 // 카테고리 데이터 로드 함수
 const loadCategoryData = async (): Promise<CategoryItem[]> => {
   try {
-    const response = await fetch('/category.json');
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const foodCategories = await response.json() as FoodCategoryData[];
+    // Vite import를 사용하여 JSON 직접 로드
+    const foodCategories = categoryDataImport as FoodCategoryData[];
     return transformFoodCategories(foodCategories);
   } catch (error) {
     console.error('Failed to load food categories:', error);

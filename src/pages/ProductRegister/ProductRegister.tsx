@@ -10,6 +10,7 @@ import { useAuthStore } from '../../stores/authStore';
 import { productService } from '../../api/services/product';
 import { imageService } from '../../api/services/image';
 import { divisionApi } from '../../api/divisionApi';
+import categoryDataImport from '../../data/category.json';
 import './ProductRegister.css';
 
 // 샘플 카테고리 데이터 (fallback용)
@@ -81,13 +82,8 @@ const transformFoodCategories = (categories: FoodCategoryData[]): CategoryItem[]
 // 카테고리 데이터 로드 함수
 const loadCategoryData = async (): Promise<CategoryItem[]> => {
   try {
-    // 실제 JSON 파일에서 로드
-    const response = await fetch('/category.json');
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const foodCategories = await response.json() as FoodCategoryData[];
+    // Vite import를 사용하여 JSON 직접 로드
+    const foodCategories = categoryDataImport as FoodCategoryData[];
     const transformed = transformFoodCategories(foodCategories);
     return transformed;
   } catch (error) {

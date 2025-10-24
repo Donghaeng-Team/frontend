@@ -86,7 +86,7 @@ export const communityService = {
       headers['Authorization'] = `Bearer ${accessToken}`;
     }
 
-    const response = await fetch(`/upload-url/${postId}`, {
+    const response = await fetch(`/api/v1/posts/private/upload-url/${postId}`, {
       method: 'POST',
       headers,
       credentials: 'include', // 쿠키 포함
