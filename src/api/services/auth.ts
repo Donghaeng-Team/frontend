@@ -157,6 +157,8 @@ export const authService = {
   // 내 정보 조회
   getProfile: async (): Promise<ApiResponse<User>> => {
     const response = await apiClient.get('/api/v1/user/private/me');
+    console.log('🔍 getProfile RAW API Response:', response.data);
+    console.log('🔍 getProfile User Data:', response.data.data);
     return response.data;
   },
 

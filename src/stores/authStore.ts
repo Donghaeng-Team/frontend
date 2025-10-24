@@ -174,6 +174,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       try {
         const response = await authService.getProfile();
+        console.log('🔍 initializeAuth - getProfile response:', response);
+        console.log('🔍 initializeAuth - response.data:', response.data);
+        console.log('🔍 initializeAuth - savedUser:', savedUser);
 
         if (response.success) {
           // getProfile 응답과 localStorage 데이터 병합 (userId 유지)
@@ -183,7 +186,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             userId: response.data.userId || savedUser?.userId
           };
 
-          console.log('🔄 프로필 업데이트:', mergedUser);
+          console.log('🔄 프로필 업데이트 (mergedUser):', mergedUser);
+          console.log('🔍 userId 확인 - response.data.userId:', response.data.userId);
+          console.log('🔍 userId 확인 - savedUser?.userId:', savedUser?.userId);
+          console.log('🔍 userId 확인 - mergedUser.userId:', mergedUser.userId);
 
           set({
             isAuthenticated: true,
