@@ -125,9 +125,9 @@ const CommunityPostDetail: React.FC = () => {
 
         console.log('✅ Comments API Response:', response);
 
-        if (response.success && response.data) {
-          setAllComments(response.data);
-          setComments(response.data.slice(0, 10));
+        if (response.success && response.data && response.data.content) {
+          setAllComments(response.data.content);
+          setComments(response.data.content.slice(0, 10));
         }
       } catch (error) {
         console.error('❌ 댓글 로드 실패:', error);
@@ -205,9 +205,9 @@ const CommunityPostDetail: React.FC = () => {
       if (response.success && response.data) {
         // 댓글 목록 새로고침
         const updatedComments = await commentService.getComments(post.postId);
-        if (updatedComments.success && updatedComments.data) {
-          setAllComments(updatedComments.data);
-          setComments(updatedComments.data.slice(0, displayedCommentsCount));
+        if (updatedComments.success && updatedComments.data && updatedComments.data.content) {
+          setAllComments(updatedComments.data.content);
+          setComments(updatedComments.data.content.slice(0, displayedCommentsCount));
         }
         setCommentText('');
       }
@@ -231,9 +231,9 @@ const CommunityPostDetail: React.FC = () => {
       // 댓글 목록 새로고침
       if (post) {
         const updatedComments = await commentService.getComments(post.postId);
-        if (updatedComments.success && updatedComments.data) {
-          setAllComments(updatedComments.data);
-          setComments(updatedComments.data.slice(0, displayedCommentsCount));
+        if (updatedComments.success && updatedComments.data && updatedComments.data.content) {
+          setAllComments(updatedComments.data.content);
+          setComments(updatedComments.data.content.slice(0, displayedCommentsCount));
         }
       }
     } catch (error) {
