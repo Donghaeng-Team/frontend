@@ -1,6 +1,8 @@
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { useState, useEffect } from "react"
 import { useAuthStore } from "../../stores/authStore"
+import { setUser } from "../../utils/token"
+import type { User } from "../../types/auth"
 
 const Callback = () => {
   const [status, setStatus] = useState<"loading" | "success" | "fail">(
@@ -35,10 +37,27 @@ const Callback = () => {
 
     const processAuth = async () => {
       try {
-        // 1. JWT 토큰 디코딩하여 내용 확인
+        // 1. JWT 토큰 디코딩하여 userId 추출
+        let userId: number | undefined = undefined
+        let userEmail = ""
         try {
           const tokenPayload = JSON.parse(atob(accessToken.split('.')[1]))
           console.log("🔍 JWT 토큰 Payload:", tokenPayload)
+
+          // JWT에서 userId 찾기 (sub, userId, id 필드 확인)
+          if (tokenPayload.sub) {
+            userId = parseInt(tokenPayload.sub, 10)
+            console.log("✅ JWT sub에서 userId 추출:", userId)
+          } else if (tokenPayload.userId) {
+            userId = tokenPayload.userId
+            console.log("✅ JWT userId에서 userId 추출:", userId)
+          } else if (tokenPayload.id) {
+            userId = tokenPayload.id
+            console.log("✅ JWT id에서 userId 추출:", userId)
+          }
+
+          // JWT에서 email도 추출
+          userEmail = tokenPayload.email || tokenPayload.sub || ""
         } catch (jwtError) {
           console.error("❌ JWT 디코딩 실패:", jwtError)
         }
@@ -47,19 +66,31 @@ const Callback = () => {
         localStorage.setItem("accessToken", accessToken)
         console.log("✅ 토큰 저장 완료, accessToken:", accessToken.substring(0, 20) + "...")
 
-        // 2. authStore 초기화하여 사용자 정보 로드
+        // 3. userId를 포함한 임시 사용자 정보를 localStorage에 저장
+        // (initializeAuth에서 getProfile 호출 시 병합에 사용됨)
+        if (userId) {
+          const tempUser: Partial<User> = {
+            userId,
+            email: userEmail,
+            provider: provider.toUpperCase() as "KAKAO" | "GOOGLE"
+          }
+          setUser(tempUser as User)
+          console.log("✅ 임시 사용자 정보 저장 (userId 포함):", tempUser)
+        }
+
+        // 4. authStore 초기화하여 사용자 정보 로드
         console.log("🔄 initializeAuth 호출 시작...")
         await initializeAuth()
         console.log("✅ 인증 상태 초기화 완료")
 
-        // 3. 초기화 후 authStore 상태 확인
+        // 5. 초기화 후 authStore 상태 확인
         const authState = useAuthStore.getState()
         console.log("🔍 OAuth 완료 후 authStore 상태:", {
           isAuthenticated: authState.isAuthenticated,
           user: authState.user
         })
 
-        // 4. 성공 상태로 변경 및 리다이렉트
+        // 6. 성공 상태로 변경 및 리다이렉트
         setStatus("success")
         setTimeout(() => navigate("/"), 1000)
       } catch (error) {
