@@ -6,6 +6,7 @@ import { communityService } from '../../api/services/community';
 import { commentService } from '../../api/services/comment';
 import type { PostDetailResponse } from '../../types/community';
 import type { CommentResponse } from '../../types/comment';
+import { divisionApi } from '../../api/divisionApi';
 import './CommunityPostDetail.css';
 
 interface RelatedPost {
@@ -26,6 +27,11 @@ const CommunityPostDetail: React.FC = () => {
   const [post, setPost] = useState<PostDetailResponse | null>(null);
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
+  const [divisionName, setDivisionName] = useState<string>(''); // region을 동네명으로 변환한 값
+
+  // localStorage 키 생성 함수
+  const getLikeStorageKey = (postId: number, userId: number) =>
+    `post_liked_${postId}_${userId}`;
   const [commentText, setCommentText] = useState('');
   const [comments, setComments] = useState<CommentResponse[]>([]);
   const [allComments, setAllComments] = useState<CommentResponse[]>([]);
@@ -82,6 +88,22 @@ const CommunityPostDetail: React.FC = () => {
 
         setPost(response.data);
         setLikeCount(response.data.likeCount);
+
+        // 좋아요 상태 초기화: 서버 > localStorage > false 순서로 확인
+        if (authUser?.userId) {
+          const storageKey = getLikeStorageKey(response.data.postId, authUser.userId);
+          const storedLiked = localStorage.getItem(storageKey);
+          const initialLiked = response.data.liked ?? (storedLiked === 'true') ?? false;
+          setLiked(initialLiked);
+
+          // 조회수 증가 API 호출 (비동기, 에러 무시)
+          communityService
+            .increaseViewCount(response.data.postId)
+            .then(() => console.log('✅ 조회수 증가 완료'))
+            .catch((err) => console.warn('⚠️ 조회수 증가 실패 (무시):', err));
+        } else {
+          setLiked(response.data.liked || false);
+        }
       } catch (error: any) {
         // 500 에러는 백엔드 이슈이므로 조용히 처리 (BACKEND_HANDOFF.md 참조)
         if (error.response?.status === 500) {
@@ -100,6 +122,22 @@ const CommunityPostDetail: React.FC = () => {
 
     loadPost();
   }, [id, navigate]);
+
+  // divisionName 로드
+  useEffect(() => {
+    const loadDivisionName = async () => {
+      if (post && post.region) {
+        const division = await divisionApi.getDivisionByCodePublic(post.region);
+        if (division) {
+          setDivisionName(divisionApi.formatDivisionShortName(division));
+        } else {
+          setDivisionName(post.region); // 실패 시 divisionId 그대로 표시
+        }
+      }
+    };
+
+    loadDivisionName();
+  }, [post]);
 
   // 작성자 여부 확인
   const isAuthor = authUser && post && post.authorId === authUser.userId;
@@ -199,23 +237,26 @@ const CommunityPostDetail: React.FC = () => {
 
     if (!post) return;
 
+    const storageKey = getLikeStorageKey(post.postId, authUser.userId);
+
     try {
-      // 좋아요 API 호출
-      await communityService.increaseLike(authUser.userId, post.postId);
+      // 좋아요 토글 API 호출
+      await communityService.toggleLike(authUser.userId, post.postId);
 
-      // 낙관적 업데이트
-      setLiked(!liked);
-      setLikeCount(liked ? likeCount - 1 : likeCount + 1);
-
-      // 게시글 정보 새로고침하여 정확한 좋아요 수 반영
+      // 서버에서 최신 데이터 가져오기
       const response = await communityService.getPost(post.postId);
       if (response.success && response.data) {
-        setLikeCount(response.data.likeCount);
+        const newLiked = response.data.liked ?? false;
+        const newCount = response.data.likeCount;
+
+        setLiked(newLiked);
+        setLikeCount(newCount);
+        localStorage.setItem(storageKey, String(newLiked));
+
+        console.log(`✅ 좋아요 ${newLiked ? '추가' : '취소'} 완료 (count: ${newCount})`);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ 좋아요 처리 실패:', error);
-      // 에러 시 원래 상태로 롤백
-      setLiked(liked);
       alert('좋아요 처리에 실패했습니다.');
     }
   };
@@ -358,7 +399,7 @@ const CommunityPostDetail: React.FC = () => {
   // 로딩 중
   if (loading) {
     return (
-      <Layout isLoggedIn={true} notificationCount={3}>
+      <Layout isLoggedIn={true}>
         <div className="community-post-detail">
           <div style={{ textAlign: 'center', padding: '100px 20px', fontSize: '18px', color: '#666' }}>
             게시글을 불러오는 중...
@@ -371,7 +412,7 @@ const CommunityPostDetail: React.FC = () => {
   // 게시글 없음
   if (!post) {
     return (
-      <Layout isLoggedIn={true} notificationCount={3}>
+      <Layout isLoggedIn={true}>
         <div className="community-post-detail">
           <div style={{ textAlign: 'center', padding: '100px 20px', fontSize: '18px', color: '#666' }}>
             게시글을 찾을 수 없습니다.
@@ -382,7 +423,7 @@ const CommunityPostDetail: React.FC = () => {
   }
 
   return (
-    <Layout isLoggedIn={true} notificationCount={3}>
+    <Layout isLoggedIn={true}>
         <div className="community-post-detail">
         {/* 게시글 본문 섹션 */}
         <section className="post-section">
@@ -497,7 +538,7 @@ const CommunityPostDetail: React.FC = () => {
                     {post.userDto?.name || '익명'}
                   </div>
                   <div className="author-meta">
-                    {formatDate(post.createdAt)} • {post.region} • 조회 {post.viewCount}
+                    {formatDate(post.createdAt)} • {divisionName || post.region} • 조회 {post.viewCount}
                   </div>
                 </div>
             </div>

@@ -9,7 +9,6 @@ import './Layout.css';
 interface LayoutProps {
   children: React.ReactNode;
   isLoggedIn?: boolean;
-  notificationCount?: number;
   currentLocation?: string;
   onLocationChange?: () => void;
   onNotificationClick?: () => void;
@@ -21,7 +20,6 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({
   children,
   isLoggedIn,
-  notificationCount = 0,
   currentLocation,
   onLocationChange,
   onNotificationClick,
@@ -73,7 +71,6 @@ const Layout: React.FC<LayoutProps> = ({
     <div className="layout">
       <Header
         className="desktop-header"
-        notificationCount={notificationCount}
         onLocationChange={onLocationChange}
         onNotificationClick={handleNotificationClick}
         onFavoriteClick={onFavoriteClick}
@@ -91,7 +88,7 @@ const Layout: React.FC<LayoutProps> = ({
       <FloatingActionButton isLoggedIn={isLoggedIn || false} isChatModalOpen={isChatModalOpen} />
 
       {/* Bottom Navigation - 모바일 전용 */}
-      <BottomNav notificationCount={notificationCount} />
+      <BottomNav />
     </div>
   );
 };

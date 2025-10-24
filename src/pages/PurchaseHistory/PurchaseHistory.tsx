@@ -467,7 +467,7 @@ const PurchaseHistory: React.FC = () => {
   ];
 
   return (
-    <Layout isLoggedIn={true} notificationCount={3}>
+    <Layout isLoggedIn={true}>
       <div className="purchase-history-container">
         <div className="purchase-history-header">
           <button className="back-button" onClick={() => navigate(-1)}>

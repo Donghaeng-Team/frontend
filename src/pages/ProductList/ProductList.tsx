@@ -476,7 +476,7 @@ const ProductList: React.FC = () => {
   return (
     <>
       <MobileHeader />
-      <Layout isLoggedIn={true} notificationCount={3}>
+      <Layout isLoggedIn={true}>
       <div className="product-list-container">
         {/* 필터 섹션 */}
         <section className="filter-section">

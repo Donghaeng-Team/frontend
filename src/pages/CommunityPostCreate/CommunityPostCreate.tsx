@@ -429,7 +429,7 @@ const CommunityPostCreate: React.FC = () => {
   };
 
   return (
-    <Layout isLoggedIn={true} notificationCount={3}>
+    <Layout isLoggedIn={true}>
         <div className="community-post-create">
         <div className="page-container">
             <div className="page-header">
