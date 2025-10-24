@@ -87,12 +87,24 @@ export const useChatStore = create<ChatState>((set, get) => ({
         const { wsClient } = get();
         if (wsClient?.isConnected()) {
           wsClient.subscribeToRoom(roomId, (message: WebSocketChatMessage) => {
+            // WebSocket 메시지 타입에 따라 messageType 결정
+            let messageType: 'TEXT' | 'SYSTEM' | 'DEADLINE_EXTEND' = 'TEXT';
+            if (message.type === 'SYSTEM' || message.type === 'JOIN' || message.type === 'LEAVE') {
+              messageType = 'SYSTEM';
+            }
+
+            // 시스템 메시지의 경우 숫자를 닉네임으로 교체
+            let messageContent = message.message;
+            if (messageType === 'SYSTEM' && message.senderNickname) {
+              messageContent = messageContent.replace(/^\d+/, message.senderNickname);
+            }
+
             get().addMessage({
               id: Date.now(),
               senderId: message.senderId,
               senderNickname: message.senderNickname,
-              messageContent: message.message,
-              messageType: 'TEXT',
+              messageContent: messageContent,
+              messageType: messageType,
               sentAt: message.timestamp,
             });
           });

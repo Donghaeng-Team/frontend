@@ -57,19 +57,30 @@ const ChatRoomPage = () => {
   };
 
   // 채팅 메시지를 ChatRoom 컴포넌트 형식으로 변환
-  const formattedMessages: ChatMessage[] = messages.map((msg) => ({
-    id: msg.id.toString(),
-    type: msg.senderId === user?.userId ? 'my' : msg.messageType === 'SYSTEM' ? 'system' : 'buyer',
-    content: msg.messageContent,
-    sender: msg.senderId === user?.userId ? undefined : {
-      name: msg.senderNickname,
-      isSeller: msg.senderId === currentRoom?.creatorUserId
-    },
-    timestamp: new Date(msg.sentAt).toLocaleTimeString('ko-KR', {
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }));
+  const formattedMessages: ChatMessage[] = messages.map((msg) => {
+    const messageType = msg.senderId === user?.userId ? 'my' : msg.messageType === 'SYSTEM' ? 'system' : 'buyer';
+
+    // 시스템 메시지의 경우 숫자(userId)를 닉네임으로 교체
+    let messageContent = msg.messageContent;
+    if (messageType === 'system' && msg.senderNickname) {
+      // "1님이 참가했습니다" → "홍길동님이 참가했습니다"
+      messageContent = messageContent.replace(/^\d+/, msg.senderNickname);
+    }
+
+    return {
+      id: msg.id.toString(),
+      type: messageType,
+      content: messageContent,
+      sender: msg.senderId === user?.userId ? undefined : {
+        name: msg.senderNickname,
+        isSeller: msg.senderId === currentRoom?.creatorUserId
+      },
+      timestamp: new Date(msg.sentAt).toLocaleTimeString('ko-KR', {
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    };
+  });
 
   const productInfo = currentRoom ? {
     name: currentRoom.title,

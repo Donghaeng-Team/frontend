@@ -104,10 +104,17 @@ const ChatModal: FC<ChatModalProps> = ({
             messageType = 'buyer';
           }
 
+          // 시스템 메시지의 경우 숫자(userId)를 닉네임으로 교체
+          let messageContent = msg.messageContent;
+          if (messageType === 'system' && msg.senderNickname) {
+            // "1님이 참가했습니다" → "홍길동님이 참가했습니다"
+            messageContent = messageContent.replace(/^\d+/, msg.senderNickname);
+          }
+
           return {
             id: msg.id.toString(),
             type: messageType,
-            content: msg.messageContent,
+            content: messageContent,
             sender: messageType !== 'system' ? {
               name: msg.senderNickname,
               isSeller: isSeller
