@@ -238,34 +238,25 @@ const CommunityPostDetail: React.FC = () => {
     if (!post) return;
 
     const storageKey = getLikeStorageKey(post.postId, authUser.userId);
-    const prevLiked = liked;
-    const prevLikeCount = likeCount;
 
     try {
-      // 낙관적 업데이트 (UI 즉시 반영)
-      const newLiked = !liked;
-      setLiked(newLiked);
-      setLikeCount(newLiked ? likeCount + 1 : likeCount - 1);
-      localStorage.setItem(storageKey, String(newLiked));
-
       // 좋아요 토글 API 호출
       await communityService.toggleLike(authUser.userId, post.postId);
-      console.log(`✅ 좋아요 ${newLiked ? '추가' : '취소'} 완료`);
 
-      // 게시글 정보 새로고침하여 정확한 좋아요 수와 상태 동기화
+      // 서버에서 최신 데이터 가져오기
       const response = await communityService.getPost(post.postId);
       if (response.success && response.data) {
-        setLikeCount(response.data.likeCount);
-        const serverLiked = response.data.liked ?? (localStorage.getItem(storageKey) === 'true');
-        setLiked(serverLiked);
-        localStorage.setItem(storageKey, String(serverLiked));
+        const newLiked = response.data.liked ?? false;
+        const newCount = response.data.likeCount;
+
+        setLiked(newLiked);
+        setLikeCount(newCount);
+        localStorage.setItem(storageKey, String(newLiked));
+
+        console.log(`✅ 좋아요 ${newLiked ? '추가' : '취소'} 완료 (count: ${newCount})`);
       }
     } catch (error: any) {
       console.error('❌ 좋아요 처리 실패:', error);
-      // 에러 시 원래 상태로 롤백
-      setLiked(prevLiked);
-      setLikeCount(prevLikeCount);
-      localStorage.setItem(storageKey, String(prevLiked));
       alert('좋아요 처리에 실패했습니다.');
     }
   };
