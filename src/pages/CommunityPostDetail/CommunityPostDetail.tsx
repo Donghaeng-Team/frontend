@@ -190,9 +190,34 @@ const CommunityPostDetail: React.FC = () => {
 
 
 
-  const handleLike = () => {
-    setLiked(!liked);
-    setLikeCount(liked ? likeCount - 1 : likeCount + 1);
+  const handleLike = async () => {
+    // 로그인 체크
+    if (!authUser || !authUser.userId) {
+      alert('좋아요를 누르려면 로그인이 필요합니다.');
+      return;
+    }
+
+    if (!post) return;
+
+    try {
+      // 좋아요 API 호출
+      await communityService.increaseLike(authUser.userId, post.postId);
+
+      // 낙관적 업데이트
+      setLiked(!liked);
+      setLikeCount(liked ? likeCount - 1 : likeCount + 1);
+
+      // 게시글 정보 새로고침하여 정확한 좋아요 수 반영
+      const response = await communityService.getPost(post.postId);
+      if (response.success && response.data) {
+        setLikeCount(response.data.likeCount);
+      }
+    } catch (error) {
+      console.error('❌ 좋아요 처리 실패:', error);
+      // 에러 시 원래 상태로 롤백
+      setLiked(liked);
+      alert('좋아요 처리에 실패했습니다.');
+    }
   };
 
   const handleCommentSubmit = async () => {
@@ -541,8 +566,10 @@ const CommunityPostDetail: React.FC = () => {
             {/* 액션 버튼 섹션 */}
             <div className="post-actions">
                 <button
-                className={`action-btn ${liked ? 'liked' : ''}`}
+                className={`action-btn ${liked ? 'liked' : ''} ${!authUser ? 'disabled' : ''}`}
                 onClick={handleLike}
+                disabled={!authUser}
+                title={!authUser ? '로그인이 필요합니다' : ''}
                 >
                 <span className="action-icon">❤️</span>
                 <span className="action-text">좋아요 {likeCount}</span>
