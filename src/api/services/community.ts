@@ -160,13 +160,13 @@ export const communityService = {
   },
 
   /**
-   * 게시글 좋아요 토글 (Private)
-   * 좋아요가 없으면 추가, 있으면 취소
+   * 게시글 좋아요 추가 (Private)
+   * 좋아요 취소 기능은 없으며, 중복 좋아요는 에러 반환
    * @param userId 사용자 ID (헤더로 전송)
    * @param postId 게시글 ID
-   * @returns 좋아요 토글 결과
+   * @returns 좋아요 추가 결과
    */
-  toggleLike: async (userId: number, postId: number): Promise<ApiResponse<unknown>> => {
+  increaseLike: async (userId: number, postId: number): Promise<ApiResponse<unknown>> => {
     const response = await apiClient.post(
       `/api/v1/posts/private/${postId}/likes`,
       {},

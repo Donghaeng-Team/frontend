@@ -237,39 +237,55 @@ const CommunityPostDetail: React.FC = () => {
 
     if (!post) return;
 
-    // 현재 상태 백업 (롤백용)
-    const prevLiked = liked;
-    const prevLikeCount = likeCount;
     const storageKey = getLikeStorageKey(post.postId, authUser.userId);
+
+    // 이미 좋아요를 누른 상태면 알림만 표시
+    if (liked) {
+      alert('이미 좋아요를 눌렀습니다.');
+      return;
+    }
+
+    // 현재 상태 백업 (롤백용)
+    const prevLikeCount = likeCount;
 
     try {
       // 낙관적 업데이트 (UI 즉시 반영)
-      const newLiked = !liked;
-      setLiked(newLiked);
-      setLikeCount(newLiked ? likeCount + 1 : likeCount - 1);
+      setLiked(true);
+      setLikeCount(likeCount + 1);
+      localStorage.setItem(storageKey, 'true');
 
-      // localStorage에 저장
-      localStorage.setItem(storageKey, String(newLiked));
+      // 좋아요 추가 API 호출
+      await communityService.increaseLike(authUser.userId, post.postId);
+      console.log('✅ 좋아요 추가 완료');
 
-      // 좋아요 토글 API 호출 (추가/취소 모두 동일한 엔드포인트)
-      await communityService.toggleLike(authUser.userId, post.postId);
-      console.log('✅ 좋아요 토글 완료');
-
-      // 게시글 정보 새로고침하여 정확한 좋아요 수와 상태 동기화
+      // 게시글 정보 새로고침하여 정확한 좋아요 수 동기화
       const response = await communityService.getPost(post.postId);
       if (response.success && response.data) {
         setLikeCount(response.data.likeCount);
-        const serverLiked = response.data.liked ?? (localStorage.getItem(storageKey) === 'true');
-        setLiked(serverLiked);
-        localStorage.setItem(storageKey, String(serverLiked));
+        setLiked(true);
+        localStorage.setItem(storageKey, 'true');
       }
     } catch (error: any) {
       console.error('❌ 좋아요 처리 실패:', error);
-      // 에러 시 원래 상태로 롤백
-      setLiked(prevLiked);
-      setLikeCount(prevLikeCount);
-      localStorage.setItem(storageKey, String(prevLiked));
-      alert('좋아요 처리에 실패했습니다.');
+
+      // "이미 좋아요" 에러인 경우 상태만 업데이트
+      const errorMessage = error?.response?.data?.message || '';
+      if (
+        errorMessage.includes('이미') ||
+        errorMessage.includes('already') ||
+        error?.response?.status === 409
+      ) {
+        console.log('⚠️ 이미 좋아요를 누른 상태');
+        setLiked(true);
+        localStorage.setItem(storageKey, 'true');
+        alert('이미 좋아요를 눌렀습니다.');
+      } else {
+        // 다른 에러는 롤백
+        setLiked(false);
+        setLikeCount(prevLikeCount);
+        localStorage.setItem(storageKey, 'false');
+        alert('좋아요 처리에 실패했습니다.');
+      }
     }
   };
 
