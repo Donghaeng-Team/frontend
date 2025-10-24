@@ -115,7 +115,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
       // "이미 참여중인 채팅방입니다" 에러는 무시 (이미 참여중이면 정상)
       if (errorMessage === '이미 참여중인 채팅방입니다') {
-        console.log('[Chat] Already joined, fetching room info instead');
+        console.log('[채팅] 이미 참여 중인 채팅방입니다. 채팅방 정보를 가져옵니다.');
         // 채팅방 정보만 조회
         get().fetchChatRoom(roomId);
 
