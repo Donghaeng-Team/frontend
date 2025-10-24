@@ -29,6 +29,7 @@ const CommunityPostDetail: React.FC = () => {
   const [commentText, setCommentText] = useState('');
   const [comments, setComments] = useState<CommentResponse[]>([]);
   const [allComments, setAllComments] = useState<CommentResponse[]>([]);
+  const [totalComments, setTotalComments] = useState(0);
   const [displayedCommentsCount, setDisplayedCommentsCount] = useState(10);
   const [commentsLoading, setCommentsLoading] = useState(false);
   const [relatedPosts, setRelatedPosts] = useState<RelatedPost[]>([]);
@@ -128,11 +129,13 @@ const CommunityPostDetail: React.FC = () => {
         if (response.success && response.data && response.data.content) {
           setAllComments(response.data.content);
           setComments(response.data.content.slice(0, 10));
+          setTotalComments(response.data.totalElements);
         }
       } catch (error) {
         console.error('❌ 댓글 로드 실패:', error);
         setAllComments([]);
         setComments([]);
+        setTotalComments(0);
       } finally {
         setCommentsLoading(false);
       }
@@ -208,6 +211,7 @@ const CommunityPostDetail: React.FC = () => {
         if (updatedComments.success && updatedComments.data && updatedComments.data.content) {
           setAllComments(updatedComments.data.content);
           setComments(updatedComments.data.content.slice(0, displayedCommentsCount));
+          setTotalComments(updatedComments.data.totalElements);
         }
         setCommentText('');
       }
@@ -234,6 +238,7 @@ const CommunityPostDetail: React.FC = () => {
         if (updatedComments.success && updatedComments.data && updatedComments.data.content) {
           setAllComments(updatedComments.data.content);
           setComments(updatedComments.data.content.slice(0, displayedCommentsCount));
+          setTotalComments(updatedComments.data.totalElements);
         }
       }
     } catch (error) {
@@ -553,7 +558,7 @@ const CommunityPostDetail: React.FC = () => {
         {/* 댓글 섹션 */}
         <section className="comments-section">
             <div className="comments-container">
-            <h2 className="comments-title">댓글 {post?.commentCount ?? allComments.length}개</h2>
+            <h2 className="comments-title">댓글 {totalComments}개</h2>
 
             {/* 댓글 목록 */}
             {commentsLoading ? (
@@ -649,23 +654,31 @@ const CommunityPostDetail: React.FC = () => {
               </>
             )}
 
-            {/* 댓글 입력 폼 */}
-            <div className="comment-form">
-                <input
-                type="text"
-                className="comment-input"
-                placeholder="댓글을 입력하세요..."
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleCommentSubmit()}
-                />
-                <button 
-                className="comment-submit-btn"
-                onClick={handleCommentSubmit}
-                >
-                등록
-                </button>
-            </div>
+            {/* 댓글 입력 폼 (로그인한 사용자만) */}
+            {authUser ? (
+              <div className="comment-form">
+                  <input
+                  type="text"
+                  className="comment-input"
+                  placeholder="댓글을 입력하세요..."
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleCommentSubmit()}
+                  />
+                  <button
+                  className="comment-submit-btn"
+                  onClick={handleCommentSubmit}
+                  >
+                  등록
+                  </button>
+              </div>
+            ) : (
+              <div className="comment-form-disabled">
+                <p style={{ textAlign: 'center', color: '#999', padding: '20px 0' }}>
+                  댓글을 작성하려면 로그인이 필요합니다.
+                </p>
+              </div>
+            )}
             </div>
         </section>
 
