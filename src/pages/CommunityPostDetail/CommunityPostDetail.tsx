@@ -251,40 +251,9 @@ const CommunityPostDetail: React.FC = () => {
       // localStorage에 저장
       localStorage.setItem(storageKey, String(newLiked));
 
-      // 좋아요 토글 API 호출
-      if (liked) {
-        // 이미 좋아요 상태 → 취소
-        await communityService.decreaseLike(authUser.userId, post.postId);
-        console.log('✅ 좋아요 취소 완료');
-      } else {
-        // 좋아요 안 한 상태 → 추가
-        try {
-          await communityService.increaseLike(authUser.userId, post.postId);
-          console.log('✅ 좋아요 추가 완료');
-        } catch (error: any) {
-          // "이미 좋아요를 누른 상태" 에러인 경우 → 상태를 true로 수정하고 취소로 전환
-          const errorMessage = error?.response?.data?.message || '';
-          if (
-            errorMessage.includes('이미') ||
-            errorMessage.includes('already') ||
-            error?.response?.status === 409
-          ) {
-            console.log('⚠️ 이미 좋아요를 누른 상태 → 취소로 전환');
-            // 상태를 true로 수정
-            setLiked(true);
-            localStorage.setItem(storageKey, 'true');
-            // 취소 API 호출
-            await communityService.decreaseLike(authUser.userId, post.postId);
-            console.log('✅ 좋아요 취소 완료 (전환)');
-            // UI는 취소 상태로 (false)
-            setLiked(false);
-            setLikeCount(likeCount - 1);
-            localStorage.setItem(storageKey, 'false');
-          } else {
-            throw error; // 다른 에러는 그대로 throw
-          }
-        }
-      }
+      // 좋아요 토글 API 호출 (추가/취소 모두 동일한 엔드포인트)
+      await communityService.toggleLike(authUser.userId, post.postId);
+      console.log('✅ 좋아요 토글 완료');
 
       // 게시글 정보 새로고침하여 정확한 좋아요 수와 상태 동기화
       const response = await communityService.getPost(post.postId);
