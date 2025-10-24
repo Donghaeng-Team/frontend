@@ -39,7 +39,11 @@ export class ChatWebSocketClient {
     // STOMP 클라이언트 생성
     this.client = new Client({
       webSocketFactory: () => {
-        const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+        // Vite proxy를 통하도록 상대 경로 사용 (개발 환경)
+        // 프로덕션에서는 절대 URL 사용
+        const isDev = import.meta.env.DEV;
+        const baseURL = isDev ? '' : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080');
+
         // SockJS 생성 시 토큰을 쿼리 파라미터로 전달
         let url = `${baseURL}/ws/v1/chat/private`;
         if (accessToken) {
