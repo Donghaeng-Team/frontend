@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
+import BottomNav from '../../components/BottomNav';
 import CategorySelector from '../../components/CategorySelector';
 import type { CategoryItem } from '../../components/CategorySelector';
 import { productService, type ProductUpdateRequest } from '../../api/services/product';
@@ -356,18 +357,19 @@ const ProductEdit: React.FC = () => {
   if (loading) {
     return (
       <div className="product-edit">
-        <Header notificationCount={3} />
+        <Header notificationCount={3} className="desktop-header" />
         <div className="edit-container">
           <div className="loading-message">상품 정보를 불러오는 중...</div>
         </div>
-        <Footer />
+        <Footer className="desktop-footer" />
+        <BottomNav notificationCount={3} />
       </div>
     );
   }
 
   return (
     <div className="product-edit">
-      <Header notificationCount={3} />
+      <Header notificationCount={3} className="desktop-header" />
 
       <div className="edit-container">
         <div className="edit-header">
@@ -584,7 +586,8 @@ const ProductEdit: React.FC = () => {
         </div>
       </div>
 
-      <Footer />
+      <Footer className="desktop-footer" />
+      <BottomNav notificationCount={3} />
     </div>
   );
 };

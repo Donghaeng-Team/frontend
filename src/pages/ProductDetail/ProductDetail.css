@@ -585,8 +585,19 @@
   }
   
   @media (max-width: 768px) {
+    /* 모바일에서 데스크톱 헤더/푸터 숨기기 */
+    .product-detail-page .desktop-header,
+    .product-detail-page .desktop-footer {
+      display: none;
+    }
+
+    .product-detail-page {
+      padding-bottom: calc(60px + env(safe-area-inset-bottom));
+    }
+
     .product-detail-container {
       padding: 0 16px;
+      padding-bottom: 20px;
     }
     
     .product-main-section {

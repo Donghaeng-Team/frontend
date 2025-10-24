@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import './ProductDetail.css';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
+import BottomNav from '../../components/BottomNav';
 import ProductCard from '../../components/ProductCard';
 import Button from '../../components/Button';
 import Progress from '../../components/Progress';
@@ -378,11 +379,12 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
   if (loading) {
     return (
       <div className="product-detail-page">
-        <Header notificationCount={3} />
+        <Header notificationCount={3} className="desktop-header" />
         <div className="product-detail-container">
           <div className="loading-message">상품 정보를 불러오는 중...</div>
         </div>
-        <Footer />
+        <Footer className="desktop-footer" />
+        <BottomNav notificationCount={3} />
       </div>
     );
   }
@@ -391,11 +393,12 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
   if (!product) {
     return (
       <div className="product-detail-page">
-        <Header notificationCount={3} />
+        <Header notificationCount={3} className="desktop-header" />
         <div className="product-detail-container">
           <div className="loading-message">상품을 찾을 수 없습니다.</div>
         </div>
-        <Footer />
+        <Footer className="desktop-footer" />
+        <BottomNav notificationCount={3} />
       </div>
     );
   }
@@ -404,7 +407,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
 
   return (
     <div className="product-detail-page">
-      <Header notificationCount={3} />
+      <Header notificationCount={3} className="desktop-header" />
 
       <main className="product-detail-container">
         {/* 상품 메인 섹션 */}
@@ -703,7 +706,8 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
         />
       )}
 
-      <Footer />
+      <Footer className="desktop-footer" />
+      <BottomNav notificationCount={3} />
     </div>
   );
 };

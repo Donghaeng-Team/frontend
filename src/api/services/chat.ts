@@ -10,8 +10,11 @@ import type {
   BuyerConfirmResponse,
   ExtendDeadlineResponse,
   RecruitmentCloseResponse,
+  RecruitmentCancelResponse,
   ChatRoomCreateRequest,
   MyPurchaseStatsResponse,
+  UserMarketIdsResponse,
+  ParticipatingStaticsResponse,
 } from '../../types';
 
 // ========================================
@@ -41,10 +44,10 @@ export const chatService = {
 
   /**
    * 채팅방 참여
-   * POST /api/v1/chat/private/{roomId}/join
+   * POST /api/v1/chat/private/{marketId}/join
    */
-  joinChatRoom: async (roomId: number): Promise<ApiResponse<ChatRoomResponse>> => {
-    const response = await apiClient.post(`/api/v1/chat/private/${roomId}/join`);
+  joinChatRoom: async (marketId: number): Promise<ApiResponse<ChatRoomResponse>> => {
+    const response = await apiClient.post(`/api/v1/chat/private/${marketId}/join`);
     return response.data;
   },
 
@@ -152,7 +155,7 @@ export const chatService = {
    * 모집 취소
    * PATCH /api/v1/chat/private/{roomId}/cancel
    */
-  cancelRecruitment: async (roomId: number): Promise<ApiResponse<string>> => {
+  cancelRecruitment: async (roomId: number): Promise<ApiResponse<RecruitmentCancelResponse>> => {
     const response = await apiClient.patch(
       `/api/v1/chat/private/${roomId}/cancel`,
       {},
@@ -194,18 +197,35 @@ export const chatService = {
 
   /**
    * 참여자 목록 조회
-   * GET /api/v1/chat/private/{roomId}/participants
+   * GET /api/v1/chat/public/{marketId}/participants
    */
   getParticipants: async (
-    roomId: number
+    marketId: number
   ): Promise<ApiResponse<ParticipantListResponse>> => {
-    const response = await apiClient.get(`/api/v1/chat/private/${roomId}/participants`);
+    const response = await apiClient.get(`/api/v1/chat/public/${marketId}/participants`);
     return response.data;
   },
 
   /**
    * 내 공동구매 통계 조회
    * GET /api/v1/chat/private/me
+   */
+  getMyStats: async (): Promise<ApiResponse<ParticipatingStaticsResponse>> => {
+    const response = await apiClient.get('/api/v1/chat/private/me');
+    return response.data;
+  },
+
+  /**
+   * 내 공동구매 마켓 ID 목록 조회
+   * GET /api/v1/chat/private/mylist
+   */
+  getMyMarketIds: async (): Promise<ApiResponse<UserMarketIdsResponse>> => {
+    const response = await apiClient.get('/api/v1/chat/private/mylist');
+    return response.data;
+  },
+
+  /**
+   * @deprecated getMyStats를 사용하세요
    */
   getMyPurchaseStats: async (): Promise<ApiResponse<MyPurchaseStatsResponse>> => {
     const response = await apiClient.get('/api/v1/chat/private/me');

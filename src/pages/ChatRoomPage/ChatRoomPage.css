@@ -12,3 +12,15 @@
   height: 100vh;
   max-width: none;
 }
+
+/* 모바일 뷰 */
+@media (max-width: 768px) {
+  /* BottomNav를 위한 padding */
+  .chat-room-page {
+    padding-bottom: calc(60px + env(safe-area-inset-bottom));
+  }
+
+  .chat-room-page .chat-room {
+    height: calc(100vh - 60px);
+  }
+}

@@ -36,6 +36,24 @@ export default defineConfig(({ mode }) => {
             });
           },
         },
+        // WebSocket 프록시 (채팅)
+        '/ws': {
+          target: env.VITE_API_BASE_URL || 'http://localhost:8080',
+          changeOrigin: true,
+          secure: false,
+          ws: true, // WebSocket 프록시 활성화
+          configure: (proxy, _options) => {
+            proxy.on('error', (err, _req, _res) => {
+              console.log('[WebSocket Proxy] error', err);
+            });
+            proxy.on('proxyReq', (_proxyReq, req, _res) => {
+              console.log('[WebSocket Proxy] Request:', req.method, req.url);
+            });
+            proxy.on('proxyRes', (proxyRes, req, _res) => {
+              console.log('[WebSocket Proxy] Response:', proxyRes.statusCode, req.url);
+            });
+          },
+        },
         // 이미지 업로드 URL 프록시
         '/upload-url': {
           target: env.VITE_API_BASE_URL || 'http://localhost:8080',

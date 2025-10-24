@@ -2,6 +2,7 @@ import { Client } from '@stomp/stompjs';
 import type { StompSubscription } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import type { WebSocketChatMessage } from '../types';
+import { getAccessToken, getRefreshToken } from './token';
 
 // WebSocket 연결 상태
 export type ConnectionStatus = 'connected' | 'disconnected' | 'connecting' | 'error';
@@ -10,6 +11,7 @@ export type ConnectionStatus = 'connected' | 'disconnected' | 'connecting' | 'er
 export class ChatWebSocketClient {
   private client: Client | null = null;
   private subscriptions: Map<number, StompSubscription> = new Map();
+  private userNotificationSubscription: StompSubscription | null = null;
   private connectionStatus: ConnectionStatus = 'disconnected';
   private onStatusChange?: (status: ConnectionStatus) => void;
   private reconnectAttempts = 0;
@@ -31,12 +33,30 @@ export class ChatWebSocketClient {
 
     this.updateStatus('connecting');
 
+    const accessToken = getAccessToken();
+    const refreshToken = getRefreshToken();
+
     // STOMP 클라이언트 생성
     this.client = new Client({
       webSocketFactory: () => {
-        const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8086';
-        return new SockJS(`${baseURL}/ws-chat`) as any;
+        // Vite proxy를 통하도록 상대 경로 사용 (개발 환경)
+        // 프로덕션에서는 절대 URL 사용
+        const isDev = import.meta.env.DEV;
+        const baseURL = isDev ? '' : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080');
+
+        // SockJS 생성 시 토큰을 쿼리 파라미터로 전달
+        let url = `${baseURL}/ws/v1/chat/private`;
+        if (accessToken) {
+          url += `?token=${encodeURIComponent(accessToken)}`;
+        }
+        return new SockJS(url) as any;
       },
+
+      // STOMP 연결 헤더에도 토큰 추가
+      connectHeaders: accessToken ? {
+        'Authorization': `Bearer ${accessToken}`,
+        'X-Refresh-Token': refreshToken || '',
+      } : {},
       
       debug: (str) => {
         if (import.meta.env.DEV) {
@@ -90,6 +110,9 @@ export class ChatWebSocketClient {
       this.subscriptions.forEach((sub) => sub.unsubscribe());
       this.subscriptions.clear();
 
+      // 개인 알림 구독 취소
+      this.unsubscribeFromUserNotifications();
+
       // 연결 해제
       this.client.deactivate();
       this.client = null;
@@ -118,7 +141,7 @@ export class ChatWebSocketClient {
 
     // 채팅방 메시지 구독
     const subscription = this.client.subscribe(
-      `/topic/chat/${roomId}`,
+      `/topic/rooms.${roomId}.messages`,
       (message) => {
         try {
           const data: WebSocketChatMessage = JSON.parse(message.body);
@@ -146,6 +169,49 @@ export class ChatWebSocketClient {
   }
 
   /**
+   * 개인 알림 구독 (강퇴, 시스템 알림 등)
+   */
+  subscribeToUserNotifications(
+    userId: number,
+    onNotification: (notification: any) => void
+  ): void {
+    if (!this.client?.connected) {
+      console.error('[WebSocket] Not connected. Cannot subscribe to notifications');
+      return;
+    }
+
+    if (this.userNotificationSubscription) {
+      console.log('[WebSocket] Already subscribed to user notifications');
+      return;
+    }
+
+    this.userNotificationSubscription = this.client.subscribe(
+      `/user/${userId}/queue/notifications`,
+      (message) => {
+        try {
+          const data = JSON.parse(message.body);
+          onNotification(data);
+        } catch (error) {
+          console.error('[WebSocket] Failed to parse notification:', error);
+        }
+      }
+    );
+
+    console.log(`[WebSocket] Subscribed to user ${userId} notifications`);
+  }
+
+  /**
+   * 개인 알림 구독 취소
+   */
+  unsubscribeFromUserNotifications(): void {
+    if (this.userNotificationSubscription) {
+      this.userNotificationSubscription.unsubscribe();
+      this.userNotificationSubscription = null;
+      console.log('[WebSocket] Unsubscribed from user notifications');
+    }
+  }
+
+  /**
    * 메시지 전송
    */
   sendMessage(roomId: number, message: string, userId: number, nickname: string): void {
@@ -154,20 +220,35 @@ export class ChatWebSocketClient {
       return;
     }
 
+    // 백엔드 문서에 따르면 Principal은 서버에서 자동 처리되므로 messageContent만 전송
     const payload = {
-      roomId,
-      senderId: userId,
-      senderNickname: nickname,
-      message,
-      timestamp: new Date().toISOString(),
+      messageContent: message
     };
 
     this.client.publish({
-      destination: `/app/chat/${roomId}`,
+      destination: `/app/chat.${roomId}.sendMessage`,
       body: JSON.stringify(payload),
     });
 
-    console.log('[WebSocket] Message sent:', payload);
+    console.log('[WebSocket] Message sent to room', roomId, ':', payload);
+  }
+
+  /**
+   * 채팅방 나가기
+   */
+  leaveRoom(roomId: number): void {
+    if (!this.client?.connected) {
+      console.error('[WebSocket] Not connected. Cannot leave room');
+      return;
+    }
+
+    this.client.publish({
+      destination: `/app/chat.${roomId}.leave`,
+      body: '',
+    });
+
+    this.unsubscribeFromRoom(roomId);
+    console.log(`[WebSocket] Left room ${roomId}`);
   }
 
   /**
