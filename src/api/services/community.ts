@@ -160,12 +160,13 @@ export const communityService = {
   },
 
   /**
-   * 게시글 좋아요 증가 (Private)
+   * 게시글 좋아요 토글 (Private)
+   * 좋아요가 없으면 추가, 있으면 취소
    * @param userId 사용자 ID (헤더로 전송)
    * @param postId 게시글 ID
-   * @returns 좋아요 결과
+   * @returns 좋아요 토글 결과
    */
-  increaseLike: async (userId: number, postId: number): Promise<ApiResponse<unknown>> => {
+  toggleLike: async (userId: number, postId: number): Promise<ApiResponse<unknown>> => {
     const response = await apiClient.post(
       `/api/v1/posts/private/${postId}/likes`,
       {},
@@ -174,6 +175,19 @@ export const communityService = {
           'X-User-Id': userId.toString(),
         },
       }
+    );
+    return response.data;
+  },
+
+  /**
+   * 게시글 조회수 증가 (Public)
+   * @param postId 게시글 ID
+   * @returns 조회수 증가 결과
+   */
+  increaseViewCount: async (postId: number): Promise<ApiResponse<unknown>> => {
+    const response = await apiClient.post(
+      `/api/v1/posts/public/${postId}`,
+      {}
     );
     return response.data;
   },

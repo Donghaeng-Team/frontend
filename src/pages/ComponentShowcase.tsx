@@ -273,7 +273,7 @@ const ComponentShowcase = () => {
   ];
 
   return (
-    <Layout isLoggedIn={true} notificationCount={3}>
+    <Layout isLoggedIn={true}>
       <div className="showcase-container">
         <h1 className="showcase-title">🛒 함께사요 - 컴포넌트 시스템</h1>
 

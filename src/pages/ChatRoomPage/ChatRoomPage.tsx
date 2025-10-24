@@ -170,7 +170,7 @@ const ChatRoomPage = () => {
         onApply={handleApply}
         onSendMessage={handleSendMessage}
       />
-      <BottomNav notificationCount={3} />
+      <BottomNav />
     </div>
   );
 };

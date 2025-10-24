@@ -346,7 +346,7 @@ const CommunityPostEdit: React.FC = () => {
 
   if (loading) {
     return (
-      <Layout isLoggedIn={true} notificationCount={3}>
+      <Layout isLoggedIn={true}>
         <div className="community-post-edit">
           <div className="page-container">
             <div className="loading-message">게시글 정보를 불러오는 중...</div>
@@ -357,7 +357,7 @@ const CommunityPostEdit: React.FC = () => {
   }
 
   return (
-    <Layout isLoggedIn={true} notificationCount={3}>
+    <Layout isLoggedIn={true}>
       <div className="community-post-edit">
         <div className="page-container">
           <div className="page-header">

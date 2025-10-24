@@ -30,7 +30,7 @@ const Main: React.FC = () => {
   }
 
   return (
-    <Layout isLoggedIn={true} notificationCount={3}>
+    <Layout isLoggedIn={true}>
       {/* 메인 섹션 */}
       <section className="main-hero">
         <div className="main-hero-content">
