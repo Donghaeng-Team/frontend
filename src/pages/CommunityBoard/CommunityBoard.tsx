@@ -6,6 +6,7 @@ import { communityService } from '../../api/services/community';
 import type { PostListResponse } from '../../types/community';
 import { APP_CONSTANTS } from '../../utils/constants';
 import { useLocationStore } from '../../stores/locationStore';
+import { divisionApi } from '../../api/divisionApi';
 import './CommunityBoard.css';
 
 export interface Post {
@@ -56,11 +57,39 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(initialHasMore);
   const [divisionCode, setDivisionCode] = useState<string>('11650'); // 기본값: 서초구
+  const [divisionNames, setDivisionNames] = useState<Map<string, string>>(new Map()); // divisionId -> 동네명 캐시
 
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   const categories = ['전체', '동네 소식', '공구 후기', '질문 답변'];
+
+  // divisionId를 동네명으로 변환
+  const formatLocationName = (divisionId: string): string => {
+    return divisionNames.get(divisionId) || divisionId;
+  };
+
+  // posts의 divisionId들을 조회하여 캐시에 저장
+  useEffect(() => {
+    const loadDivisionNames = async () => {
+      const uniqueDivisionIds = Array.from(new Set(posts.map(p => p.location)));
+
+      for (const divisionId of uniqueDivisionIds) {
+        // 이미 캐시에 있으면 스킵
+        if (divisionNames.has(divisionId)) continue;
+
+        // division API 호출
+        const division = await divisionApi.getDivisionByCodePublic(divisionId);
+        if (division) {
+          setDivisionNames(prev => new Map(prev).set(divisionId, divisionApi.formatDivisionShortName(division)));
+        }
+      }
+    };
+
+    if (posts.length > 0) {
+      loadDivisionNames();
+    }
+  }, [posts]);
 
   // 태그 매핑
   const getCategoryTag = (category: string): string => {
@@ -395,7 +424,7 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
                   
                   <div className="post-meta">
                     <div className="post-author">
-                      {post.author} • {post.timeAgo} • {post.location}
+                      {post.author} • {post.timeAgo} • {formatLocationName(post.location)}
                     </div>
                     <div className="post-stats">
                       👁 {post.viewCount} • 💬 {post.commentCount} • ❤️ {post.likeCount ?? 0}

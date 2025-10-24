@@ -23,6 +23,19 @@ class DivisionApi {
     return response.data;
   }
 
+  // 읍면동 검색 (읍면동 코드로) - 공개 API
+  async getDivisionByCodePublic(emdCode: string): Promise<Division | null> {
+    try {
+      const response = await apiClient.get('/api/v1/division/public/by-code', {
+        params: { emdCode }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Division by code 조회 실패:', error);
+      return null;
+    }
+  }
+
   // 읍면동 리스트 검색 (좌표로) - 내부 API (인증 필요)
   async getDivisionListByCoord(data: DivisionListByCoordRequest): Promise<(Division | null)[]> {
     const response = await apiClient.post('/internal/v1/division/list/by-coord', data);

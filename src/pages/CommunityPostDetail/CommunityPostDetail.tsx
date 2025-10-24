@@ -6,6 +6,7 @@ import { communityService } from '../../api/services/community';
 import { commentService } from '../../api/services/comment';
 import type { PostDetailResponse } from '../../types/community';
 import type { CommentResponse } from '../../types/comment';
+import { divisionApi } from '../../api/divisionApi';
 import './CommunityPostDetail.css';
 
 interface RelatedPost {
@@ -26,6 +27,7 @@ const CommunityPostDetail: React.FC = () => {
   const [post, setPost] = useState<PostDetailResponse | null>(null);
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
+  const [divisionName, setDivisionName] = useState<string>(''); // region을 동네명으로 변환한 값
 
   // localStorage 키 생성 함수
   const getLikeStorageKey = (postId: number, userId: number) =>
@@ -120,6 +122,22 @@ const CommunityPostDetail: React.FC = () => {
 
     loadPost();
   }, [id, navigate]);
+
+  // divisionName 로드
+  useEffect(() => {
+    const loadDivisionName = async () => {
+      if (post && post.region) {
+        const division = await divisionApi.getDivisionByCodePublic(post.region);
+        if (division) {
+          setDivisionName(divisionApi.formatDivisionShortName(division));
+        } else {
+          setDivisionName(post.region); // 실패 시 divisionId 그대로 표시
+        }
+      }
+    };
+
+    loadDivisionName();
+  }, [post]);
 
   // 작성자 여부 확인
   const isAuthor = authUser && post && post.authorId === authUser.userId;
@@ -563,7 +581,7 @@ const CommunityPostDetail: React.FC = () => {
                     {post.userDto?.name || '익명'}
                   </div>
                   <div className="author-meta">
-                    {formatDate(post.createdAt)} • {post.region} • 조회 {post.viewCount}
+                    {formatDate(post.createdAt)} • {divisionName || post.region} • 조회 {post.viewCount}
                   </div>
                 </div>
             </div>
