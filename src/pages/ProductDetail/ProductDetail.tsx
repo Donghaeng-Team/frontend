@@ -97,6 +97,10 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
   const imageContainerRef = useRef<HTMLDivElement>(null);
 
+  // localStorage 키 생성 헬퍼 함수
+  const getWishStorageKey = (marketId: number, userId: number) =>
+    `product_wished_${marketId}_${userId}`;
+
   // 상품 데이터 로드 및 좋아요 상태 확인
   useEffect(() => {
     const loadProduct = async () => {
@@ -119,21 +123,32 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
         setProduct(response.data);
 
         // 좋아요 상태 확인 (로그인 사용자만)
-        if (authUser) {
+        if (authUser && authUser.userId) {
           try {
             const wishlistResponse = await productService.getWishlistedProducts({ pageSize: 100 });
+            let initialWished = false;
+
             if (wishlistResponse.success && wishlistResponse.data) {
               const isInWishlist = wishlistResponse.data.content.some(
                 (item: any) => item.marketId === response.data.marketId
               );
-              setIsWished(isInWishlist);
+              initialWished = isInWishlist;
             }
+
+            // localStorage와 동기화
+            const storageKey = getWishStorageKey(response.data.marketId, authUser.userId);
+            localStorage.setItem(storageKey, initialWished.toString());
+            setIsWished(initialWished);
           } catch (wishlistError: any) {
             // 404는 위시리스트가 비어있는 정상 상태이므로 무시
             if (wishlistError?.response?.status !== 404) {
               console.error('좋아요 상태 확인 실패:', wishlistError);
             }
-            // 좋아요 상태 확인 실패는 치명적이지 않으므로 무시
+
+            // localStorage에서 복원 시도
+            const storageKey = getWishStorageKey(response.data.marketId, authUser.userId);
+            const storedWished = localStorage.getItem(storageKey);
+            setIsWished(storedWished === 'true');
           }
         }
       } catch (error: any) {
@@ -314,20 +329,62 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
   };
 
   const handleWish = async () => {
-    if (!authUser || !product) return;
+    if (!authUser || !authUser.userId || !product) return;
+
+    const storageKey = getWishStorageKey(product.marketId, authUser.userId);
+
+    // Optimistic update
+    const newWishedState = !isWished;
+    setIsWished(newWishedState);
 
     try {
       if (isWished) {
         // 좋아요 취소
         await productService.removeWishlist(product.marketId);
-        setIsWished(false);
+        console.log('✅ 좋아요 취소 성공');
+        localStorage.setItem(storageKey, 'false');
       } else {
         // 좋아요 추가
-        await productService.addWishlist(product.marketId);
-        setIsWished(true);
+        try {
+          await productService.addWishlist(product.marketId);
+          console.log('✅ 좋아요 추가 성공');
+          localStorage.setItem(storageKey, 'true');
+        } catch (addError: any) {
+          // "이미 좋아요" 에러 감지 시 자동으로 취소로 전환
+          const errorMessage = addError?.response?.data?.message || '';
+          if (
+            errorMessage.includes('이미') ||
+            errorMessage.includes('already') ||
+            addError?.response?.status === 409
+          ) {
+            console.log('⚠️ 이미 좋아요한 상태 - 자동으로 취소로 전환');
+            await productService.removeWishlist(product.marketId);
+            setIsWished(false);
+            localStorage.setItem(storageKey, 'false');
+            return;
+          } else {
+            throw addError;
+          }
+        }
       }
-    } catch (error) {
-      console.error('좋아요 처리 실패:', error);
+
+      // 서버 상태와 동기화
+      try {
+        const wishlistResponse = await productService.getWishlistedProducts({ pageSize: 100 });
+        if (wishlistResponse.success && wishlistResponse.data) {
+          const isInWishlist = wishlistResponse.data.content.some(
+            (item: any) => item.marketId === product.marketId
+          );
+          setIsWished(isInWishlist);
+          localStorage.setItem(storageKey, isInWishlist.toString());
+        }
+      } catch (syncError) {
+        console.warn('⚠️ 서버 동기화 실패 (무시):', syncError);
+      }
+    } catch (error: any) {
+      console.error('❌ 좋아요 처리 실패:', error);
+      // Optimistic update 원복
+      setIsWished(isWished);
       alert('좋아요 처리에 실패했습니다.');
     }
   };
