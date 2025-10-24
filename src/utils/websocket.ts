@@ -68,7 +68,7 @@ export class ChatWebSocketClient {
 
       onConnect: () => {
         if (import.meta.env.DEV) {
-          console.log('[WebSocket] Connected successfully');
+          console.log('[실시간 채팅] 연결 성공');
         }
         this.updateStatus('connected');
         this.reconnectAttempts = 0;
@@ -76,7 +76,7 @@ export class ChatWebSocketClient {
 
       onDisconnect: () => {
         if (import.meta.env.DEV) {
-          console.log('[WebSocket] Disconnected');
+          console.log('[실시간 채팅] 연결 종료');
         }
         this.updateStatus('disconnected');
         this.subscriptions.clear();
@@ -84,7 +84,7 @@ export class ChatWebSocketClient {
 
       onStompError: (frame) => {
         if (import.meta.env.DEV) {
-          console.error('[WebSocket] STOMP error:', frame);
+          console.error('[실시간 채팅] 오류 발생:', frame);
         }
         this.updateStatus('error');
 
@@ -92,7 +92,7 @@ export class ChatWebSocketClient {
         if (this.reconnectAttempts < this.maxReconnectAttempts) {
           this.reconnectAttempts++;
           if (import.meta.env.DEV) {
-            console.log(`[WebSocket] Reconnecting... (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+            console.log(`[실시간 채팅] 재연결 시도 중... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
           }
           setTimeout(() => this.connect(), this.reconnectDelay * this.reconnectAttempts);
         }
@@ -100,7 +100,7 @@ export class ChatWebSocketClient {
 
       onWebSocketError: (event) => {
         if (import.meta.env.DEV) {
-          console.error('[WebSocket] WebSocket error:', event);
+          console.error('[실시간 채팅] 연결 오류:', event);
         }
         this.updateStatus('error');
       },
