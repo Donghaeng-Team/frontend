@@ -162,7 +162,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           loading: false,
           error: null,
         });
-        console.log('✅ localStorage에서 사용자 정보 복원:', savedUser);
+        if (import.meta.env.DEV) {
+          console.log('✅ localStorage에서 사용자 정보 복원:', savedUser);
+        }
       }
 
       // 테스트 토큰인 경우 API 호출 건너뛰기
@@ -174,9 +176,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       try {
         const response = await authService.getProfile();
-        console.log('🔍 initializeAuth - getProfile response:', response);
-        console.log('🔍 initializeAuth - response.data:', response.data);
-        console.log('🔍 initializeAuth - savedUser:', savedUser);
 
         if (response.success) {
           // getProfile 응답과 localStorage 데이터 병합 (userId 유지)
@@ -185,11 +184,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             // getProfile에 userId가 없으면 localStorage의 userId 사용
             userId: response.data.userId || savedUser?.userId
           };
-
-          console.log('🔄 프로필 업데이트 (mergedUser):', mergedUser);
-          console.log('🔍 userId 확인 - response.data.userId:', response.data.userId);
-          console.log('🔍 userId 확인 - savedUser?.userId:', savedUser?.userId);
-          console.log('🔍 userId 확인 - mergedUser.userId:', mergedUser.userId);
 
           set({
             isAuthenticated: true,
@@ -211,7 +205,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
       } catch (error) {
         // 401 등 인증 오류 발생 시, localStorage에 사용자 정보가 있으면 유지
-        console.warn('인증 초기화 실패 (토큰 만료 또는 유효하지 않음)');
+        if (import.meta.env.DEV) {
+          console.warn('인증 초기화 실패 (토큰 만료 또는 유효하지 않음)');
+        }
         if (!savedUser) {
           clearAuth();
           set({

@@ -57,11 +57,9 @@ export class ChatWebSocketClient {
         'Authorization': `Bearer ${accessToken}`,
         'X-Refresh-Token': refreshToken || '',
       } : {},
-      
-      debug: (str) => {
-        if (import.meta.env.DEV) {
-          console.log('[WebSocket Debug]', str);
-        }
+
+      debug: () => {
+        // WebSocket 디버그 로그 비활성화
       },
 
       reconnectDelay: this.reconnectDelay,
@@ -69,31 +67,41 @@ export class ChatWebSocketClient {
       heartbeatOutgoing: 4000,
 
       onConnect: () => {
-        console.log('[WebSocket] Connected successfully');
+        if (import.meta.env.DEV) {
+          console.log('[WebSocket] Connected successfully');
+        }
         this.updateStatus('connected');
         this.reconnectAttempts = 0;
       },
 
       onDisconnect: () => {
-        console.log('[WebSocket] Disconnected');
+        if (import.meta.env.DEV) {
+          console.log('[WebSocket] Disconnected');
+        }
         this.updateStatus('disconnected');
         this.subscriptions.clear();
       },
 
       onStompError: (frame) => {
-        console.error('[WebSocket] STOMP error:', frame);
+        if (import.meta.env.DEV) {
+          console.error('[WebSocket] STOMP error:', frame);
+        }
         this.updateStatus('error');
-        
+
         // 재연결 시도
         if (this.reconnectAttempts < this.maxReconnectAttempts) {
           this.reconnectAttempts++;
-          console.log(`[WebSocket] Reconnecting... (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+          if (import.meta.env.DEV) {
+            console.log(`[WebSocket] Reconnecting... (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+          }
           setTimeout(() => this.connect(), this.reconnectDelay * this.reconnectAttempts);
         }
       },
 
       onWebSocketError: (event) => {
-        console.error('[WebSocket] WebSocket error:', event);
+        if (import.meta.env.DEV) {
+          console.error('[WebSocket] WebSocket error:', event);
+        }
         this.updateStatus('error');
       },
     });
@@ -117,7 +125,9 @@ export class ChatWebSocketClient {
       this.client.deactivate();
       this.client = null;
       this.updateStatus('disconnected');
-      console.log('[WebSocket] Disconnected manually');
+      if (import.meta.env.DEV) {
+        console.log('[WebSocket] Disconnected manually');
+      }
     }
   }
 
@@ -129,13 +139,17 @@ export class ChatWebSocketClient {
     onMessage: (message: WebSocketChatMessage) => void
   ): void {
     if (!this.client?.connected) {
-      console.error('[WebSocket] Not connected. Cannot subscribe to room', roomId);
+      if (import.meta.env.DEV) {
+        console.error('[WebSocket] Not connected. Cannot subscribe to room', roomId);
+      }
       return;
     }
 
     // 이미 구독 중이면 무시
     if (this.subscriptions.has(roomId)) {
-      console.log(`[WebSocket] Already subscribed to room ${roomId}`);
+      if (import.meta.env.DEV) {
+        console.log(`[WebSocket] Already subscribed to room ${roomId}`);
+      }
       return;
     }
 
@@ -147,13 +161,17 @@ export class ChatWebSocketClient {
           const data: WebSocketChatMessage = JSON.parse(message.body);
           onMessage(data);
         } catch (error) {
-          console.error('[WebSocket] Failed to parse message:', error);
+          if (import.meta.env.DEV) {
+            console.error('[WebSocket] Failed to parse message:', error);
+          }
         }
       }
     );
 
     this.subscriptions.set(roomId, subscription);
-    console.log(`[WebSocket] Subscribed to room ${roomId}`);
+    if (import.meta.env.DEV) {
+      console.log(`[WebSocket] Subscribed to room ${roomId}`);
+    }
   }
 
   /**
@@ -164,7 +182,9 @@ export class ChatWebSocketClient {
     if (subscription) {
       subscription.unsubscribe();
       this.subscriptions.delete(roomId);
-      console.log(`[WebSocket] Unsubscribed from room ${roomId}`);
+      if (import.meta.env.DEV) {
+        console.log(`[WebSocket] Unsubscribed from room ${roomId}`);
+      }
     }
   }
 
@@ -176,12 +196,16 @@ export class ChatWebSocketClient {
     onNotification: (notification: any) => void
   ): void {
     if (!this.client?.connected) {
-      console.error('[WebSocket] Not connected. Cannot subscribe to notifications');
+      if (import.meta.env.DEV) {
+        console.error('[WebSocket] Not connected. Cannot subscribe to notifications');
+      }
       return;
     }
 
     if (this.userNotificationSubscription) {
-      console.log('[WebSocket] Already subscribed to user notifications');
+      if (import.meta.env.DEV) {
+        console.log('[WebSocket] Already subscribed to user notifications');
+      }
       return;
     }
 
@@ -192,12 +216,16 @@ export class ChatWebSocketClient {
           const data = JSON.parse(message.body);
           onNotification(data);
         } catch (error) {
-          console.error('[WebSocket] Failed to parse notification:', error);
+          if (import.meta.env.DEV) {
+            console.error('[WebSocket] Failed to parse notification:', error);
+          }
         }
       }
     );
 
-    console.log(`[WebSocket] Subscribed to user ${userId} notifications`);
+    if (import.meta.env.DEV) {
+      console.log(`[WebSocket] Subscribed to user ${userId} notifications`);
+    }
   }
 
   /**
@@ -207,7 +235,9 @@ export class ChatWebSocketClient {
     if (this.userNotificationSubscription) {
       this.userNotificationSubscription.unsubscribe();
       this.userNotificationSubscription = null;
-      console.log('[WebSocket] Unsubscribed from user notifications');
+      if (import.meta.env.DEV) {
+        console.log('[WebSocket] Unsubscribed from user notifications');
+      }
     }
   }
 
@@ -216,7 +246,9 @@ export class ChatWebSocketClient {
    */
   sendMessage(roomId: number, message: string, userId: number, nickname: string): void {
     if (!this.client?.connected) {
-      console.error('[WebSocket] Not connected. Cannot send message');
+      if (import.meta.env.DEV) {
+        console.error('[WebSocket] Not connected. Cannot send message');
+      }
       return;
     }
 
@@ -230,7 +262,9 @@ export class ChatWebSocketClient {
       body: JSON.stringify(payload),
     });
 
-    console.log('[WebSocket] Message sent to room', roomId, ':', payload);
+    if (import.meta.env.DEV) {
+      console.log('[WebSocket] Message sent to room', roomId, ':', payload);
+    }
   }
 
   /**
@@ -238,7 +272,9 @@ export class ChatWebSocketClient {
    */
   leaveRoom(roomId: number): void {
     if (!this.client?.connected) {
-      console.error('[WebSocket] Not connected. Cannot leave room');
+      if (import.meta.env.DEV) {
+        console.error('[WebSocket] Not connected. Cannot leave room');
+      }
       return;
     }
 
@@ -248,7 +284,9 @@ export class ChatWebSocketClient {
     });
 
     this.unsubscribeFromRoom(roomId);
-    console.log(`[WebSocket] Left room ${roomId}`);
+    if (import.meta.env.DEV) {
+      console.log(`[WebSocket] Left room ${roomId}`);
+    }
   }
 
   /**
