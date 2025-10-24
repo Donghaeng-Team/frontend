@@ -180,20 +180,14 @@ export const communityService = {
   },
 
   /**
-   * 게시글 조회수 증가 (Private)
-   * @param userId 사용자 ID (헤더로 전송)
+   * 게시글 조회수 증가 (Public)
    * @param postId 게시글 ID
    * @returns 조회수 증가 결과
    */
-  increaseViewCount: async (userId: number, postId: number): Promise<ApiResponse<unknown>> => {
+  increaseViewCount: async (postId: number): Promise<ApiResponse<unknown>> => {
     const response = await apiClient.post(
-      `/api/v1/posts/private/${postId}/views`,
-      {},
-      {
-        headers: {
-          'X-User-Id': userId.toString(),
-        },
-      }
+      `/api/v1/posts/public/${postId}`,
+      {}
     );
     return response.data;
   },

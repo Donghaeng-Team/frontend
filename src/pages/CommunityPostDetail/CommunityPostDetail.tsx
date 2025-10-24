@@ -98,7 +98,7 @@ const CommunityPostDetail: React.FC = () => {
 
           // 조회수 증가 API 호출 (비동기, 에러 무시)
           communityService
-            .increaseViewCount(authUser.userId, response.data.postId)
+            .increaseViewCount(response.data.postId)
             .then(() => console.log('✅ 조회수 증가 완료'))
             .catch((err) => console.warn('⚠️ 조회수 증가 실패 (무시):', err));
         } else {
