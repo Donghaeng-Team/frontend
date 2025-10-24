@@ -10,6 +10,7 @@ export type ConnectionStatus = 'connected' | 'disconnected' | 'connecting' | 'er
 export class ChatWebSocketClient {
   private client: Client | null = null;
   private subscriptions: Map<number, StompSubscription> = new Map();
+  private userNotificationSubscription: StompSubscription | null = null;
   private connectionStatus: ConnectionStatus = 'disconnected';
   private onStatusChange?: (status: ConnectionStatus) => void;
   private reconnectAttempts = 0;
@@ -35,7 +36,7 @@ export class ChatWebSocketClient {
     this.client = new Client({
       webSocketFactory: () => {
         const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8086';
-        return new SockJS(`${baseURL}/ws-chat`) as any;
+        return new SockJS(`${baseURL}/ws/v1/chat/private`) as any;
       },
       
       debug: (str) => {
@@ -90,6 +91,9 @@ export class ChatWebSocketClient {
       this.subscriptions.forEach((sub) => sub.unsubscribe());
       this.subscriptions.clear();
 
+      // 개인 알림 구독 취소
+      this.unsubscribeFromUserNotifications();
+
       // 연결 해제
       this.client.deactivate();
       this.client = null;
@@ -118,7 +122,7 @@ export class ChatWebSocketClient {
 
     // 채팅방 메시지 구독
     const subscription = this.client.subscribe(
-      `/topic/chat/${roomId}`,
+      `/topic/rooms.${roomId}.messages`,
       (message) => {
         try {
           const data: WebSocketChatMessage = JSON.parse(message.body);
@@ -146,6 +150,49 @@ export class ChatWebSocketClient {
   }
 
   /**
+   * 개인 알림 구독 (강퇴, 시스템 알림 등)
+   */
+  subscribeToUserNotifications(
+    userId: number,
+    onNotification: (notification: any) => void
+  ): void {
+    if (!this.client?.connected) {
+      console.error('[WebSocket] Not connected. Cannot subscribe to notifications');
+      return;
+    }
+
+    if (this.userNotificationSubscription) {
+      console.log('[WebSocket] Already subscribed to user notifications');
+      return;
+    }
+
+    this.userNotificationSubscription = this.client.subscribe(
+      `/user/${userId}/queue/notifications`,
+      (message) => {
+        try {
+          const data = JSON.parse(message.body);
+          onNotification(data);
+        } catch (error) {
+          console.error('[WebSocket] Failed to parse notification:', error);
+        }
+      }
+    );
+
+    console.log(`[WebSocket] Subscribed to user ${userId} notifications`);
+  }
+
+  /**
+   * 개인 알림 구독 취소
+   */
+  unsubscribeFromUserNotifications(): void {
+    if (this.userNotificationSubscription) {
+      this.userNotificationSubscription.unsubscribe();
+      this.userNotificationSubscription = null;
+      console.log('[WebSocket] Unsubscribed from user notifications');
+    }
+  }
+
+  /**
    * 메시지 전송
    */
   sendMessage(roomId: number, message: string, userId: number, nickname: string): void {
@@ -154,20 +201,35 @@ export class ChatWebSocketClient {
       return;
     }
 
+    // 백엔드 문서에 따르면 Principal은 서버에서 자동 처리되므로 messageContent만 전송
     const payload = {
-      roomId,
-      senderId: userId,
-      senderNickname: nickname,
-      message,
-      timestamp: new Date().toISOString(),
+      messageContent: message
     };
 
     this.client.publish({
-      destination: `/app/chat/${roomId}`,
+      destination: `/app/chat.${roomId}.sendMessage`,
       body: JSON.stringify(payload),
     });
 
-    console.log('[WebSocket] Message sent:', payload);
+    console.log('[WebSocket] Message sent to room', roomId, ':', payload);
+  }
+
+  /**
+   * 채팅방 나가기
+   */
+  leaveRoom(roomId: number): void {
+    if (!this.client?.connected) {
+      console.error('[WebSocket] Not connected. Cannot leave room');
+      return;
+    }
+
+    this.client.publish({
+      destination: `/app/chat.${roomId}.leave`,
+      body: '',
+    });
+
+    this.unsubscribeFromRoom(roomId);
+    console.log(`[WebSocket] Left room ${roomId}`);
   }
 
   /**
