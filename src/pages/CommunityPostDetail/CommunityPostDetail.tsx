@@ -82,6 +82,8 @@ const CommunityPostDetail: React.FC = () => {
 
         setPost(response.data);
         setLikeCount(response.data.likeCount);
+        // 서버에서 받은 liked 상태로 초기화 (없으면 false)
+        setLiked(response.data.liked || false);
       } catch (error: any) {
         // 500 에러는 백엔드 이슈이므로 조용히 처리 (BACKEND_HANDOFF.md 참조)
         if (error.response?.status === 500) {
@@ -199,23 +201,37 @@ const CommunityPostDetail: React.FC = () => {
 
     if (!post) return;
 
-    try {
-      // 좋아요 API 호출
-      await communityService.increaseLike(authUser.userId, post.postId);
+    // 현재 상태 백업 (롤백용)
+    const prevLiked = liked;
+    const prevLikeCount = likeCount;
 
-      // 낙관적 업데이트
+    try {
+      // 낙관적 업데이트 (UI 즉시 반영)
       setLiked(!liked);
       setLikeCount(liked ? likeCount - 1 : likeCount + 1);
 
-      // 게시글 정보 새로고침하여 정확한 좋아요 수 반영
+      // 좋아요 토글 API 호출
+      if (liked) {
+        // 이미 좋아요 상태 → 취소
+        await communityService.decreaseLike(authUser.userId, post.postId);
+        console.log('✅ 좋아요 취소 완료');
+      } else {
+        // 좋아요 안 한 상태 → 추가
+        await communityService.increaseLike(authUser.userId, post.postId);
+        console.log('✅ 좋아요 추가 완료');
+      }
+
+      // 게시글 정보 새로고침하여 정확한 좋아요 수와 상태 동기화
       const response = await communityService.getPost(post.postId);
       if (response.success && response.data) {
         setLikeCount(response.data.likeCount);
+        setLiked(response.data.liked || false);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ 좋아요 처리 실패:', error);
       // 에러 시 원래 상태로 롤백
-      setLiked(liked);
+      setLiked(prevLiked);
+      setLikeCount(prevLikeCount);
       alert('좋아요 처리에 실패했습니다.');
     }
   };

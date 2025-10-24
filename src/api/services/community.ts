@@ -179,6 +179,24 @@ export const communityService = {
   },
 
   /**
+   * 게시글 좋아요 취소 (Private)
+   * @param userId 사용자 ID (헤더로 전송)
+   * @param postId 게시글 ID
+   * @returns 좋아요 취소 결과
+   */
+  decreaseLike: async (userId: number, postId: number): Promise<ApiResponse<unknown>> => {
+    const response = await apiClient.delete(
+      `/api/v1/posts/private/${postId}/likes`,
+      {
+        headers: {
+          'X-User-Id': userId.toString(),
+        },
+      }
+    );
+    return response.data;
+  },
+
+  /**
    * 이미지와 함께 게시글 생성 (통합 함수) - fetch 사용
    * @param userId 사용자 ID
    * @param post 게시글 초기 데이터

@@ -127,6 +127,8 @@ export interface PostDetailResponse {
   commentCount: number;
   /** 조회 수 */
   viewCount: number;
+  /** 현재 사용자의 좋아요 여부 */
+  liked?: boolean;
 }
 
 /**
