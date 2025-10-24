@@ -86,7 +86,13 @@ export interface RecruitmentCloseResponse {
   kickedCount: number;
 }
 
+export interface RecruitmentCancelResponse {
+  roomId: number;
+  canceledAt: string;
+}
+
 export interface ParticipantListResponse {
+  roomId: number;
   currentParticipants: number;
   currentBuyers: number;
   participants: ParticipantResponse[];
@@ -109,6 +115,19 @@ export interface MyPurchaseStatsResponse {
   activeAsCreator: number;    // 자신이 개설자 + 현재 활성화 상태인 채팅방 숫자
   activeAsBuyer: number;       // 자신이 개설자가 아닌 구매자 + 현재 활성화 상태인 채팅방 숫자
   completed: number;           // 자신이 개설자 또는 구매자 + 현재 종료 상태인 채팅방 숫자
+}
+
+export interface UserMarketIdsResponse {
+  ongoing: number[];           // 진행 중인 공동구매 마켓 ID 목록
+  completed: number[];         // 완료된 공동구매 마켓 ID 목록
+  ongoingCount: number;        // 진행 중인 공동구매 개수
+  completedCount: number;      // 완료된 공동구매 개수
+}
+
+export interface ParticipatingStaticsResponse {
+  activeAsCreator: number;     // 개설자로 활성화된 채팅방 수
+  activeAsBuyer: number;       // 구매자로 활성화된 채팅방 수
+  completed: number;           // 완료된 채팅방 수
 }
 
 // ========================================
