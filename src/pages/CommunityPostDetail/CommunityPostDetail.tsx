@@ -553,7 +553,7 @@ const CommunityPostDetail: React.FC = () => {
         {/* 댓글 섹션 */}
         <section className="comments-section">
             <div className="comments-container">
-            <h2 className="comments-title">댓글 {allComments.length}개</h2>
+            <h2 className="comments-title">댓글 {post?.commentCount ?? allComments.length}개</h2>
 
             {/* 댓글 목록 */}
             {commentsLoading ? (

@@ -392,9 +392,7 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
                       {post.author} • {post.timeAgo} • {post.location}
                     </div>
                     <div className="post-stats">
-                      👁 {post.viewCount}
-                      {post.commentCount > 0 && ` • 💬 ${post.commentCount}`}
-                      {post.likeCount && post.likeCount > 0 && ` • 👍 ${post.likeCount}`}
+                      👁 {post.viewCount} • 💬 {post.commentCount} • ❤️ {post.likeCount ?? 0}
                     </div>
                   </div>
                 </div>
