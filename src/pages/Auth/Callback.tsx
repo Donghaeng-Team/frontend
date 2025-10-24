@@ -1,6 +1,6 @@
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { useState, useEffect } from "react"
-// import handleAuth from "../../utils/functions/authfunction"
+import { useAuthStore } from "../../stores/authStore"
 
 const Callback = () => {
   const [status, setStatus] = useState<"loading" | "success" | "fail">(
@@ -9,6 +9,7 @@ const Callback = () => {
   const [error, setError] = useState("")
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const initializeAuth = useAuthStore((state) => state.initializeAuth)
   const provider = searchParams.get("provider")
   const accessToken = searchParams.get("access_token")
   console.log(provider)
@@ -28,21 +29,75 @@ const Callback = () => {
       setStatus("fail")
       setError("허용된 Oauth Provider가 아닙니다")
       console.log("프로바이더 오류")
+      return
     }
     console.log("오류검증 완료 ")
+
     const processAuth = async () => {
-      // const success = await handleAuth(), refreshToken을 사용한 정식 검증과정 추후 추가 (cors오류발생, login전환시)
-      setStatus("success")
-      setTimeout(() => navigate("/"), 2000)
+      try {
+        // 1. 토큰 저장
+        localStorage.setItem("accessToken", accessToken)
+        console.log("✅ 토큰 저장 완료")
+
+        // 2. authStore 초기화하여 사용자 정보 로드
+        await initializeAuth()
+        console.log("✅ 인증 상태 초기화 완료")
+
+        // 3. 성공 상태로 변경 및 리다이렉트
+        setStatus("success")
+        setTimeout(() => navigate("/"), 1000)
+      } catch (error) {
+        console.error("❌ OAuth 인증 처리 실패:", error)
+        setStatus("fail")
+        setError("인증 처리 중 오류가 발생했습니다.")
+      }
     }
-    localStorage.setItem("accessToken", accessToken)
-    console.log("✅ 토큰 저장 완료")
+
     processAuth()
-  }, [provider])
+  }, [provider, accessToken, initializeAuth, navigate])
 
   return (
-    <div>
-      <div>{status}</div>
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '100vh',
+      padding: '20px',
+      textAlign: 'center'
+    }}>
+      {status === 'loading' && (
+        <>
+          <h2>로그인 처리 중...</h2>
+          <p>잠시만 기다려주세요.</p>
+        </>
+      )}
+      {status === 'success' && (
+        <>
+          <h2>✅ 로그인 성공!</h2>
+          <p>메인 페이지로 이동합니다...</p>
+        </>
+      )}
+      {status === 'fail' && (
+        <>
+          <h2>❌ 로그인 실패</h2>
+          <p style={{ color: '#f24d4d', marginTop: '10px' }}>{error}</p>
+          <button
+            onClick={() => navigate('/login')}
+            style={{
+              marginTop: '20px',
+              padding: '10px 20px',
+              backgroundColor: '#ff5e2e',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer'
+            }}
+          >
+            로그인 페이지로 돌아가기
+          </button>
+        </>
+      )}
     </div>
   )
 }
