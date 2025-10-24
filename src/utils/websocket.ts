@@ -42,10 +42,10 @@ export class ChatWebSocketClient {
         // Vite proxy를 통하도록 상대 경로 사용 (개발 환경)
         // 프로덕션에서는 절대 URL 사용
         const isDev = import.meta.env.DEV;
-        const baseURL = isDev ? '' : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080');
+        const wsBaseURL = isDev ? '' : (import.meta.env.VITE_WS_BASE_URL || 'http://localhost:8080');
 
         // SockJS 생성 시 토큰을 쿼리 파라미터로 전달
-        let url = `${baseURL}/ws/v1/chat/private`;
+        let url = `${wsBaseURL}/ws/v1/chat/private`;
         if (accessToken) {
           url += `?token=${encodeURIComponent(accessToken)}`;
         }
