@@ -35,15 +35,31 @@ const Callback = () => {
 
     const processAuth = async () => {
       try {
-        // 1. 토큰 저장
+        // 1. JWT 토큰 디코딩하여 내용 확인
+        try {
+          const tokenPayload = JSON.parse(atob(accessToken.split('.')[1]))
+          console.log("🔍 JWT 토큰 Payload:", tokenPayload)
+        } catch (jwtError) {
+          console.error("❌ JWT 디코딩 실패:", jwtError)
+        }
+
+        // 2. 토큰 저장
         localStorage.setItem("accessToken", accessToken)
-        console.log("✅ 토큰 저장 완료")
+        console.log("✅ 토큰 저장 완료, accessToken:", accessToken.substring(0, 20) + "...")
 
         // 2. authStore 초기화하여 사용자 정보 로드
+        console.log("🔄 initializeAuth 호출 시작...")
         await initializeAuth()
         console.log("✅ 인증 상태 초기화 완료")
 
-        // 3. 성공 상태로 변경 및 리다이렉트
+        // 3. 초기화 후 authStore 상태 확인
+        const authState = useAuthStore.getState()
+        console.log("🔍 OAuth 완료 후 authStore 상태:", {
+          isAuthenticated: authState.isAuthenticated,
+          user: authState.user
+        })
+
+        // 4. 성공 상태로 변경 및 리다이렉트
         setStatus("success")
         setTimeout(() => navigate("/"), 1000)
       } catch (error) {
