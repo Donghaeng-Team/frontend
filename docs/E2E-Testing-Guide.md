@@ -1,143 +1,98 @@
-# Playwright E2E 자동화 테스트 가이드
+# Playwright MCP E2E 자동화 테스트 가이드
 
 ## 목차
 1. [개요](#1-개요)
-2. [프로젝트 초기 설정](#2-프로젝트-초기-설정)
-3. [프로젝트 구조](#3-프로젝트-구조)
-4. [테스트 시나리오 및 우선순위](#4-테스트-시나리오-및-우선순위)
-5. [Page Object Model (POM) 구현](#5-page-object-model-pom-구현)
-6. [테스트 픽스처 및 헬퍼](#6-테스트-픽스처-및-헬퍼)
-7. [실제 테스트 예제](#7-실제-테스트-예제)
-8. [실행 및 CI/CD 통합](#8-실행-및-cicd-통합)
-9. [모범 사례 및 주의사항](#9-모범-사례-및-주의사항)
-10. [단계별 구현 로드맵](#10-단계별-구현-로드맵)
+2. [Playwright MCP 설정](#2-playwright-mcp-설정)
+3. [테스트 시나리오 및 우선순위](#3-테스트-시나리오-및-우선순위)
+4. [Playwright MCP 사용법](#4-playwright-mcp-사용법)
+5. [테스트 작성 가이드](#5-테스트-작성-가이드)
+6. [CI/CD 통합](#6-cicd-통합)
+7. [모범 사례](#7-모범-사례)
 
 ---
 
 ## 1. 개요
 
-이 문서는 **함께 사요(Bytogether)** 프로젝트의 Playwright E2E 자동화 테스트 구성 및 실행 가이드입니다.
+이 문서는 **함께 사요(Bytogether)** 프로젝트의 Playwright MCP를 활용한 E2E 자동화 테스트 가이드입니다.
 
 ### 1.1 목적
 - 사용자 플로우의 자동화된 검증
 - 회귀 테스트 자동화
 - 브라우저 간 호환성 테스트
-- CI/CD 파이프라인 통합
+- AI 기반 테스트 자동화
 
 ### 1.2 기술 스택
-- **Playwright**: E2E 테스트 프레임워크
-- **TypeScript**: 타입 안전한 테스트 코드
+- **Playwright MCP**: AI 기반 E2E 테스트 자동화
+- **Claude Code**: MCP 서버 실행 환경
+- **TypeScript/JavaScript**: 테스트 스크립트
 - **GitHub Actions**: CI/CD 자동화
 
+### 1.3 Playwright MCP란?
+
+Playwright MCP는 Model Context Protocol을 통해 Claude와 Playwright를 연결하여, 자연어로 E2E 테스트를 작성하고 실행할 수 있게 해주는 도구입니다.
+
+**장점:**
+- 자연어로 테스트 시나리오 작성
+- 브라우저 자동화 및 스크린샷 캡처
+- 실시간 디버깅 및 분석
+- 코드 작성 없이 테스트 가능
+
 ---
 
-## 2. 프로젝트 초기 설정
+## 2. Playwright MCP 설정
 
-### 2.1 Playwright 설치
+### 2.1 Claude Code 설치
 
 ```bash
-# 프로젝트 루트에서 실행
+# Claude Code CLI 설치
+npm install -g @anthropic-ai/claude-code
+```
+
+### 2.2 MCP 서버 설정
+
+Claude Code 설정 파일에 Playwright MCP 서버를 추가합니다:
+
+**경로:** `~/.config/claude-code/config.json` (Linux/Mac) 또는 `%APPDATA%\claude-code\config.json` (Windows)
+
+```json
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest"]
+    }
+  }
+}
+```
+
+### 2.3 Claude Code 실행
+
+```bash
+# Claude Code 시작
+claude-code
+
+# 또는 프로젝트 디렉토리에서
 cd C:\Users\user\Desktop\sesac\frontend\bytogether
-
-# Playwright 설치
-npm init playwright@latest
-
-# 또는 기존 프로젝트에 추가
-npm install -D @playwright/test
-npx playwright install
+claude-code
 ```
 
-### 2.2 설치 시 선택 옵션
+### 2.4 Playwright MCP 도구 확인
 
-| 질문 | 권장 선택 |
-|------|----------|
-| TypeScript 사용? | ✅ Yes |
-| 테스트 폴더 위치 | `e2e/` |
-| GitHub Actions workflow 추가 | 선택 사항 |
-| Playwright Test 예제 추가 | ✅ Yes |
+Claude Code 실행 후 사용 가능한 MCP 도구들:
 
-### 2.3 추가 패키지 설치
-
-```bash
-# Faker (테스트 데이터 생성용)
-npm install -D @faker-js/faker
-```
+- `playwright_navigate`: 페이지 이동
+- `playwright_click`: 요소 클릭
+- `playwright_fill`: 입력 필드 채우기
+- `playwright_screenshot`: 스크린샷 캡처
+- `playwright_evaluate`: JavaScript 실행
+- `playwright_select`: 드롭다운 선택
+- 기타 Playwright 모든 기능
 
 ---
 
-## 3. 프로젝트 구조
+## 3. 테스트 시나리오 및 우선순위
 
-```
-bytogether/
-├── e2e/                          # E2E 테스트 루트
-│   ├── .auth/                   # 인증 상태 저장
-│   │   ├── seller.json
-│   │   └── buyer.json
-│   │
-│   ├── fixtures/                 # 테스트 픽스처
-│   │   ├── auth.fixture.ts      # 인증 관련 픽스처
-│   │   ├── db.fixture.ts        # DB 데이터 설정
-│   │   └── index.ts             # 픽스처 통합
-│   │
-│   ├── pages/                    # Page Object Model
-│   │   ├── base.page.ts         # 기본 페이지 클래스
-│   │   ├── login.page.ts        # 로그인 페이지
-│   │   ├── product-list.page.ts # 상품 목록 페이지
-│   │   ├── product-detail.page.ts # 상품 상세 페이지
-│   │   ├── chat-room.page.ts    # 채팅방 페이지
-│   │   ├── community.page.ts    # 커뮤니티 페이지
-│   │   └── mypage.page.ts       # 마이페이지
-│   │
-│   ├── tests/                    # 실제 테스트 파일
-│   │   ├── auth/                # 인증 관련 테스트
-│   │   │   ├── login.spec.ts
-│   │   │   ├── logout.spec.ts
-│   │   │   └── signup.spec.ts
-│   │   │
-│   │   ├── product/             # 공동구매 관련 테스트
-│   │   │   ├── create-product.spec.ts
-│   │   │   ├── product-list.spec.ts
-│   │   │   ├── product-detail.spec.ts
-│   │   │   ├── wishlist.spec.ts
-│   │   │   └── filter-search.spec.ts
-│   │   │
-│   │   ├── chat/                # 채팅 관련 테스트
-│   │   │   ├── chat-room-join.spec.ts
-│   │   │   ├── chat-messaging.spec.ts
-│   │   │   ├── buyer-confirm.spec.ts
-│   │   │   ├── chat-list.spec.ts
-│   │   │   └── websocket.spec.ts
-│   │   │
-│   │   ├── community/           # 커뮤니티 관련 테스트
-│   │   │   ├── post-create.spec.ts
-│   │   │   ├── post-detail.spec.ts
-│   │   │   ├── comment.spec.ts
-│   │   │   └── reply.spec.ts
-│   │   │
-│   │   └── integration/         # 통합 시나리오 테스트
-│   │       ├── full-purchase-flow.spec.ts
-│   │       └── user-journey.spec.ts
-│   │
-│   ├── utils/                    # 유틸리티 함수
-│   │   ├── test-data.ts         # 테스트 데이터 생성
-│   │   ├── api-helpers.ts       # API 헬퍼
-│   │   ├── db-helpers.ts        # DB 헬퍼
-│   │   └── custom-matchers.ts   # 커스텀 Matcher
-│   │
-│   └── config/                   # 테스트 설정
-│       ├── test-users.ts        # 테스트 사용자 정보
-│       └── test-env.ts          # 환경별 설정
-│
-├── playwright.config.ts          # Playwright 설정
-├── .env.test                     # 테스트 환경변수
-└── package.json
-```
-
----
-
-## 4. 테스트 시나리오 및 우선순위
-
-### 4.1 우선순위 1 (Critical Path) - 핵심 사용자 플로우
+### 3.1 우선순위 1 (Critical Path) - 핵심 사용자 플로우
 
 #### A. 인증 (Authentication)
 - ✅ 이메일/비밀번호로 로그인 성공
@@ -157,7 +112,7 @@ bytogether/
 - ✅ 메시지 전송/수신
 - ✅ 실시간 다중 사용자 채팅
 
-### 4.2 우선순위 2 (High Priority) - 주요 기능
+### 3.2 우선순위 2 (High Priority) - 주요 기능
 
 #### D. 상품 관리
 - 상품 생성 (필수 정보 입력, 이미지 업로드, 위치 설정)
@@ -170,7 +125,7 @@ bytogether/
 - 댓글/대댓글 작성
 - 댓글 수정/삭제
 
-### 4.3 우선순위 3 (Medium Priority) - 부가 기능
+### 3.3 우선순위 3 (Medium Priority) - 부가 기능
 
 #### F. 검색 및 필터
 - 키워드 검색
@@ -183,241 +138,134 @@ bytogether/
 
 ---
 
-## 5. Page Object Model (POM) 구현
+## 4. Playwright MCP 사용법
 
-### 5.1 Base Page 예제
+### 4.1 기본 테스트 시나리오 예제
 
-```typescript
-// e2e/pages/base.page.ts
-import { Page, Locator } from '@playwright/test';
+Claude Code에서 자연어로 테스트를 요청할 수 있습니다:
 
-export class BasePage {
-  readonly page: Page;
-  readonly header: Locator;
-  readonly footer: Locator;
-  readonly bottomNav: Locator;
+```
+"로그인 페이지로 이동해서 이메일 test@example.com, 비밀번호 Test1234!로 로그인하고 스크린샷 찍어줘"
 
-  constructor(page: Page) {
-    this.page = page;
-    this.header = page.locator('header.header');
-    this.footer = page.locator('footer');
-    this.bottomNav = page.locator('.bottom-nav');
-  }
+"상품 목록 페이지에서 첫 번째 상품을 클릭하고 상세 페이지가 제대로 로드되는지 확인해줘"
 
-  async goto(path: string = '/') {
-    await this.page.goto(path);
-  }
-
-  async waitForPageLoad() {
-    await this.page.waitForLoadState('networkidle');
-  }
-
-  async navigateToProducts() {
-    await this.header.locator('a[href="/products"]').click();
-  }
-
-  async navigateToCommunity() {
-    await this.header.locator('a[href="/community"]').click();
-  }
-
-  async logout() {
-    const isMobile = await this.page.viewportSize()
-      .then(vp => vp && vp.width <= 768);
-
-    if (isMobile) {
-      await this.header.locator('.hamburger-btn').click();
-    }
-    await this.page.getByText('로그아웃').click();
-  }
-
-  async isLoggedIn(): Promise<boolean> {
-    return await this.header.locator('.header-icon-btn').count() > 0;
-  }
-}
+"채팅방에 메시지를 입력하고 전송 버튼을 클릭한 후 메시지가 표시되는지 확인해줘"
 ```
 
-자세한 POM 구현은 [`Page-Object-Models.md`](./Page-Object-Models.md) 참조
+### 4.2 일반적인 테스트 패턴
+
+#### 로그인 테스트
+
+```
+1. http://localhost:5173/login-form 페이지로 이동
+2. 이메일 입력 필드에 seller@test.com 입력
+3. 비밀번호 입력 필드에 Test1234! 입력
+4. 로그인 버튼 클릭
+5. URL이 /로 변경되는지 확인
+6. 스크린샷 캡처
+```
+
+#### 상품 목록 테스트
+
+```
+1. http://localhost:5173/products 페이지로 이동
+2. 상품 카드가 표시되는지 확인
+3. 검색 입력 필드에 "사과" 입력
+4. 검색 결과가 표시되는지 확인
+5. 스크린샷 캡처
+```
+
+#### 채팅 테스트
+
+```
+1. http://localhost:5173/chat/1 페이지로 이동
+2. 메시지 입력 필드에 "안녕하세요" 입력
+3. 전송 버튼 클릭
+4. 메시지가 화면에 표시되는지 확인
+5. 스크린샷 캡처
+```
+
+### 4.3 스크린샷 및 디버깅
+
+```
+"현재 페이지의 스크린샷을 찍어줘"
+
+"페이지의 HTML 구조를 확인해줘"
+
+"특정 요소가 존재하는지 확인해줘"
+
+"JavaScript 콘솔 에러가 있는지 확인해줘"
+```
 
 ---
 
-## 6. 테스트 픽스처 및 헬퍼
+## 5. 테스트 작성 가이드
 
-### 6.1 테스트 사용자 정의
+### 5.1 테스트 시나리오 작성 원칙
 
-```typescript
-// e2e/fixtures/auth.fixture.ts
-export const TEST_USERS = {
-  seller: {
-    email: 'seller@example.com',
-    password: 'Test1234!',
-    nickname: 'Seller User'
-  },
-  buyer1: {
-    email: 'buyer1@example.com',
-    password: 'Test1234!',
-    nickname: 'Buyer One'
-  },
-  buyer2: {
-    email: 'buyer2@example.com',
-    password: 'Test1234!',
-    nickname: 'Buyer Two'
-  }
-};
+#### BDD 스타일 (Given-When-Then)
+
+```
+Given: 사용자가 로그인 페이지에 있을 때
+When: 유효한 이메일과 비밀번호를 입력하고 로그인 버튼을 클릭하면
+Then: 홈페이지로 리다이렉트되고 사용자 아이콘이 표시된다
 ```
 
-### 6.2 테스트 데이터 생성
+#### 명확한 시나리오 설명
 
-```typescript
-// e2e/utils/test-data.ts
-import { faker } from '@faker-js/faker/locale/ko';
+```
+테스트 이름: "이메일/비밀번호로 로그인 성공"
 
-export class TestDataGenerator {
-  static generateProduct() {
-    return {
-      title: `${faker.commerce.productName()} 공동구매`,
-      category: '식품',
-      price: faker.number.int({ min: 10000, max: 100000 }),
-      minBuyers: faker.number.int({ min: 2, max: 5 }),
-      maxBuyers: faker.number.int({ min: 5, max: 20 }),
-      description: faker.commerce.productDescription(),
-      location: '서울시 강남구 역삼동',
-      endTime: faker.date.future({ years: 0.1 }).toISOString()
-    };
-  }
-}
+단계:
+1. 로그인 폼 페이지 접속
+2. 이메일 입력: seller@test.com
+3. 비밀번호 입력: Test1234!
+4. 로그인 버튼 클릭
+5. 홈페이지(/) 리다이렉트 확인
+6. 헤더에 사용자 아이콘 표시 확인
 ```
 
-자세한 픽스처 구현은 [`Test-Fixtures.md`](./Test-Fixtures.md) 참조
+### 5.2 Selector 전략
+
+#### 우선순위
+
+1. ✅ `data-testid` 속성 (권장)
+2. ✅ Role 기반 (`button`, `link`, `textbox`)
+3. ✅ Label 텍스트
+4. ⚠️ CSS 클래스 (변경 가능성)
+5. ❌ XPath (취약함)
+
+#### 예제
+
+```
+"이메일 입력 필드" → input#email 또는 input[name="email"]
+"로그인 버튼" → button:has-text("로그인")
+"상품 카드" → .product-card
+"첫 번째 상품" → .product-card:first-child
+```
+
+### 5.3 대기 전략
+
+Playwright MCP는 자동으로 요소가 나타날 때까지 대기하지만, 필요시 명시적으로 요청할 수 있습니다:
+
+```
+"페이지가 완전히 로드될 때까지 기다려줘"
+
+"상품 카드가 표시될 때까지 기다려줘"
+
+"API 응답이 완료될 때까지 기다려줘"
+```
 
 ---
 
-## 7. 실제 테스트 예제
+## 6. CI/CD 통합
 
-### 7.1 로그인 테스트
-
-```typescript
-// e2e/tests/auth/login.spec.ts
-import { test, expect } from '@playwright/test';
-import { LoginPage } from '../../pages/login.page';
-import { TEST_USERS } from '../../fixtures/auth.fixture';
-
-test.describe('로그인', () => {
-  let loginPage: LoginPage;
-
-  test.beforeEach(async ({ page }) => {
-    loginPage = new LoginPage(page);
-    await loginPage.goto();
-  });
-
-  test('이메일/비밀번호로 로그인 성공', async ({ page }) => {
-    // Given: 유효한 사용자 정보
-    const user = TEST_USERS.seller;
-
-    // When: 로그인 시도
-    await loginPage.login(user.email, user.password);
-
-    // Then: 로그인 성공하고 홈으로 이동
-    await loginPage.expectLoginSuccess();
-    expect(await loginPage.isLoggedIn()).toBe(true);
-  });
-
-  test('잘못된 비밀번호로 로그인 실패', async ({ page }) => {
-    // Given: 잘못된 비밀번호
-    const user = TEST_USERS.seller;
-
-    // When: 잘못된 비밀번호로 로그인 시도
-    await loginPage.login(user.email, 'WrongPassword123!');
-
-    // Then: 에러 메시지 표시
-    await loginPage.expectLoginError('비밀번호가 일치하지 않습니다');
-  });
-});
-```
-
-### 7.2 공동구매 전체 플로우 테스트
-
-```typescript
-// e2e/tests/integration/full-purchase-flow.spec.ts
-test('생성부터 구매 완료까지', async ({ browser }) => {
-  // 판매자와 구매자 2명의 컨텍스트 생성
-  const sellerContext = await browser.newContext();
-  const buyer1Context = await browser.newContext();
-
-  const sellerPage = await sellerContext.newPage();
-  const buyer1Page = await buyer1Context.newPage();
-
-  try {
-    // Step 1: 판매자 로그인 및 상품 생성
-    // Step 2: 구매자1 로그인 및 채팅방 참여
-    // Step 3: 구매 신청
-    // Step 4: 참여자 현황 확인
-    // Step 5: 모집 확정
-    // ... (자세한 코드는 Test-Examples.md 참조)
-
-  } finally {
-    await sellerContext.close();
-    await buyer1Context.close();
-  }
-});
-```
-
-자세한 테스트 예제는 [`Test-Examples.md`](./Test-Examples.md) 참조
-
----
-
-## 8. 실행 및 CI/CD 통합
-
-### 8.1 로컬 실행 명령어
-
-```bash
-# 모든 테스트 실행
-npm run test:e2e
-
-# UI 모드로 실행
-npm run test:e2e:ui
-
-# 헤드 모드로 실행 (브라우저 보면서)
-npm run test:e2e:headed
-
-# 디버그 모드
-npm run test:e2e:debug
-
-# 특정 브라우저만 실행
-npm run test:e2e:chromium
-npm run test:e2e:firefox
-npm run test:e2e:mobile
-
-# 리포트 보기
-npm run test:e2e:report
-
-# 테스트 코드 생성기
-npm run test:e2e:codegen
-```
-
-### 8.2 package.json 스크립트
-
-```json
-{
-  "scripts": {
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
-    "test:e2e:headed": "playwright test --headed",
-    "test:e2e:debug": "playwright test --debug",
-    "test:e2e:chromium": "playwright test --project=chromium",
-    "test:e2e:firefox": "playwright test --project=firefox",
-    "test:e2e:mobile": "playwright test --project=mobile-chrome",
-    "test:e2e:report": "playwright show-report",
-    "test:e2e:codegen": "playwright codegen http://localhost:3000"
-  }
-}
-```
-
-### 8.3 GitHub Actions 워크플로우
+### 6.1 GitHub Actions 워크플로우
 
 `.github/workflows/e2e-tests.yml` 파일 생성:
 
 ```yaml
-name: E2E Tests
+name: E2E Tests with Playwright MCP
 
 on:
   push:
@@ -441,13 +289,22 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
 
-      - name: Run Playwright tests
-        run: npm run test:e2e
+      - name: Start dev server
+        run: npm run dev &
         env:
           CI: true
+
+      - name: Wait for server
+        run: npx wait-on http://localhost:5173
+
+      - name: Run E2E tests
+        run: npx playwright test
+        env:
+          CI: true
+          BASE_URL: http://localhost:5173
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -457,151 +314,141 @@ jobs:
           retention-days: 30
 ```
 
-자세한 CI/CD 설정은 [`CI-CD-Integration.md`](./CI-CD-Integration.md) 참조
+### 6.2 환경 변수 설정
+
+`.env.test` 파일:
+
+```env
+BASE_URL=http://localhost:5173
+API_BASE_URL=http://localhost:8080
+
+TEST_SELLER_EMAIL=seller@test.com
+TEST_SELLER_PASSWORD=Test1234!
+
+TEST_BUYER1_EMAIL=buyer1@test.com
+TEST_BUYER1_PASSWORD=Test1234!
+```
 
 ---
 
-## 9. 모범 사례 및 주의사항
+## 7. 모범 사례
 
-### 9.1 테스트 작성 원칙
-
-#### AAA 패턴 (Arrange-Act-Assert)
-
-```typescript
-test('테스트 이름', async ({ page }) => {
-  // Arrange: 테스트 설정
-  const loginPage = new LoginPage(page);
-
-  // Act: 실행
-  await loginPage.login('user@example.com', 'password');
-
-  // Assert: 검증
-  await loginPage.expectLoginSuccess();
-});
-```
-
-#### 명확한 테스트 이름
-- ✅ "무엇을", "어떤 조건에서", "어떻게 되어야 하는지" 포함
-- ✅ 예: `'이메일/비밀번호로 로그인 성공'`
-- ❌ 나쁜 예: `'test1'`, `'로그인'`
+### 7.1 테스트 작성 원칙
 
 #### 독립적인 테스트
 - 각 테스트는 다른 테스트에 의존하지 않아야 함
-- `beforeEach`로 초기 상태 설정
+- 테스트 간 상태 공유 금지
 
-### 9.2 Selector 전략
+#### 명확한 테스트 이름
+- ✅ "이메일/비밀번호로 로그인 성공"
+- ❌ "test1", "로그인"
 
-#### 우선순위
+#### 적절한 대기
+- 하드코딩된 timeout 피하기
+- 요소 출현 대기 사용
 
-1. ✅ `data-testid` 속성 (권장)
-2. ✅ Role 기반 (`getByRole`)
-3. ✅ Label 텍스트 (`getByLabel`)
-4. ⚠️ CSS 클래스 (변경 가능성)
-5. ❌ XPath (취약함)
-
-#### 예제
-
-```typescript
-// ✅ 좋은 예
-page.getByTestId('login-button');
-page.getByRole('button', { name: '로그인' });
-page.getByLabel('이메일');
-
-// ❌ 나쁜 예
-page.locator('.btn-primary.login-btn');
-page.locator('//div[@class="form"]/button[1]');
-```
-
-### 9.3 대기 전략
-
-#### 자동 대기 활용 (Playwright 내장)
-
-```typescript
-// 자동으로 요소가 나타날 때까지 대기
-await page.click('button');
-```
-
-#### 명시적 대기
-
-```typescript
-// 네트워크 요청 완료 대기
-await page.waitForResponse(
-  resp => resp.url().includes('/api/products')
-);
-
-// 특정 상태 대기
-await page.waitForLoadState('networkidle');
-```
-
-#### 피해야 할 것
-
-```typescript
-// ❌ 하드코딩된 timeout
-await page.waitForTimeout(3000);
-```
-
-### 9.4 성능 최적화
+### 7.2 성능 최적화
 
 1. **병렬 실행 제한**
    - DB 상태 공유 시 순차 실행
-   - `fullyParallel: false` 설정
 
 2. **API 직접 호출**
    - UI를 거치지 않고 테스트 데이터 생성
-   - 테스트 속도 향상
 
 3. **브라우저 컨텍스트 재사용**
    - 로그인 상태 저장/복원
-   - Setup 단계 활용
 
-자세한 내용은 [`Best-Practices.md`](./Best-Practices.md) 참조
+### 7.3 디버깅 팁
 
----
+```
+"현재 페이지의 HTML을 보여줘"
 
-## 10. 단계별 구현 로드맵
+"특정 요소의 CSS 스타일을 확인해줘"
 
-### Phase 1: 기본 설정 (1-2일)
-- [ ] Playwright 설치 및 설정
-- [ ] 프로젝트 구조 생성
-- [ ] Base Page 구현
-- [ ] 테스트 사용자 설정
+"JavaScript 콘솔 로그를 보여줘"
 
-### Phase 2: 핵심 기능 테스트 (3-5일)
-- [ ] 로그인/로그아웃 테스트
-- [ ] 상품 생성 테스트
-- [ ] 채팅방 참여 테스트
-- [ ] 구매 신청 테스트
-
-### Phase 3: 통합 시나리오 (3-4일)
-- [ ] 전체 공동구매 플로우 테스트
-- [ ] 실시간 채팅 테스트
-- [ ] 커뮤니티 기능 테스트
-
-### Phase 4: CI/CD 통합 (1-2일)
-- [ ] GitHub Actions 설정
-- [ ] 리포트 자동화
-- [ ] 슬랙/디스코드 알림 연동
-
-### Phase 5: 고도화 (진행 중)
-- [ ] Visual Regression Testing
-- [ ] 접근성(A11y) 테스트
-- [ ] 성능 테스트
-- [ ] 모바일 시나리오 추가
+"네트워크 요청을 모니터링해줘"
+```
 
 ---
 
-## 참고 문서
+## 8. 실전 예제
 
-- [Playwright 공식 문서](https://playwright.dev)
-- [Page Object Models 상세 가이드](./Page-Object-Models.md)
-- [Test Fixtures 가이드](./Test-Fixtures.md)
-- [Test Examples 모음](./Test-Examples.md)
-- [CI/CD Integration 가이드](./CI-CD-Integration.md)
-- [Best Practices](./Best-Practices.md)
-- [Playwright Configuration 상세](./Playwright-Configuration.md)
+### 8.1 전체 공동구매 플로우 테스트
+
+```
+시나리오: 판매자가 상품을 등록하고 구매자가 참여하는 전체 플로우
+
+1. [판매자] 로그인
+   - /login-form 접속
+   - seller@test.com / Test1234! 로그인
+
+2. [판매자] 상품 등록
+   - /products/register 접속
+   - 상품명: "유기농 사과 공동구매"
+   - 가격: 25000
+   - 설명: "신선한 유기농 사과입니다"
+   - 이미지 업로드
+   - 등록 버튼 클릭
+
+3. [구매자] 로그아웃 후 로그인
+   - 로그아웃
+   - buyer1@test.com / Test1234! 로그인
+
+4. [구매자] 상품 찾기 및 채팅방 참여
+   - /products 접속
+   - "유기농 사과" 검색
+   - 상품 클릭
+   - 채팅방 참여 버튼 클릭
+
+5. [구매자] 메시지 전송
+   - "참여하고 싶습니다" 입력
+   - 전송 버튼 클릭
+
+6. [구매자] 구매 신청
+   - 구매 신청 버튼 클릭
+   - 확인
+
+7. 스크린샷 캡처 및 검증
+```
+
+### 8.2 커뮤니티 게시글 작성 테스트
+
+```
+시나리오: 사용자가 커뮤니티에 게시글을 작성하고 댓글을 남김
+
+1. 로그인
+   - /login-form 접속
+   - test@example.com / Test1234! 로그인
+
+2. 커뮤니티 페이지 접속
+   - /community 클릭
+
+3. 게시글 작성
+   - 글쓰기 버튼 클릭
+   - 카테고리: 동네 소식
+   - 제목: "테스트 게시글"
+   - 내용: "이것은 테스트 게시글입니다"
+   - 등록 버튼 클릭
+
+4. 댓글 작성
+   - 댓글 입력: "좋은 정보 감사합니다"
+   - 댓글 등록 버튼 클릭
+
+5. 검증
+   - 게시글이 목록에 표시되는지 확인
+   - 댓글이 표시되는지 확인
+```
 
 ---
 
-## 문의 및 기여
+## 9. 문의 및 기여
 
 테스트 관련 문의사항이나 개선 제안은 팀 슬랙 채널 또는 GitHub Issue로 등록해주세요.
+
+### 참고 자료
+
+- [Playwright MCP 공식 문서](https://github.com/microsoft/playwright-mcp)
+- [Playwright 공식 문서](https://playwright.dev)
+- [Claude Code 문서](https://docs.anthropic.com/claude-code)
+- [Model Context Protocol](https://modelcontextprotocol.io)
