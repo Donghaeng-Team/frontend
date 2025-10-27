@@ -599,8 +599,9 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
                       onClick={() => navigate(`/products/${product.marketId}/edit`)}
                       className="edit-button"
                       style={{ flex: 1 }}
+                      disabled={product.status === 'ENDED'}
                     >
-                      ✏️ 수정하기
+                      {product.status === 'ENDED' ? '🔒 종료됨' : '✏️ 수정하기'}
                     </Button>
                     <button
                       onClick={handleJoinChat}
@@ -616,8 +617,15 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
                     <button
                       onClick={handleJoinChat}
                       className={`chat-button ${isJoinedChat ? 'chat-button-joined' : ''}`}
+                      disabled={product.status === 'ENDED' && !isJoinedChat}
                     >
-                      {isBuyer ? '💳 구매중' : isJoinedChat ? '💬 참여중' : '💬 채팅방 참여'}
+                      {product.status === 'ENDED' && !isJoinedChat
+                        ? '🔒 종료됨'
+                        : isBuyer
+                        ? '💳 구매중'
+                        : isJoinedChat
+                        ? '💬 참여중'
+                        : '💬 채팅방 참여'}
                     </button>
                     <button
                       onClick={handleWish}
