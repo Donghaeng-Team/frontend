@@ -277,7 +277,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   closeRecruitment: async (roomId) => {
     try {
-      const response = await chatService.completePurchase(roomId);
+      const response = await chatService.closeRecruitment(roomId);
       if (response.success) {
         // 채팅방 정보 새로고침
         await get().fetchChatRoom(roomId);
