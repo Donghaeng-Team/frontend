@@ -1,14 +1,11 @@
 import { type FC, useState, useEffect } from 'react';
-import ChatRoomListModal from '../ChatRoomListModal/ChatRoomListModal';
+import ChatList from '../../pages/ChatList/ChatList';
 import ChatRoomPage from '../../pages/ChatRoomPage/ChatRoomPage';
-import type { ChatRoom as ChatRoomType } from '../ChatRoomListModal/ChatRoomListModal';
 import './ChatModal.css';
 
 interface ChatModalProps {
   isOpen: boolean;
   onClose: () => void;
-  chatRooms: ChatRoomType[];
-  triggerRef?: React.RefObject<HTMLElement | null>;
   // 특정 채팅방으로 직접 들어갈 때 사용
   initialRoomId?: string;
 }
@@ -16,8 +13,6 @@ interface ChatModalProps {
 const ChatModal: FC<ChatModalProps> = ({
   isOpen,
   onClose,
-  chatRooms,
-  triggerRef,
   initialRoomId
 }) => {
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(initialRoomId || null);
@@ -38,8 +33,8 @@ const ChatModal: FC<ChatModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleRoomClick = (roomId: string) => {
-    setSelectedRoomId(roomId);
+  const handleRoomSelect = (roomId: number) => {
+    setSelectedRoomId(roomId.toString());
   };
 
   const handleBack = () => {
@@ -54,12 +49,9 @@ const ChatModal: FC<ChatModalProps> = ({
     }}>
       <div className="chat-modal-container">
         {!selectedRoomId ? (
-          <ChatRoomListModal
-            isOpen={true}
-            onClose={onClose}
-            chatRooms={chatRooms}
-            onRoomClick={handleRoomClick}
-            triggerRef={triggerRef}
+          <ChatList
+            onRoomSelect={handleRoomSelect}
+            showBottomNav={false}
           />
         ) : (
           <ChatRoomPage

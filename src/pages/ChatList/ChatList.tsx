@@ -5,7 +5,15 @@ import { useChatStore } from '../../stores/chatStore';
 import { useAuthStore } from '../../stores/authStore';
 import './ChatList.css';
 
-const ChatList: React.FC = () => {
+interface ChatListProps {
+  onRoomSelect?: (roomId: number) => void; // 모달에서 사용 시 prop 핸들러
+  showBottomNav?: boolean; // BottomNav 표시 여부 (모달에서는 false)
+}
+
+const ChatList: React.FC<ChatListProps> = ({
+  onRoomSelect: propOnRoomSelect,
+  showBottomNav = true
+}) => {
   const navigate = useNavigate();
   const { chatRooms, chatRoomsLoading, fetchChatRooms, error } = useChatStore();
   const { user } = useAuthStore();
@@ -16,7 +24,11 @@ const ChatList: React.FC = () => {
   }, [fetchChatRooms]);
 
   const handleRoomSelect = (roomId: number) => {
-    navigate(`/chat/${roomId}`);
+    if (propOnRoomSelect) {
+      propOnRoomSelect(roomId); // 모달에서는 prop 핸들러 사용
+    } else {
+      navigate(`/chat/${roomId}`); // 페이지에서는 navigate 사용
+    }
   };
 
   const getStatusInfo = (status: string) => {
@@ -128,7 +140,7 @@ const ChatList: React.FC = () => {
             </div>
           </div>
       </div>
-      <BottomNav />
+      {showBottomNav && <BottomNav />}
     </>
   );
 };
