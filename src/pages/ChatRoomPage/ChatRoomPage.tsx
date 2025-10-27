@@ -47,15 +47,15 @@ const ChatRoomPage = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // 빈 배열: 마운트/언마운트 시에만 실행
 
-  // 채팅방 입장 (중복 방지)
+  // 채팅방 정보 로드 (중복 방지)
   useEffect(() => {
     if (roomId && user && !hasJoinedRef.current) {
       hasJoinedRef.current = true;
       const numericRoomId = parseInt(roomId, 10);
       if (import.meta.env.DEV) {
-        console.log('[ChatRoomPage] joinChatRoom 호출:', numericRoomId);
+        console.log('[ChatRoomPage] fetchChatRoom 호출:', numericRoomId);
       }
-      joinChatRoom(numericRoomId);
+      fetchChatRoom(numericRoomId);
     }
     // cleanup에서 hasJoinedRef를 false로 만들지 않음
     // (컴포넌트 언마운트 시에만 초기화하면 됨)
