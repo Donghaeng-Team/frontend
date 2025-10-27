@@ -163,8 +163,14 @@ const ChatRoom: FC<ChatRoomProps> = ({
         ) : (
           <>
             {isBuyer ? (
-              <button className="chat-room-action-btn cancel" onClick={onCancel}>
-                ❌ 구매 취소
+              <button
+                className="chat-room-action-btn cancel"
+                onClick={onCancel}
+                disabled={recruitmentStatus.status === 'closing' || recruitmentStatus.status === 'closed'}
+              >
+                {recruitmentStatus.status === 'closing' || recruitmentStatus.status === 'closed'
+                  ? '🔒 구매 취소'
+                  : '❌ 구매 취소'}
               </button>
             ) : (
               <>

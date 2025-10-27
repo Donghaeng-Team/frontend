@@ -75,10 +75,28 @@ const ChatRoomPage = ({
     };
   }, [roomId, user, joinChatRoom, leaveChatRoom]);
 
-  // 실시간 남은 시간 계산
+  // 실시간 남은 시간 계산 또는 모집 확정 시간 표시
   useEffect(() => {
     const calculateTimeRemaining = () => {
-      if (!currentRoom?.endTime) {
+      if (!currentRoom) {
+        setTimeRemaining('정보 없음');
+        return;
+      }
+
+      // 모집 확정된 경우 확정 시간 표시
+      if (currentRoom.status === 'RECRUITMENT_CLOSED' && currentRoom.recruitmentClosedAt) {
+        const closedTime = new Date(currentRoom.recruitmentClosedAt);
+        const formattedTime = closedTime.toLocaleString('ko-KR', {
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        setTimeRemaining(`${formattedTime} 확정`);
+        return;
+      }
+
+      if (!currentRoom.endTime) {
         setTimeRemaining('정보 없음');
         return;
       }
@@ -110,11 +128,12 @@ const ChatRoomPage = ({
     // 초기 계산
     calculateTimeRemaining();
 
-    // 1분마다 업데이트
-    const intervalId = setInterval(calculateTimeRemaining, 60000);
-
-    return () => clearInterval(intervalId);
-  }, [currentRoom?.endTime]);
+    // 모집 확정 상태가 아닌 경우만 1분마다 업데이트
+    if (currentRoom?.status !== 'RECRUITMENT_CLOSED') {
+      const intervalId = setInterval(calculateTimeRemaining, 60000);
+      return () => clearInterval(intervalId);
+    }
+  }, [currentRoom?.endTime, currentRoom?.status, currentRoom?.recruitmentClosedAt]);
 
   // ChatRoomStatus를 RecruitmentStatus의 status 타입으로 변환
   const convertChatRoomStatus = (status: ChatRoomStatus): 'active' | 'closing' | 'closed' => {
