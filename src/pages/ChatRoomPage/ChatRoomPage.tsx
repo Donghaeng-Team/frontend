@@ -90,9 +90,11 @@ const ChatRoomPage = ({
   // 채팅 메시지를 ChatRoom 컴포넌트 형식으로 변환
   const formattedMessages: ChatMessage[] = messages
     .filter((msg) => {
-      // 방장의 첫 참가 메시지 필터링 (혼란 방지)
+      // 방장의 첫 참가 메시지만 필터링 (혼란 방지)
+      // currentRoom.creator가 true이고, 본인의 참가 메시지인 경우만 숨김
       if (msg.messageType === 'SYSTEM' &&
-          msg.senderId === currentRoom?.creatorUserId &&
+          currentRoom?.creator === true &&
+          msg.senderId === user?.userId &&
           (msg.messageContent.includes('참가하셨습니다') || msg.messageContent.includes('joined'))) {
         return false;
       }
