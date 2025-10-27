@@ -84,31 +84,39 @@ export const useChatStore = create<ChatState>((set, get) => ({
       const response = await chatService.joinChatRoom(roomId);
       if (response.success && response.data) {
         set({ currentRoom: response.data });
-        const { wsClient } = get();
-        if (wsClient?.isConnected()) {
-          wsClient.subscribeToRoom(roomId, (message: WebSocketChatMessage) => {
-            // WebSocket 메시지 타입에 따라 messageType 결정
-            let messageType: 'TEXT' | 'SYSTEM' | 'DEADLINE_EXTEND' = 'TEXT';
-            if (message.type === 'SYSTEM' || message.type === 'JOIN' || message.type === 'LEAVE') {
-              messageType = 'SYSTEM';
-            }
 
-            // 시스템 메시지의 경우 숫자를 닉네임으로 교체
-            let messageContent = message.message;
-            if (messageType === 'SYSTEM' && message.senderNickname) {
-              messageContent = messageContent.replace(/^\d+/, message.senderNickname);
-            }
+        // WebSocket 구독 설정 (연결 대기)
+        const subscribeWhenReady = (retryCount = 0) => {
+          const { wsClient } = get();
+          if (wsClient?.isConnected()) {
+            wsClient.subscribeToRoom(roomId, (message: WebSocketChatMessage) => {
+              // WebSocket 메시지 타입에 따라 messageType 결정
+              let messageType: 'TEXT' | 'SYSTEM' | 'DEADLINE_EXTEND' = 'TEXT';
+              if (message.type === 'SYSTEM' || message.type === 'JOIN' || message.type === 'LEAVE') {
+                messageType = 'SYSTEM';
+              }
 
-            get().addMessage({
-              id: Date.now(),
-              senderId: message.senderId,
-              senderNickname: message.senderNickname,
-              messageContent: messageContent,
-              messageType: messageType,
-              sentAt: message.timestamp,
+              // 시스템 메시지의 경우 숫자를 닉네임으로 교체
+              let messageContent = message.message;
+              if (messageType === 'SYSTEM' && message.senderNickname) {
+                messageContent = messageContent.replace(/^\d+/, message.senderNickname);
+              }
+
+              get().addMessage({
+                id: Date.now(),
+                senderId: message.senderId,
+                senderNickname: message.senderNickname,
+                messageContent: messageContent,
+                messageType: messageType,
+                sentAt: message.timestamp,
+              });
             });
-          });
-        }
+          } else if (retryCount < 10) {
+            // 연결 대기 (최대 10번, 5초)
+            setTimeout(() => subscribeWhenReady(retryCount + 1), 500);
+          }
+        };
+        subscribeWhenReady();
       }
     } catch (error: any) {
       const errorMessage = error?.response?.data?.message;
@@ -119,30 +127,36 @@ export const useChatStore = create<ChatState>((set, get) => ({
         // 채팅방 정보만 조회
         get().fetchChatRoom(roomId);
 
-        // WebSocket 구독은 설정
-        const { wsClient } = get();
-        if (wsClient?.isConnected()) {
-          wsClient.subscribeToRoom(roomId, (message: WebSocketChatMessage) => {
-            let messageType: 'TEXT' | 'SYSTEM' | 'DEADLINE_EXTEND' = 'TEXT';
-            if (message.type === 'SYSTEM' || message.type === 'JOIN' || message.type === 'LEAVE') {
-              messageType = 'SYSTEM';
-            }
+        // WebSocket 구독 설정 (연결 대기)
+        const subscribeWhenReady = (retryCount = 0) => {
+          const { wsClient } = get();
+          if (wsClient?.isConnected()) {
+            wsClient.subscribeToRoom(roomId, (message: WebSocketChatMessage) => {
+              let messageType: 'TEXT' | 'SYSTEM' | 'DEADLINE_EXTEND' = 'TEXT';
+              if (message.type === 'SYSTEM' || message.type === 'JOIN' || message.type === 'LEAVE') {
+                messageType = 'SYSTEM';
+              }
 
-            let messageContent = message.message;
-            if (messageType === 'SYSTEM' && message.senderNickname) {
-              messageContent = messageContent.replace(/^\d+/, message.senderNickname);
-            }
+              let messageContent = message.message;
+              if (messageType === 'SYSTEM' && message.senderNickname) {
+                messageContent = messageContent.replace(/^\d+/, message.senderNickname);
+              }
 
-            get().addMessage({
-              id: Date.now(),
-              senderId: message.senderId,
-              senderNickname: message.senderNickname,
-              messageContent: messageContent,
-              messageType: messageType,
-              sentAt: message.timestamp,
+              get().addMessage({
+                id: Date.now(),
+                senderId: message.senderId,
+                senderNickname: message.senderNickname,
+                messageContent: messageContent,
+                messageType: messageType,
+                sentAt: message.timestamp,
+              });
             });
-          });
-        }
+          } else if (retryCount < 10) {
+            // 연결 대기 (최대 10번, 5초)
+            setTimeout(() => subscribeWhenReady(retryCount + 1), 500);
+          }
+        };
+        subscribeWhenReady();
       } else {
         set({ error: '채팅방 참여에 실패했습니다.' });
       }
