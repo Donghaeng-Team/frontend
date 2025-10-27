@@ -738,28 +738,8 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
       {isChatModalOpen && product && (
         <ChatModal
           isOpen={isChatModalOpen}
-          onClose={async () => {
-            console.log('🚪 모달 닫기 - 채팅방 목록 새로고침 시작');
-            setIsChatModalOpen(false);
-            // 모달 닫을 때 채팅방 목록 새로고침 (구매 상태 업데이트 반영)
-            await fetchChatRooms();
-            console.log('🚪 모달 닫기 - 채팅방 목록 새로고침 완료, 채팅방 개수:', chatRooms.length);
-            console.log('🚪 채팅방 목록:', chatRooms);
-          }}
-          chatRooms={transformChatRoomsForUI(chatRooms)}
+          onClose={() => setIsChatModalOpen(false)}
           initialRoomId={product.chatRoomId?.toString()}
-          initialProductInfo={{
-            name: product.title,
-            price: product.price,
-            image: product.images?.[0]?.imageUrl ? convertToCloudFrontUrl(product.images[0].imageUrl) : undefined
-          }}
-          initialRecruitmentStatus={{
-            current: product.recruitNow || 0,
-            max: product.recruitMax,
-            timeRemaining: '진행 중',
-            status: 'active'
-          }}
-          initialRole="buyer"
         />
       )}
 
