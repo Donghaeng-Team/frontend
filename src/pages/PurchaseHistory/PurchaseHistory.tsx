@@ -84,14 +84,36 @@ const PurchaseHistory: React.FC = () => {
         // 주최한 상품
         const hostingResponse = await productService.getMyProducts();
         if (hostingResponse.success && hostingResponse.data) {
-          const items = hostingResponse.data.content.map(p => convertProductToPurchaseItem(p, 'host'));
+          const markets = (hostingResponse.data as any).markets || [];
+          const items = markets.map((market: any) => ({
+            id: market.marketId.toString(),
+            title: market.title,
+            category: market.categoryId,
+            price: market.price,
+            image: market.thumbnailImageUrl,
+            status: market.status === 'RECRUITING' ? 'recruiting' as const : 
+                    market.status === 'ENDED' ? 'completed' as const : 
+                    'cancelled' as const,
+            participants: {
+              current: market.recruitNow,
+              max: market.recruitMax
+            },
+            seller: {
+              name: market.nickname,
+              avatar: market.userProfileImageUrl
+            },
+            location: market.emdName,
+            date: new Date().toISOString().split('T')[0],
+            role: 'host' as const
+          }));
           setHostingItems(items);
         }
 
         // 참여중인 상품
         const participatingResponse = await productService.getMyJoinedProducts();
         if (participatingResponse.success && participatingResponse.data) {
-          const items = participatingResponse.data.content
+          const content = participatingResponse.data.content || [];
+          const items = content
             .filter(p => p.status === 'active')
             .map(p => convertProductToPurchaseItem(p, 'participant'));
           setParticipatingItems(items);
@@ -102,11 +124,33 @@ const PurchaseHistory: React.FC = () => {
         const joinedCompletedResponse = await productService.getMyJoinedProducts();
 
         const myCompleted = myCompletedResponse.success && myCompletedResponse.data
-          ? myCompletedResponse.data.content.filter(p => p.status === 'completed').map(p => convertProductToPurchaseItem(p, 'host'))
+          ? ((myCompletedResponse.data as any).markets || [])
+              .filter((m: any) => m.status === 'ENDED')
+              .map((market: any) => ({
+                id: market.marketId.toString(),
+                title: market.title,
+                category: market.categoryId,
+                price: market.price,
+                image: market.thumbnailImageUrl,
+                status: 'completed' as const,
+                participants: {
+                  current: market.recruitNow,
+                  max: market.recruitMax
+                },
+                seller: {
+                  name: market.nickname,
+                  avatar: market.userProfileImageUrl
+                },
+                location: market.emdName,
+                date: new Date().toISOString().split('T')[0],
+                role: 'host' as const
+              }))
           : [];
 
         const joinedCompleted = joinedCompletedResponse.success && joinedCompletedResponse.data
-          ? joinedCompletedResponse.data.content.filter(p => p.status === 'completed').map(p => convertProductToPurchaseItem(p, 'participant'))
+          ? (joinedCompletedResponse.data.content || [])
+              .filter(p => p.status === 'completed')
+              .map(p => convertProductToPurchaseItem(p, 'participant'))
           : [];
 
         setCompletedItems([...myCompleted, ...joinedCompleted]);
