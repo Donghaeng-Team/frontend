@@ -1,8 +1,7 @@
 import { Client } from '@stomp/stompjs';
 import type { StompSubscription } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
-import type { WebSocketChatMessage } from '../types';
-import { getAccessToken, getRefreshToken } from './token';
+import type { ChatMessageResponse } from '../types';
 
 // WebSocket 연결 상태
 export type ConnectionStatus = 'connected' | 'disconnected' | 'connecting' | 'error';
@@ -33,30 +32,28 @@ export class ChatWebSocketClient {
 
     this.updateStatus('connecting');
 
-    const accessToken = getAccessToken();
-    const refreshToken = getRefreshToken();
-
     // STOMP 클라이언트 생성
     this.client = new Client({
       webSocketFactory: () => {
-        // 개발: 상대 경로 (Vite proxy 사용, CORS 회피)
+        // 개발: 상대 경로 (Vite 프록시가 localhost:8086으로 전달)
         // 프로덕션: 절대 URL (https://bytogether.net)
         const isDev = import.meta.env.DEV;
-        const wsBaseURL = isDev ? '' : (import.meta.env.VITE_WS_BASE_URL || 'https://bytogether.net');
+        const wsBaseURL = isDev
+          ? '' // Vite 프록시 사용
+          : (import.meta.env.VITE_WS_BASE_URL || 'https://bytogether.net');
 
-        // SockJS 생성 시 토큰을 쿼리 파라미터로 전달
-        let url = `${wsBaseURL}/ws/v1/chat/private`;
-        if (accessToken) {
-          url += `?token=${encodeURIComponent(accessToken)}`;
-        }
-        return new SockJS(url) as any;
+        const url = `${wsBaseURL}/ws/v1/chat/private`;
+
+        // SockJS 옵션: API Gateway를 통과하면서 WebSocket Upgrade 헤더가 손실되므로
+        // xhr 전송만 사용 (WebSocket 비활성화)
+        return new SockJS(url, null, {
+          transports: ['xhr-streaming', 'xhr-polling']
+        }) as any;
       },
 
-      // STOMP 연결 헤더에도 토큰 추가
-      connectHeaders: accessToken ? {
-        'Authorization': `Bearer ${accessToken}`,
-        'X-Refresh-Token': refreshToken || '',
-      } : {},
+      // API Gateway가 쿠키를 읽어 X-User-Id를 자동으로 추가하므로
+      // 프론트엔드에서는 별도 인증 헤더 불필요
+      connectHeaders: {},
 
       debug: () => {
         // WebSocket 디버그 로그 비활성화
@@ -136,7 +133,7 @@ export class ChatWebSocketClient {
    */
   subscribeToRoom(
     roomId: number,
-    onMessage: (message: WebSocketChatMessage) => void
+    onMessage: (message: ChatMessageResponse) => void
   ): void {
     if (!this.client?.connected) {
       if (import.meta.env.DEV) {
@@ -158,7 +155,10 @@ export class ChatWebSocketClient {
       `/topic/rooms.${roomId}.messages`,
       (message) => {
         try {
-          const data: WebSocketChatMessage = JSON.parse(message.body);
+          const data: ChatMessageResponse = JSON.parse(message.body);
+          if (import.meta.env.DEV) {
+            console.log('[실시간 채팅] 수신된 메시지:', data);
+          }
           onMessage(data);
         } catch (error) {
           if (import.meta.env.DEV) {
@@ -247,7 +247,7 @@ export class ChatWebSocketClient {
   sendMessage(roomId: number, message: string, userId: number, nickname: string): void {
     if (!this.client?.connected) {
       if (import.meta.env.DEV) {
-        console.error('[WebSocket] Not connected. Cannot send message');
+        console.error('[실시간 채팅] 연결되지 않음 - 메시지를 보낼 수 없습니다');
       }
       return;
     }
@@ -263,7 +263,7 @@ export class ChatWebSocketClient {
     });
 
     if (import.meta.env.DEV) {
-      console.log('[WebSocket] Message sent to room', roomId, ':', payload);
+      console.log(`[실시간 채팅] 메시지 전송 완료 - 방 ${roomId}:`, message);
     }
   }
 
