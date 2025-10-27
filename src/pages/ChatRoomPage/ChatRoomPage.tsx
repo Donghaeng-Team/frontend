@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import ChatRoom from '../../components/ChatRoom';
 import BottomNav from '../../components/BottomNav';
@@ -23,6 +23,7 @@ const ChatRoomPage = ({
   const { roomId: paramRoomId } = useParams<{ roomId: string }>();
   const roomId = propRoomId || paramRoomId; // prop 우선, 없으면 URL 파라미터
   const hasJoinedRef = useRef(false);
+  const [timeRemaining, setTimeRemaining] = useState<string>('계산 중...');
 
   const {
     initializeWebSocket,
@@ -71,6 +72,47 @@ const ChatRoomPage = ({
       }
     };
   }, [roomId, user, joinChatRoom, leaveChatRoom]);
+
+  // 실시간 남은 시간 계산
+  useEffect(() => {
+    const calculateTimeRemaining = () => {
+      if (!currentRoom?.endTime) {
+        setTimeRemaining('정보 없음');
+        return;
+      }
+
+      const now = new Date();
+      const endTime = new Date(currentRoom.endTime);
+      const diffMs = endTime.getTime() - now.getTime();
+
+      if (diffMs <= 0) {
+        setTimeRemaining('마감됨');
+        return;
+      }
+
+      const diffMinutes = Math.floor(diffMs / (1000 * 60));
+      const diffHours = Math.floor(diffMinutes / 60);
+      const diffDays = Math.floor(diffHours / 24);
+
+      if (diffDays > 0) {
+        const remainingHours = diffHours % 24;
+        setTimeRemaining(`${diffDays}일 ${remainingHours}시간`);
+      } else if (diffHours > 0) {
+        const remainingMinutes = diffMinutes % 60;
+        setTimeRemaining(`${diffHours}시간 ${remainingMinutes}분`);
+      } else {
+        setTimeRemaining(`${diffMinutes}분`);
+      }
+    };
+
+    // 초기 계산
+    calculateTimeRemaining();
+
+    // 1분마다 업데이트
+    const intervalId = setInterval(calculateTimeRemaining, 60000);
+
+    return () => clearInterval(intervalId);
+  }, [currentRoom?.endTime]);
 
   // ChatRoomStatus를 RecruitmentStatus의 status 타입으로 변환
   const convertChatRoomStatus = (status: ChatRoomStatus): 'active' | 'closing' | 'closed' => {
@@ -160,12 +202,12 @@ const ChatRoomPage = ({
   const recruitmentStatus = currentRoom ? {
     current: currentRoom.currentBuyers,
     max: currentRoom.maxBuyers,
-    timeRemaining: '2시간 30분', // TODO: 실제 남은 시간 계산
+    timeRemaining: timeRemaining, // 실시간 계산된 남은 시간
     status: convertChatRoomStatus(currentRoom.status)
   } : {
     current: 0,
     max: 0,
-    timeRemaining: '0분',
+    timeRemaining: '계산 중...',
     status: 'active' as const
   };
 
