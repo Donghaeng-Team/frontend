@@ -1,5 +1,5 @@
 import type { ChatRoomResponse } from '../types';
-import type { ChatRoom } from '../components/ChatRoomListModal/ChatRoomListModal';
+import type { ChatRoom } from '../types/chatRoom';
 
 /**
  * API 응답(ChatRoomResponse)을 UI 컴포넌트용 타입(ChatRoom)으로 변환

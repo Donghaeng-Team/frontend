@@ -33,7 +33,6 @@ import Divider from '../components/Divider';
 import TimePicker from '../components/TimePicker';
 import Rating from '../components/Rating';
 import Tooltip from '../components/Tooltip';
-import ChatRoomListModal from '../components/ChatRoomListModal';
 import ChatRoom from '../components/ChatRoom';
 import './ComponentShowcase.css';
 
@@ -613,20 +612,20 @@ const ComponentShowcase = () => {
         <Modal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          title="모달 제목"
-          footer={
-            <>
+        >
+          <div style={{ padding: '20px' }}>
+            <h2 style={{ marginBottom: '16px' }}>모달 제목</h2>
+            <p>모달 내용이 들어갑니다.</p>
+            <p>여러 줄의 내용을 넣을 수 있습니다.</p>
+            <div style={{ marginTop: '20px', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
               <Button variant="secondary" onClick={() => setIsModalOpen(false)}>
                 취소
               </Button>
               <Button onClick={() => setIsModalOpen(false)}>
                 확인
               </Button>
-            </>
-          }
-        >
-          <p>모달 내용이 들어갑니다.</p>
-          <p>여러 줄의 내용을 넣을 수 있습니다.</p>
+            </div>
+          </div>
         </Modal>
 
         {/* Toast */}
@@ -834,17 +833,7 @@ const ComponentShowcase = () => {
             </div>
           </div>
 
-          {/* 채팅방 목록 모달 */}
-          <ChatRoomListModal
-            isOpen={showChatList}
-            onClose={() => setShowChatList(false)}
-            chatRooms={sampleChatRooms}
-            onRoomClick={(roomId) => {
-              console.log('Room clicked:', roomId);
-              setShowChatList(false);
-              setShowChatRoom(true);
-            }}
-          />
+          {/* 채팅방 목록 모달 기능 제거됨 - ChatList 페이지를 직접 사용하세요 */}
 
           {/* 채팅방 */}
           {showChatRoom && (

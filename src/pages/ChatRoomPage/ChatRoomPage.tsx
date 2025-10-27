@@ -8,9 +8,20 @@ import { useAuthStore } from '../../stores/authStore';
 import type { ChatRoomStatus } from '../../types/chat';
 import './ChatRoomPage.css';
 
-const ChatRoomPage = () => {
+interface ChatRoomPageProps {
+  roomId?: string; // prop으로 받을 수 있음 (모달에서 사용)
+  onBack?: () => void; // 모달에서 뒤로가기 핸들러
+  showBottomNav?: boolean; // BottomNav 표시 여부 (모달에서는 false)
+}
+
+const ChatRoomPage = ({
+  roomId: propRoomId,
+  onBack: propOnBack,
+  showBottomNav = true
+}: ChatRoomPageProps) => {
   const navigate = useNavigate();
-  const { roomId } = useParams<{ roomId: string }>();
+  const { roomId: paramRoomId } = useParams<{ roomId: string }>();
+  const roomId = propRoomId || paramRoomId; // prop 우선, 없으면 URL 파라미터
   const hasJoinedRef = useRef(false);
 
   const {
@@ -128,7 +139,11 @@ const ChatRoomPage = () => {
   }
 
   const handleBack = () => {
-    navigate(-1);
+    if (propOnBack) {
+      propOnBack(); // 모달에서는 prop 핸들러 사용
+    } else {
+      navigate(-1); // 페이지에서는 브라우저 히스토리 사용
+    }
   };
 
   const handleLeave = () => {
@@ -206,7 +221,7 @@ const ChatRoomPage = () => {
         onCancel={handleCancel}
         onSendMessage={handleSendMessage}
       />
-      <BottomNav />
+      {showBottomNav && <BottomNav />}
     </div>
   );
 };

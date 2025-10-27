@@ -4,7 +4,6 @@ import { useAuthStore } from '../../stores/authStore';
 import { useLocationStore } from '../../stores/locationStore';
 import { useChatStore } from '../../stores/chatStore';
 import { divisionApi } from '../../api/divisionApi';
-import { transformChatRoomsForUI } from '../../utils/chatUtils';
 import './Header.css';
 import NotificationModal from '../NotificationModal/NotificationModal';
 import ChatModal from '../ChatModal';
@@ -47,9 +46,6 @@ const Header: React.FC<HeaderProps> = ({
   const internalNotificationButtonRef = useRef<HTMLButtonElement>(null);
   const chatButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Zustand store에서 채팅방 목록 가져오기
-  const { chatRooms: chatRoomsFromStore, chatRoomsLoading, fetchChatRooms } = useChatStore();
-
   // Zustand store에서 현재 위치 가져오기
   const currentDivision = useLocationStore((state) => state.currentDivision);
   const isLoadingLocation = useLocationStore((state) => state.isLoading);
@@ -70,16 +66,6 @@ const Header: React.FC<HeaderProps> = ({
   useEffect(() => {
     onChatModalStateChange?.(isChatModalOpen);
   }, [isChatModalOpen, onChatModalStateChange]);
-
-  // 채팅방 목록 로드 (모달이 열릴 때만)
-  useEffect(() => {
-    if (isChatModalOpen && isAuthenticated) {
-      fetchChatRooms();
-    }
-  }, [isChatModalOpen, isAuthenticated, fetchChatRooms]);
-
-  // ChatRoomResponse를 ChatRoom 타입으로 변환
-  const chatRooms = transformChatRoomsForUI(chatRoomsFromStore);
 
   const handleChatClick = () => {
     // 화면 크기 확인
@@ -320,8 +306,6 @@ const Header: React.FC<HeaderProps> = ({
       <ChatModal
         isOpen={isChatModalOpen}
         onClose={() => setIsChatModalOpen(false)}
-        triggerRef={chatButtonRef}
-        chatRooms={chatRooms}
       />
 
       {/* LocationModal */}
