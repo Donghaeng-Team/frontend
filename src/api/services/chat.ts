@@ -135,12 +135,7 @@ export const chatService = {
   ): Promise<ApiResponse<RecruitmentCloseResponse>> => {
     const response = await apiClient.patch(
       `/api/v1/chat/private/${roomId}/close`,
-      {},
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
+      null
     );
     return response.data;
   },
@@ -152,12 +147,7 @@ export const chatService = {
   cancelRecruitment: async (roomId: number): Promise<ApiResponse<RecruitmentCancelResponse>> => {
     const response = await apiClient.patch(
       `/api/v1/chat/private/${roomId}/cancel`,
-      {},
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
+      null
     );
     return response.data;
   },
