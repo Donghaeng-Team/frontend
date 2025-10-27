@@ -6,6 +6,7 @@ import type { TabItem } from '../../components/Tab';
 import Badge from '../../components/Badge';
 import Button from '../../components/Button';
 import { productService, type Product } from '../../api/services/product';
+import { cartService } from '../../api/services/cart';
 import { useAuthStore } from '../../stores/authStore';
 import './PurchaseHistory.css';
 
@@ -83,14 +84,36 @@ const PurchaseHistory: React.FC = () => {
         // 주최한 상품
         const hostingResponse = await productService.getMyProducts();
         if (hostingResponse.success && hostingResponse.data) {
-          const items = hostingResponse.data.content.map(p => convertProductToPurchaseItem(p, 'host'));
+          const markets = (hostingResponse.data as any).markets || [];
+          const items = markets.map((market: any) => ({
+            id: market.marketId.toString(),
+            title: market.title,
+            category: market.categoryId,
+            price: market.price,
+            image: market.thumbnailImageUrl,
+            status: market.status === 'RECRUITING' ? 'recruiting' as const : 
+                    market.status === 'ENDED' ? 'completed' as const : 
+                    'cancelled' as const,
+            participants: {
+              current: market.recruitNow,
+              max: market.recruitMax
+            },
+            seller: {
+              name: market.nickname,
+              avatar: market.userProfileImageUrl
+            },
+            location: market.emdName,
+            date: new Date().toISOString().split('T')[0],
+            role: 'host' as const
+          }));
           setHostingItems(items);
         }
 
         // 참여중인 상품
         const participatingResponse = await productService.getMyJoinedProducts();
         if (participatingResponse.success && participatingResponse.data) {
-          const items = participatingResponse.data.content
+          const content = participatingResponse.data.content || [];
+          const items = content
             .filter(p => p.status === 'active')
             .map(p => convertProductToPurchaseItem(p, 'participant'));
           setParticipatingItems(items);
@@ -101,20 +124,78 @@ const PurchaseHistory: React.FC = () => {
         const joinedCompletedResponse = await productService.getMyJoinedProducts();
 
         const myCompleted = myCompletedResponse.success && myCompletedResponse.data
-          ? myCompletedResponse.data.content.filter(p => p.status === 'completed').map(p => convertProductToPurchaseItem(p, 'host'))
+          ? ((myCompletedResponse.data as any).markets || [])
+              .filter((m: any) => m.status === 'ENDED')
+              .map((market: any) => ({
+                id: market.marketId.toString(),
+                title: market.title,
+                category: market.categoryId,
+                price: market.price,
+                image: market.thumbnailImageUrl,
+                status: 'completed' as const,
+                participants: {
+                  current: market.recruitNow,
+                  max: market.recruitMax
+                },
+                seller: {
+                  name: market.nickname,
+                  avatar: market.userProfileImageUrl
+                },
+                location: market.emdName,
+                date: new Date().toISOString().split('T')[0],
+                role: 'host' as const
+              }))
           : [];
 
         const joinedCompleted = joinedCompletedResponse.success && joinedCompletedResponse.data
-          ? joinedCompletedResponse.data.content.filter(p => p.status === 'completed').map(p => convertProductToPurchaseItem(p, 'participant'))
+          ? (joinedCompletedResponse.data.content || [])
+              .filter(p => p.status === 'completed')
+              .map(p => convertProductToPurchaseItem(p, 'participant'))
           : [];
 
         setCompletedItems([...myCompleted, ...joinedCompleted]);
 
-        // 좋아요한 상품
-        const likedResponse = await productService.getWishlistedProducts();
-        if (likedResponse.success && likedResponse.data) {
-          const items = likedResponse.data.content.map(p => convertProductToPurchaseItem(p, 'participant'));
-          setLikedItems(items);
+        // 좋아요한 상품 (cartService 사용)
+        if (authUser?.userId) {
+          try {
+            const likedResponse = await cartService.getMyCarts(authUser.userId, {
+              pageNum: 0,
+              pageSize: 100
+            });
+            if (likedResponse.success && likedResponse.data) {
+              const items = likedResponse.data.markets.map((market: any) => ({
+                id: market.marketId.toString(),
+                title: market.title,
+                category: market.categoryId,
+                price: market.price,
+                image: market.thumbnailImageUrl,
+                status: market.status === 'RECRUITING' ? 'recruiting' as const : 
+                        market.status === 'ENDED' ? 'completed' as const : 
+                        'cancelled' as const,
+                participants: {
+                  current: market.recruitNow,
+                  max: market.recruitMax
+                },
+                seller: {
+                  name: market.nickname,
+                  avatar: market.userProfileImageUrl
+                },
+                location: market.emdName,
+                date: new Date().toISOString().split('T')[0],
+                role: 'participant' as const
+              }));
+              setLikedItems(items);
+            }
+          } catch (likedError: any) {
+            // 404는 좋아요한 항목이 없는 정상 상태
+            if (likedError?.response?.status === 404) {
+              console.log('ℹ️ 좋아요한 항목이 없습니다.');
+              setLikedItems([]);
+            } else {
+              console.error('좋아요 목록 로드 실패:', likedError);
+              setLikedItems([]);
+            }
+          }
         }
       } catch (error) {
         console.error('데이터 로드 실패:', error);
@@ -309,7 +390,12 @@ const PurchaseHistory: React.FC = () => {
     if (!confirm('좋아요를 취소하시겠습니까?')) return;
 
     try {
-      const response = await productService.toggleWishlist(productId);
+      if (!authUser?.userId) {
+        alert('로그인이 필요합니다.');
+        return;
+      }
+
+      const response = await cartService.deleteCart(authUser.userId, parseInt(productId, 10));
       if (response.success) {
         alert('좋아요가 취소되었습니다.');
         // 데이터 다시 로드
@@ -378,7 +464,7 @@ const PurchaseHistory: React.FC = () => {
             <Button size="small" variant="outline" onClick={(e) => { e.stopPropagation(); }}>모집 마감</Button>
           </>
         )}
-        {item.status === 'recruiting' && item.role === 'participant' && (
+        {item.status === 'recruiting' && item.role === 'participant' && activeTab !== 'liked' && (
           <Button size="small" variant="outline" onClick={(e) => { e.stopPropagation(); handleCancelParticipation(item.id); }}>참여 취소</Button>
         )}
         {item.status === 'processing' && (

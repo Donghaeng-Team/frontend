@@ -154,8 +154,12 @@ const ChatRoom: FC<ChatRoomProps> = ({
               </button>
             ) : (
               <>
-                <button className="chat-room-action-btn apply" onClick={onApply}>
-                  ✅ 구매 신청
+                <button 
+                  className="chat-room-action-btn apply" 
+                  onClick={onApply}
+                  disabled={recruitmentStatus.current >= recruitmentStatus.max}
+                >
+                  {recruitmentStatus.current >= recruitmentStatus.max ? '🔒 모집 마감' : '✅ 구매 신청'}
                 </button>
                 <button className="chat-room-action-btn leave" onClick={onLeave}>
                   🚪 채팅방 나가기
