@@ -18,16 +18,19 @@ interface ChatState {
   messages: ChatMessageResponse[];
   participants: ParticipantResponse[];
   error: string | null;
-  
+
   initializeWebSocket: (onStatusChange?: (status: ConnectionStatus) => void) => void;
   disconnectWebSocket: () => void;
   fetchChatRooms: () => Promise<void>;
   fetchChatRoom: (roomId: number) => Promise<void>;
   joinChatRoom: (roomId: number) => Promise<void>;
   leaveChatRoom: (roomId: number) => void;
+  exitChatRoom: (roomId: number) => Promise<void>;
   sendMessage: (roomId: number, message: string, userId: number, nickname: string) => void;
   addMessage: (message: ChatMessageResponse) => void;
   confirmBuyer: (roomId: number) => Promise<void>;
+  cancelBuyer: (roomId: number) => Promise<void>;
+  extendDeadline: (roomId: number, hours: number) => Promise<void>;
   clearError: () => void;
   reset: () => void;
 }
@@ -124,21 +127,19 @@ export const useChatStore = create<ChatState>((set, get) => ({
         // WebSocket 구독 설정 (연결 대기)
         const subscribeWhenReady = (retryCount = 0) => {
           const { wsClient } = get();
-          if (import.meta.env.DEV) {
-            console.log(`[채팅] WebSocket 구독 시도 (${retryCount + 1}/10) - 연결 상태:`, wsClient?.isConnected());
-          }
+          console.log(`[DEBUG] 구독 시도 ${retryCount + 1}/10, 연결:`, wsClient?.isConnected());
+
           if (wsClient?.isConnected()) {
-      
+            console.log(`[DEBUG] 방 ${roomId} 구독 시작`);
             wsClient.subscribeToRoom(roomId, (message: ChatMessageResponse) => {
-        
-              
-              // 백엔드가 ChatMessageResponse를 그대로 전송하므로
-              // messageType, messageContent, sentAt 필드를 직접 사용
+              console.log('[DEBUG] 메시지 수신:', message);
               get().addMessage(message);
             });
           } else if (retryCount < 10) {
             // 연결 대기 (최대 10번, 5초)
             setTimeout(() => subscribeWhenReady(retryCount + 1), 500);
+          } else {
+            console.error('[DEBUG] WebSocket 구독 실패 - 연결 안됨');
           }
         };
         subscribeWhenReady();
@@ -180,9 +181,51 @@ export const useChatStore = create<ChatState>((set, get) => ({
     const { wsClient } = get();
     if (wsClient) {
       wsClient.unsubscribeFromRoom(roomId);
-
     }
     set({ currentRoom: null, messages: [] });
+  },
+
+  exitChatRoom: async (roomId) => {
+    try {
+      const response = await chatService.leaveChatRoom(roomId);
+      if (response.success) {
+        // WebSocket 구독 해제
+        const { wsClient } = get();
+        if (wsClient) {
+          wsClient.unsubscribeFromRoom(roomId);
+        }
+        set({ currentRoom: null, messages: [], error: null });
+      }
+    } catch (error: any) {
+      set({ error: '채팅방 나가기에 실패했습니다.' });
+      throw error;
+    }
+  },
+
+  cancelBuyer: async (roomId) => {
+    try {
+      const response = await chatService.cancelBuyer(roomId);
+      if (response.success) {
+        // 채팅방 정보 새로고침
+        await get().fetchChatRoom(roomId);
+      }
+    } catch (error: any) {
+      set({ error: '구매 취소에 실패했습니다.' });
+      throw error;
+    }
+  },
+
+  extendDeadline: async (roomId, hours) => {
+    try {
+      const response = await chatService.extendDeadline(roomId, hours);
+      if (response.success) {
+        // 채팅방 정보 새로고침
+        await get().fetchChatRoom(roomId);
+      }
+    } catch (error: any) {
+      set({ error: '시간 연장에 실패했습니다.' });
+      throw error;
+    }
   },
 
   clearError: () => {

@@ -33,9 +33,12 @@ const ChatRoomPage = ({
     fetchChatRoom,
     joinChatRoom,
     leaveChatRoom,
+    exitChatRoom,
     sendMessage,
     addMessage,
     confirmBuyer,
+    cancelBuyer,
+    extendDeadline,
   } = useChatStore();
   const { user } = useAuthStore();
 
@@ -54,9 +57,9 @@ const ChatRoomPage = ({
       hasJoinedRef.current = true;
       const numericRoomId = parseInt(roomId, 10);
       if (import.meta.env.DEV) {
-        console.log('[ChatRoomPage] fetchChatRoom 호출:', numericRoomId);
+        console.log('[ChatRoomPage] joinChatRoom 호출:', numericRoomId);
       }
-      fetchChatRoom(numericRoomId);
+      joinChatRoom(numericRoomId);
     }
 
     // cleanup: 채팅방 나갈 때 구독 해제
@@ -67,7 +70,7 @@ const ChatRoomPage = ({
         hasJoinedRef.current = false;
       }
     };
-  }, [roomId, user, fetchChatRoom, leaveChatRoom]);
+  }, [roomId, user, joinChatRoom, leaveChatRoom]);
 
   // ChatRoomStatus를 RecruitmentStatus의 status 타입으로 변환
   const convertChatRoomStatus = (status: ChatRoomStatus): 'active' | 'closing' | 'closed' => {
@@ -157,16 +160,35 @@ const ChatRoomPage = ({
     }
   };
 
-  const handleLeave = () => {
+  const handleLeave = async () => {
     if (window.confirm('채팅방을 나가시겠습니까?')) {
-      navigate('/');
+      if (roomId) {
+        try {
+          await exitChatRoom(parseInt(roomId, 10));
+          navigate('/');
+        } catch (error) {
+          alert('채팅방 나가기에 실패했습니다.');
+        }
+      }
     }
   };
 
-  const handleExtendTime = () => {
+  const handleExtendTime = async () => {
     if (roomId && currentRoom) {
-      // TODO: 시간 연장 API 호출
-      alert('시간 연장 기능 (구현 예정)');
+      const hoursInput = prompt('몇 시간 연장하시겠습니까?', '1');
+      if (hoursInput) {
+        const hours = parseInt(hoursInput, 10);
+        if (isNaN(hours) || hours <= 0) {
+          alert('올바른 시간을 입력해주세요.');
+          return;
+        }
+        try {
+          await extendDeadline(parseInt(roomId, 10), hours);
+          alert(`마감 시간이 ${hours}시간 연장되었습니다.`);
+        } catch (error) {
+          alert('시간 연장에 실패했습니다.');
+        }
+      }
     }
   };
 
@@ -175,9 +197,6 @@ const ChatRoomPage = ({
       try {
         await confirmBuyer(parseInt(roomId, 10));
         alert('구매자가 확정되었습니다.');
-        
-        // 채팅방 정보 새로고침 (모집 상태 업데이트)
-        await fetchChatRoom(parseInt(roomId, 10));
       } catch (error) {
         alert('구매자 확정에 실패했습니다.');
       }
@@ -189,9 +208,6 @@ const ChatRoomPage = ({
       try {
         await confirmBuyer(parseInt(roomId, 10));
         alert('구매 신청이 완료되었습니다.');
-        
-        // 채팅방 정보 새로고침 (참여자 수 및 구매자 상태 업데이트)
-        await fetchChatRoom(parseInt(roomId, 10));
       } catch (error) {
         alert('구매 신청에 실패했습니다.');
       }
@@ -206,8 +222,8 @@ const ChatRoomPage = ({
       }
       if (window.confirm('구매를 취소하시겠습니까?')) {
         try {
-          // TODO: 구매 취소 API 호출
-          alert('구매 취소 기능 (구현 예정)');
+          await cancelBuyer(parseInt(roomId, 10));
+          alert('구매가 취소되었습니다.');
         } catch (error) {
           alert('구매 취소에 실패했습니다.');
         }
