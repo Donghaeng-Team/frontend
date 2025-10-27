@@ -18,6 +18,7 @@ import { transformChatRoomsForUI } from '../../utils/chatUtils';
 import { productService } from '../../api/services/product';
 import { chatService } from '../../api/services/chat';
 import type { MarketDetailResponse } from '../../types/market';
+import type { ParticipantResponse } from '../../types/chat';
 
 interface ProductDetailProps {
   productId?: string;
@@ -74,7 +75,8 @@ const generateFallbackMockProduct = (id: string): MarketDetailResponse => {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     views: 0,
-    images: []
+    images: [],
+    participants: []
   };
 };
 
@@ -228,8 +230,13 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
     productChatRoomId: product?.chatRoomId
   });
 
-  // TODO: 백엔드 참여자 목록 API 구현 후 실제 데이터로 대체
-  const participants: Participant[] = [];
+  // 참여자 목록 (MarketDetailResponse의 participants 사용)
+  const participants: Participant[] = product?.participants?.map((p: ParticipantResponse) => ({
+    id: p.userId.toString(),
+    name: p.nickname,
+    avatar: p.profileImage || undefined,
+    color: p.isCreator ? '#ff5e2f' : p.isBuyer ? '#3399ff' : '#999999'
+  })) || [];
 
   const faqItems: AccordionItem[] = [
     {

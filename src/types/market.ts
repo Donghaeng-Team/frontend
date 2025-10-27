@@ -1,5 +1,7 @@
 // 마켓글(공동구매) 관련 타입 정의
 
+import type { ParticipantResponse } from './chat';
+
 /**
  * 마켓 상태
  */
@@ -62,6 +64,7 @@ export interface MarketDetailResponse {
   updatedAt: string;
   views: number;
   images: ImageResponse[];
+  participants: ParticipantResponse[];
   chatRoomId?: number; // 채팅방 ID (백엔드에서 제공)
 }
 
