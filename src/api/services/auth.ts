@@ -33,42 +33,22 @@ export interface AuthResponse {
 export const authService = {
   // 로그인
   login: async (data: LoginRequest): Promise<ApiResponse<LoginResponse>> => {
-    const response = await apiClient.post<ApiResponse<User | LoginResponse>>('/api/v1/user/public/login', data);
+    const response = await apiClient.post<ApiResponse<User>>('/api/v1/user/public/login', data);
     
-    // 디버깅: 응답 헤더와 body 확인
-    console.log('🔍 로그인 응답 헤더:', response.headers);
-    console.log('🔍 로그인 응답 body:', response.data);
-    
-    // 1. 헤더에서 토큰 찾기 (Axios는 헤더를 소문자로 정규화)
-    let accessToken = (response.headers['authorization'] || response.headers['Authorization'])?.replace('Bearer ', '');
-    
-    // 2. 헤더에 없으면 body에서 찾기
-    const responseData = response.data?.data as any;
-    if (!accessToken && responseData?.accessToken) {
-      accessToken = responseData.accessToken;
-      console.log('✅ Body에서 accessToken 추출:', accessToken);
-    }
-    
-    // refreshToken은 쿠키로 전달되거나 body에 포함될 수 있음
-    const refreshToken = responseData?.refreshToken || '';
+    // 백엔드가 토큰을 헤더로 전달 (Axios는 헤더를 소문자로 정규화)
+    const accessToken = (response.headers['authorization'] || response.headers['Authorization'])?.replace('Bearer ', '');
+    // refreshToken은 쿠키로 전달되므로 브라우저가 자동 관리
     
     if (!accessToken) {
-      console.error('❌ 토큰을 찾을 수 없습니다. 헤더:', response.headers, 'Body:', response.data);
       throw new Error('로그인 응답에 토큰이 없습니다.');
     }
     
     // AccessToken 먼저 저장
     setAccessToken(accessToken);
     
-    // RefreshToken이 body에 포함된 경우 저장
-    if (refreshToken) {
-      setRefreshToken(refreshToken);
-      console.log('✅ RefreshToken 저장 완료');
-    }
-    
     // 사용자 정보는 응답 body에 포함되지만, userId가 없을 수 있으므로
     // /api/v1/user/private/me를 호출하여 완전한 사용자 정보 가져오기
-    let user = responseData?.user || responseData;
+    let user = response.data.data;
     
     if (!user) {
       throw new Error('사용자 정보를 가져올 수 없습니다.');
@@ -115,7 +95,7 @@ export const authService = {
       message: '로그인 성공',
       data: {
         accessToken,
-        refreshToken, // body에서 가져왔거나 빈 문자열
+        refreshToken: '', // 쿠키로 관리되므로 빈 문자열
         user
       },
       timestamp: new Date().toISOString()
