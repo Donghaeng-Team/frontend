@@ -157,33 +157,44 @@ const PurchaseHistory: React.FC = () => {
 
         // 좋아요한 상품 (cartService 사용)
         if (authUser?.userId) {
-          const likedResponse = await cartService.getMyCarts(authUser.userId, {
-            pageNum: 0,
-            pageSize: 100
-          });
-          if (likedResponse.success && likedResponse.data) {
-            const items = likedResponse.data.markets.map((market: any) => ({
-              id: market.marketId.toString(),
-              title: market.title,
-              category: market.categoryId,
-              price: market.price,
-              image: market.thumbnailImageUrl,
-              status: market.status === 'RECRUITING' ? 'recruiting' as const : 
-                      market.status === 'ENDED' ? 'completed' as const : 
-                      'cancelled' as const,
-              participants: {
-                current: market.recruitNow,
-                max: market.recruitMax
-              },
-              seller: {
-                name: market.nickname,
-                avatar: market.userProfileImageUrl
-              },
-              location: market.emdName,
-              date: new Date().toISOString().split('T')[0],
-              role: 'participant' as const
-            }));
-            setLikedItems(items);
+          try {
+            const likedResponse = await cartService.getMyCarts(authUser.userId, {
+              pageNum: 0,
+              pageSize: 100
+            });
+            if (likedResponse.success && likedResponse.data) {
+              const items = likedResponse.data.markets.map((market: any) => ({
+                id: market.marketId.toString(),
+                title: market.title,
+                category: market.categoryId,
+                price: market.price,
+                image: market.thumbnailImageUrl,
+                status: market.status === 'RECRUITING' ? 'recruiting' as const : 
+                        market.status === 'ENDED' ? 'completed' as const : 
+                        'cancelled' as const,
+                participants: {
+                  current: market.recruitNow,
+                  max: market.recruitMax
+                },
+                seller: {
+                  name: market.nickname,
+                  avatar: market.userProfileImageUrl
+                },
+                location: market.emdName,
+                date: new Date().toISOString().split('T')[0],
+                role: 'participant' as const
+              }));
+              setLikedItems(items);
+            }
+          } catch (likedError: any) {
+            // 404는 좋아요한 항목이 없는 정상 상태
+            if (likedError?.response?.status === 404) {
+              console.log('ℹ️ 좋아요한 항목이 없습니다.');
+              setLikedItems([]);
+            } else {
+              console.error('좋아요 목록 로드 실패:', likedError);
+              setLikedItems([]);
+            }
           }
         }
       } catch (error) {
