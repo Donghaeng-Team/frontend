@@ -9,7 +9,7 @@ import { canChangePassword } from '../../utils/auth';
 import { useAuthStore } from '../../stores/authStore';
 import { userService } from '../../api/services/user';
 import { productService } from '../../api/services/product';
-import { chatService } from '../../api/services/chat';
+import { cartService } from '../../api/services/cart';
 import './MyPage.css';
 
 interface UserProfile {
@@ -69,34 +69,80 @@ const MyPage: React.FC<MyPageProps> = () => {
   // 통계 데이터 로드
   useEffect(() => {
     const loadStats = async () => {
-      if (!authUser) return;
+      if (!authUser?.userId) return;
 
       try {
-        // 채팅 API를 통한 공동구매 통계 조회
-        const purchaseStatsResponse = await chatService.getMyPurchaseStats();
-
-        // 좋아요한 상품 개수 (효율적인 API 사용)
-        const likedCountResponse = await productService.getWishlistCount();
-        const likedCount = likedCountResponse.success && likedCountResponse.data
-          ? likedCountResponse.data
-          : 0;
-
-        if (purchaseStatsResponse.success && purchaseStatsResponse.data) {
-          setStats({
-            hosting: purchaseStatsResponse.data.activeAsCreator,
-            participating: purchaseStatsResponse.data.activeAsBuyer,
-            completed: purchaseStatsResponse.data.completed,
-            liked: likedCount
-          });
-        } else {
-          // API 실패 시 기본값
-          setStats({
-            hosting: 0,
-            participating: 0,
-            completed: 0,
-            liked: likedCount
-          });
+        // 주최한 상품 개수
+        let hostingCount = 0;
+        try {
+          const hostingResponse = await productService.getMyProducts();
+          if (hostingResponse.success && hostingResponse.data) {
+            const markets = (hostingResponse.data as any).markets || [];
+            hostingCount = markets.length;
+          }
+        } catch (error: any) {
+          if (error?.response?.status !== 404) {
+            console.error('주최한 상품 로드 실패:', error);
+          }
         }
+
+        // 참여중인 상품 개수
+        let participatingCount = 0;
+        try {
+          const participatingResponse = await productService.getMyJoinedProducts();
+          if (participatingResponse.success && participatingResponse.data) {
+            const content = participatingResponse.data.content || [];
+            participatingCount = content.filter(p => p.status === 'active').length;
+          }
+        } catch (error: any) {
+          if (error?.response?.status !== 404) {
+            console.error('참여중인 상품 로드 실패:', error);
+          }
+        }
+
+        // 완료된 상품 개수
+        let completedCount = 0;
+        try {
+          const myCompletedResponse = await productService.getMyProducts();
+          const joinedCompletedResponse = await productService.getMyJoinedProducts();
+
+          const myCompleted = myCompletedResponse.success && myCompletedResponse.data
+            ? ((myCompletedResponse.data as any).markets || []).filter((m: any) => m.status === 'ENDED').length
+            : 0;
+
+          const joinedCompleted = joinedCompletedResponse.success && joinedCompletedResponse.data
+            ? (joinedCompletedResponse.data.content || []).filter(p => p.status === 'completed').length
+            : 0;
+
+          completedCount = myCompleted + joinedCompleted;
+        } catch (error: any) {
+          if (error?.response?.status !== 404) {
+            console.error('완료된 상품 로드 실패:', error);
+          }
+        }
+
+        // 좋아요한 상품 개수
+        let likedCount = 0;
+        try {
+          const likedResponse = await cartService.getMyCarts(authUser.userId, {
+            pageNum: 0,
+            pageSize: 100
+          });
+          if (likedResponse.success && likedResponse.data) {
+            likedCount = likedResponse.data.markets.length;
+          }
+        } catch (error: any) {
+          if (error?.response?.status !== 404) {
+            console.error('좋아요 목록 로드 실패:', error);
+          }
+        }
+
+        setStats({
+          hosting: hostingCount,
+          participating: participatingCount,
+          completed: completedCount,
+          liked: likedCount
+        });
       } catch (error) {
         console.error('통계 데이터 로드 실패:', error);
         // Fallback to default values

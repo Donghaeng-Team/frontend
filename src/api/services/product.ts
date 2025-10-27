@@ -197,13 +197,31 @@ export const productService = {
 
   // 좋아요 추가
   addWishlist: async (marketId: number): Promise<ApiResponse<null>> => {
-    const response = await apiClient.post(`/api/v1/market/private/cart/${marketId}`);
+    const user = getUser();
+    if (!user?.userId) {
+      throw new Error('로그인이 필요합니다.');
+    }
+
+    const response = await apiClient.post(`/api/v1/market/private/cart/${marketId}`, null, {
+      headers: {
+        'X-User-Id': user.userId.toString(),
+      },
+    });
     return response.data;
   },
 
   // 좋아요 취소
   removeWishlist: async (marketId: number): Promise<ApiResponse<null>> => {
-    const response = await apiClient.delete(`/api/v1/market/private/cart/${marketId}`);
+    const user = getUser();
+    if (!user?.userId) {
+      throw new Error('로그인이 필요합니다.');
+    }
+
+    const response = await apiClient.delete(`/api/v1/market/private/cart/${marketId}`, {
+      headers: {
+        'X-User-Id': user.userId.toString(),
+      },
+    });
     return response.data;
   },
 
@@ -223,12 +241,20 @@ export const productService = {
 
   // 좋아요한 상품 목록
   getWishlistedProducts: async (params: { pageNum?: number; pageSize?: number } = {}): Promise<ApiResponse<PaginationResponse<Product>>> => {
+    const user = getUser();
+    if (!user?.userId) {
+      throw new Error('로그인이 필요합니다.');
+    }
+
     // /api/v1/market/private/cart/my 사용
     const response = await apiClient.get('/api/v1/market/private/cart/my', {
       params: {
         pageNum: params.pageNum || 0,
         pageSize: params.pageSize || 10
-      }
+      },
+      headers: {
+        'X-User-Id': user.userId.toString(),
+      },
     });
     return response.data;
   },

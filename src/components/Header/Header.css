@@ -120,6 +120,7 @@
   
   .header-icon-btn .icon {
     font-size: 24px;
+    color: #212121;
   }
   
   .notification-badge {
@@ -137,6 +138,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+  
+  /* 하트 아이콘 빨간색 */
+  .favorite-btn .icon {
+    color: #ff3333;
   }
   
   .header-login-btn {
@@ -361,6 +367,16 @@
 
     .mobile-menu-item .icon {
       font-size: 20px;
+      color: #212121;
+    }
+    
+    /* 모바일 하트 아이콘 빨간색 */
+    .mobile-menu-item .icon:first-child {
+      color: inherit;
+    }
+    
+    .mobile-user-actions .mobile-menu-item:nth-child(2) .icon {
+      color: #ff3333;
     }
 
     .mobile-notification-badge {

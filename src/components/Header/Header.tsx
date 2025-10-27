@@ -162,7 +162,7 @@ const Header: React.FC<HeaderProps> = ({
                     onFavoriteClick?.();
                   }}
                 >
-                  <span className="icon">♥</span>
+                  <span className="icon">❤️</span>
                   <span>찜한 상품</span>
                 </button>
 
@@ -239,13 +239,13 @@ const Header: React.FC<HeaderProps> = ({
               */}
 
               <button
-                className="header-icon-btn"
+                className="header-icon-btn favorite-btn"
                 onClick={() => {
                   navigate('/purchase-history?tab=liked');
                   onFavoriteClick?.();
                 }}
               >
-                <span className="icon">♥</span>
+                <span className="icon">❤️</span>
               </button>
 
               <button

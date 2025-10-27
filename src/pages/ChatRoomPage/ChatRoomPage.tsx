@@ -132,10 +132,13 @@ const ChatRoomPage = ({
   // 디버깅용 로그
   if (import.meta.env.DEV && currentRoom) {
     console.log('[ChatRoomPage] currentRoom:', currentRoom);
-    console.log('[ChatRoomPage] userRole:', userRole);
-    console.log('[ChatRoomPage] isBuyer:', isBuyer);
-    console.log('[ChatRoomPage] creator:', currentRoom.creator);
-    console.log('[ChatRoomPage] buyer:', currentRoom.buyer);
+    console.log('[ChatRoomPage] user:', user);
+    console.log('[ChatRoomPage] creatorUserId:', currentRoom.creatorUserId);
+    console.log('[ChatRoomPage] user.userId:', user?.userId);
+    console.log('[ChatRoomPage] creator (백엔드):', currentRoom.creator);
+    console.log('[ChatRoomPage] buyer (백엔드):', currentRoom.buyer);
+    console.log('[ChatRoomPage] → userRole (계산):', userRole);
+    console.log('[ChatRoomPage] → isBuyer (계산):', isBuyer);
   }
 
   const handleBack = () => {
