@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import ChatRoom from '../../components/ChatRoom';
 import BottomNav from '../../components/BottomNav';
@@ -112,7 +112,10 @@ const ChatRoomPage = () => {
     status: 'active' as const
   };
 
-  const userRole = (currentRoom && user?.userId === currentRoom.creatorUserId) ? 'seller' : 'buyer';
+  // 사용자 역할 결정: creator면 seller, 아니면 buyer
+  // 단, buyer 필드가 true인 경우는 이미 구매자로 확정된 상태
+  const userRole = (currentRoom?.creator) ? 'seller' : 'buyer';
+  const isBuyer = currentRoom?.buyer ?? false;
 
   const handleBack = () => {
     navigate(-1);
@@ -142,10 +145,31 @@ const ChatRoomPage = () => {
     }
   };
 
-  const handleApply = () => {
-    if (roomId) {
-      // TODO: 구매 신청 API 호출
-      alert('구매 신청 기능 (구현 예정)');
+  const handleApply = async () => {
+    if (roomId && currentRoom) {
+      try {
+        await confirmBuyer(parseInt(roomId, 10));
+        alert('구매 신청이 완료되었습니다.');
+      } catch (error) {
+        alert('구매 신청에 실패했습니다.');
+      }
+    }
+  };
+
+  const handleCancel = async () => {
+    if (roomId && currentRoom) {
+      if (currentRoom.creator) {
+        alert('방장은 구매 취소를 할 수 없습니다.');
+        return;
+      }
+      if (window.confirm('구매를 취소하시겠습니까?')) {
+        try {
+          // TODO: 구매 취소 API 호출
+          alert('구매 취소 기능 (구현 예정)');
+        } catch (error) {
+          alert('구매 취소에 실패했습니다.');
+        }
+      }
     }
   };
 
@@ -160,6 +184,7 @@ const ChatRoomPage = () => {
     <div className="chat-room-page">
       <ChatRoom
         role={userRole}
+        isBuyer={isBuyer}
         productInfo={productInfo}
         recruitmentStatus={recruitmentStatus}
         messages={formattedMessages}
@@ -168,6 +193,7 @@ const ChatRoomPage = () => {
         onExtendTime={handleExtendTime}
         onConfirm={handleConfirm}
         onApply={handleApply}
+        onCancel={handleCancel}
         onSendMessage={handleSendMessage}
       />
       <BottomNav />
