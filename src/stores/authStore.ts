@@ -162,9 +162,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           loading: false,
           error: null,
         });
-        if (import.meta.env.DEV) {
-          console.log('✅ localStorage에서 사용자 정보 복원:', savedUser);
-        }
       }
 
       // 테스트 토큰인 경우 API 호출 건너뛰기
