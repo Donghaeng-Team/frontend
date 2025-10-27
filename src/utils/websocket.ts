@@ -2,7 +2,6 @@ import { Client } from '@stomp/stompjs';
 import type { StompSubscription } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import type { WebSocketChatMessage } from '../types';
-import { getAccessToken, getRefreshToken } from './token';
 
 // WebSocket 연결 상태
 export type ConnectionStatus = 'connected' | 'disconnected' | 'connecting' | 'error';
@@ -33,11 +32,6 @@ export class ChatWebSocketClient {
 
     this.updateStatus('connecting');
 
-    const accessToken = getAccessToken();
-    const refreshToken = getRefreshToken();
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const userId = user?.userId;
-
     // STOMP 클라이언트 생성
     this.client = new Client({
       webSocketFactory: () => {
@@ -57,12 +51,9 @@ export class ChatWebSocketClient {
         }) as any;
       },
 
-      // STOMP 연결 헤더에 토큰 및 사용자 ID 추가
-      connectHeaders: accessToken && userId ? {
-        'Authorization': `Bearer ${accessToken}`,
-        'X-Refresh-Token': refreshToken || '',
-        'X-User-Id': userId.toString(),
-      } : {},
+      // API Gateway가 쿠키를 읽어 X-User-Id를 자동으로 추가하므로
+      // 프론트엔드에서는 별도 인증 헤더 불필요
+      connectHeaders: {},
 
       debug: () => {
         // WebSocket 디버그 로그 비활성화
