@@ -239,7 +239,7 @@ const Header: React.FC<HeaderProps> = ({
               */}
 
               <button
-                className="header-icon-btn"
+                className="header-icon-btn favorite-btn"
                 onClick={() => {
                   navigate('/purchase-history?tab=liked');
                   onFavoriteClick?.();
