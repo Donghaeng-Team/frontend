@@ -18,25 +18,7 @@ export default defineConfig(({ mode }) => {
         usePolling: true  // WSL이나 Docker 사용 시
       },
       proxy: {
-        // API 요청을 API Gateway로 프록시 (Public API만)
-        '/api': {
-          target: env.VITE_API_BASE_URL || 'http://localhost:8080',
-          changeOrigin: true,
-          secure: false,
-          timeout: 10000, // 10초 타임아웃
-          configure: (proxy, _options) => {
-            proxy.on('error', (err, _req, _res) => {
-              console.log('proxy error', err);
-            });
-            proxy.on('proxyReq', (_proxyReq, req, _res) => {
-              console.log('Sending Request to the Target:', req.method, req.url);
-            });
-            proxy.on('proxyRes', (proxyRes, req, _res) => {
-              console.log('Received Response from the Target:', proxyRes.statusCode, req.url);
-            });
-          },
-        },
-        // WebSocket 프록시 (채팅)
+        // WebSocket 프록시 (API Gateway를 거침)
         '/ws': {
           target: env.VITE_API_BASE_URL || 'http://localhost:8080',
           changeOrigin: true,
@@ -51,6 +33,24 @@ export default defineConfig(({ mode }) => {
             });
             proxy.on('proxyRes', (proxyRes, req, _res) => {
               console.log('[WebSocket Proxy] Response:', proxyRes.statusCode, req.url);
+            });
+          },
+        },
+        // 모든 API 요청을 API Gateway로 프록시
+        '/api': {
+          target: env.VITE_API_BASE_URL || 'http://localhost:8080',
+          changeOrigin: true,
+          secure: false,
+          timeout: 10000, // 10초 타임아웃
+          configure: (proxy, _options) => {
+            proxy.on('error', (err, _req, _res) => {
+              console.log('[API Proxy] error', err);
+            });
+            proxy.on('proxyReq', (_proxyReq, req, _res) => {
+              console.log('[API Proxy] Request:', req.method, req.url);
+            });
+            proxy.on('proxyRes', (proxyRes, req, _res) => {
+              console.log('[API Proxy] Response:', proxyRes.statusCode, req.url);
             });
           },
         },
