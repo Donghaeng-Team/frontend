@@ -83,6 +83,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
     try {
       // 채팅방 정보 조회 (이미 참가한 채팅방)
       const response = await chatService.getChatRoom(roomId);
+      if (import.meta.env.DEV) {
+        console.log('[채팅] API 응답 전체:', JSON.stringify(response, null, 2));
+        console.log('[채팅] currentRoom 데이터:', response.data);
+      }
       if (response.success && response.data) {
         set({ currentRoom: response.data });
 
