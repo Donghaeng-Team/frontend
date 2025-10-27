@@ -664,11 +664,23 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
             </div>
 
             <h4>⏰ 공동구매 진행 안내</h4>
-            <div className="description-group">
-              <p>• 목표 수량: {product.recruitMax}개</p>
-              <p>• 현재 수량: {product.recruitNow}개</p>
-              <p>• 모집 마감: {new Date(product.endTime).toLocaleDateString('ko-KR')}</p>
-              <p>• 거래 장소: {product.locationText}</p>
+            <div className="recruitment-info-grid">
+              <div className="recruitment-info-item">
+                <div className="info-label">목표 인원</div>
+                <div className="info-value">{product.recruitMax}명</div>
+              </div>
+              <div className="recruitment-info-item">
+                <div className="info-label">현재 인원</div>
+                <div className="info-value highlight">{product.recruitNow}명</div>
+              </div>
+              <div className="recruitment-info-item">
+                <div className="info-label">모집 마감</div>
+                <div className="info-value">{new Date(product.endTime).toLocaleDateString('ko-KR')}</div>
+              </div>
+              <div className="recruitment-info-item">
+                <div className="info-label">거래 장소</div>
+                <div className="info-value">{product.locationText}</div>
+              </div>
             </div>
           </div>
         </section>
