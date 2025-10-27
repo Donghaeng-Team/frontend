@@ -117,6 +117,15 @@ const ChatRoomPage = () => {
   const userRole = (currentRoom?.creator) ? 'seller' : 'buyer';
   const isBuyer = currentRoom?.buyer ?? false;
 
+  // 디버깅용 로그
+  if (import.meta.env.DEV && currentRoom) {
+    console.log('[ChatRoomPage] currentRoom:', currentRoom);
+    console.log('[ChatRoomPage] userRole:', userRole);
+    console.log('[ChatRoomPage] isBuyer:', isBuyer);
+    console.log('[ChatRoomPage] creator:', currentRoom.creator);
+    console.log('[ChatRoomPage] buyer:', currentRoom.buyer);
+  }
+
   const handleBack = () => {
     navigate(-1);
   };
