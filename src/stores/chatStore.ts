@@ -72,39 +72,23 @@ export const useChatStore = create<ChatState>((set, get) => ({
   fetchChatRoom: async (roomId) => {
     try {
       const response = await chatService.getChatRoom(roomId);
-      if (import.meta.env.DEV) {
-        console.log('[fetchChatRoom] API 응답:', JSON.stringify(response, null, 2));
-        console.log('[fetchChatRoom] currentRoom 데이터:', response.data);
-      }
       if (response.success && response.data) {
         set({ currentRoom: response.data });
 
         // 메시지도 함께 로드
         try {
           const messagesResponse = await chatService.getMessages(roomId, { size: 50 });
-          if (import.meta.env.DEV) {
-            console.log('[fetchChatRoom] 메시지 응답:', messagesResponse);
-          }
           if (messagesResponse.success && messagesResponse.data) {
             const sortedMessages = messagesResponse.data.messages.sort((a, b) =>
               new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime()
             );
             set({ messages: sortedMessages });
-            if (import.meta.env.DEV) {
-              console.log(`[fetchChatRoom] ${sortedMessages.length}개의 메시지를 불러왔습니다.`);
-            }
           }
         } catch (error) {
-          if (import.meta.env.DEV) {
-            console.error('[fetchChatRoom] 메시지 로드 실패:', error);
-          }
           set({ messages: [] });
         }
       }
     } catch (error: any) {
-      if (import.meta.env.DEV) {
-        console.error('[fetchChatRoom] 에러:', error);
-      }
       set({ error: '채팅방 정보를 불러오는데 실패했습니다.' });
     }
   },
@@ -129,14 +113,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
               new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime()
             );
             set({ messages: sortedMessages });
-            if (import.meta.env.DEV) {
-              console.log(`[채팅] ${sortedMessages.length}개의 이전 메시지를 불러왔습니다.`);
-            }
+      
           }
         } catch (error) {
-          if (import.meta.env.DEV) {
-            console.error('[채팅] 이전 메시지 로드 실패:', error);
-          }
+    
           // 메시지 로드 실패해도 채팅방은 계속 진행
           set({ messages: [] });
         }
@@ -148,13 +128,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
             console.log(`[채팅] WebSocket 구독 시도 (${retryCount + 1}/10) - 연결 상태:`, wsClient?.isConnected());
           }
           if (wsClient?.isConnected()) {
-            if (import.meta.env.DEV) {
-              console.log(`[채팅] 방 ${roomId}에 WebSocket 구독 시작`);
-            }
+      
             wsClient.subscribeToRoom(roomId, (message: ChatMessageResponse) => {
-              if (import.meta.env.DEV) {
-                console.log('[채팅] WebSocket 메시지 수신:', message);
-              }
+        
               
               // 백엔드가 ChatMessageResponse를 그대로 전송하므로
               // messageType, messageContent, sentAt 필드를 직접 사용
@@ -169,9 +145,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       }
     } catch (error: any) {
       set({ error: '채팅방 정보를 불러오는데 실패했습니다.' });
-      if (import.meta.env.DEV) {
-        console.error('[채팅] 채팅방 입장 실패:', error);
-      }
+
     }
   },
 
@@ -183,9 +157,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     if (wsClient?.isConnected()) {
       wsClient.sendMessage(roomId, message, userId, nickname);
     } else {
-      if (import.meta.env.DEV) {
-        console.error('[채팅] WebSocket이 연결되지 않았습니다. 메시지를 보낼 수 없습니다.');
-      }
+
     }
   },
 
@@ -208,9 +180,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     const { wsClient } = get();
     if (wsClient) {
       wsClient.unsubscribeFromRoom(roomId);
-      if (import.meta.env.DEV) {
-        console.log(`[채팅] 방 ${roomId} 구독 해제 완료`);
-      }
+
     }
     set({ currentRoom: null, messages: [] });
   },
