@@ -453,7 +453,7 @@ const PurchaseHistory: React.FC = () => {
             <Button size="small" variant="outline" onClick={(e) => { e.stopPropagation(); }}>모집 마감</Button>
           </>
         )}
-        {item.status === 'recruiting' && item.role === 'participant' && (
+        {item.status === 'recruiting' && item.role === 'participant' && activeTab !== 'liked' && (
           <Button size="small" variant="outline" onClick={(e) => { e.stopPropagation(); handleCancelParticipation(item.id); }}>참여 취소</Button>
         )}
         {item.status === 'processing' && (
