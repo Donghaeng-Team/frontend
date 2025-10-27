@@ -167,6 +167,9 @@ const ChatRoomPage = ({
       try {
         await confirmBuyer(parseInt(roomId, 10));
         alert('구매자가 확정되었습니다.');
+        
+        // 채팅방 정보 새로고침 (모집 상태 업데이트)
+        await fetchChatRoom(parseInt(roomId, 10));
       } catch (error) {
         alert('구매자 확정에 실패했습니다.');
       }
@@ -178,6 +181,9 @@ const ChatRoomPage = ({
       try {
         await confirmBuyer(parseInt(roomId, 10));
         alert('구매 신청이 완료되었습니다.');
+        
+        // 채팅방 정보 새로고침 (참여자 수 및 구매자 상태 업데이트)
+        await fetchChatRoom(parseInt(roomId, 10));
       } catch (error) {
         alert('구매 신청에 실패했습니다.');
       }

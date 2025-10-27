@@ -231,13 +231,15 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
     productChatRoomId: product?.chatRoomId
   });
 
-  // 참여자 목록 (MarketDetailResponse의 participants 사용)
-  const participants: Participant[] = product?.participants?.map((p: ParticipantResponse) => ({
-    id: p.userId.toString(),
-    name: p.nickname,
-    avatar: p.profileImage || undefined,
-    color: p.isCreator ? '#ff5e2f' : p.isBuyer ? '#3399ff' : '#999999'
-  })) || [];
+  // 참여자 목록 (구매자만 표시: isCreator 또는 isBuyer가 true인 경우)
+  const participants: Participant[] = product?.participants
+    ?.filter((p: ParticipantResponse) => p.isCreator || p.isBuyer)
+    ?.map((p: ParticipantResponse) => ({
+      id: p.userId.toString(),
+      name: p.nickname,
+      avatar: p.profileImage || undefined,
+      color: p.isCreator ? '#ff5e2f' : '#3399ff'
+    })) || [];
 
   const faqItems: AccordionItem[] = [
     {
@@ -319,9 +321,6 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
 
         // 채팅방 목록 새로고침 (백그라운드에서)
         fetchChatRooms();
-
-        // 상품 정보 새로고침 (참여자 수 및 참여자 목록 업데이트)
-        await loadProduct();
       }
 
       // PC에서는 모달로, 모바일에서는 페이지 이동
