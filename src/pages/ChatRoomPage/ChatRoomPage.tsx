@@ -260,16 +260,10 @@ const ChatRoomPage = ({
 
   const handleExtendTime = async () => {
     if (roomId && currentRoom) {
-      const hoursInput = prompt('몇 시간 연장하시겠습니까?', '1');
-      if (hoursInput) {
-        const hours = parseInt(hoursInput, 10);
-        if (isNaN(hours) || hours <= 0) {
-          alert('올바른 시간을 입력해주세요.');
-          return;
-        }
+      if (window.confirm('마감 시간을 1일 연장하시겠습니까?')) {
         try {
-          await extendDeadline(parseInt(roomId, 10), hours);
-          alert(`마감 시간이 ${hours}시간 연장되었습니다.`);
+          await extendDeadline(parseInt(roomId, 10), 24); // 1일 = 24시간
+          alert('마감 시간이 1일 연장되었습니다.');
         } catch (error) {
           alert('시간 연장에 실패했습니다.');
         }
