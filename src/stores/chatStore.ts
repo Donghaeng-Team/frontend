@@ -110,8 +110,17 @@ export const useChatStore = create<ChatState>((set, get) => ({
         // WebSocket 구독 설정 (연결 대기)
         const subscribeWhenReady = (retryCount = 0) => {
           const { wsClient } = get();
+          if (import.meta.env.DEV) {
+            console.log(`[채팅] WebSocket 구독 시도 (${retryCount + 1}/10) - 연결 상태:`, wsClient?.isConnected());
+          }
           if (wsClient?.isConnected()) {
+            if (import.meta.env.DEV) {
+              console.log(`[채팅] 방 ${roomId}에 WebSocket 구독 시작`);
+            }
             wsClient.subscribeToRoom(roomId, (message: WebSocketChatMessage) => {
+              if (import.meta.env.DEV) {
+                console.log('[채팅] WebSocket 메시지 수신:', message);
+              }
               // WebSocket 메시지 타입에 따라 messageType 결정
               let messageType: 'TEXT' | 'SYSTEM' | 'DEADLINE_EXTEND' = 'TEXT';
               if (message.type === 'SYSTEM' || message.type === 'JOIN' || message.type === 'LEAVE') {

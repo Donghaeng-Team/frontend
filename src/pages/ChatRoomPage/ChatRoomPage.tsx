@@ -27,27 +27,28 @@ const ChatRoomPage = () => {
   } = useChatStore();
   const { user } = useAuthStore();
 
-  // WebSocket 초기화
+  // WebSocket 초기화 (컴포넌트 마운트 시 한 번만 실행)
   useEffect(() => {
     initializeWebSocket();
     return () => {
       disconnectWebSocket();
     };
-  }, [initializeWebSocket, disconnectWebSocket]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // 빈 배열: 마운트/언마운트 시에만 실행
 
   // 채팅방 입장 (중복 방지)
   useEffect(() => {
     if (roomId && user && !hasJoinedRef.current) {
       hasJoinedRef.current = true;
       const numericRoomId = parseInt(roomId, 10);
+      if (import.meta.env.DEV) {
+        console.log('[ChatRoomPage] joinChatRoom 호출:', numericRoomId);
+      }
       joinChatRoom(numericRoomId);
     }
-
-    // cleanup: 컴포넌트 언마운트 시 초기화
-    return () => {
-      hasJoinedRef.current = false;
-    };
-  }, [roomId, user]);
+    // cleanup에서 hasJoinedRef를 false로 만들지 않음
+    // (컴포넌트 언마운트 시에만 초기화하면 됨)
+  }, [roomId, user, joinChatRoom]);
 
   // ChatRoomStatus를 RecruitmentStatus의 status 타입으로 변환
   const convertChatRoomStatus = (status: ChatRoomStatus): 'active' | 'closing' | 'closed' => {
