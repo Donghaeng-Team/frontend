@@ -277,13 +277,13 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   closeRecruitment: async (roomId) => {
     try {
-      const response = await chatService.closeRecruitment(roomId);
+      const response = await chatService.completePurchase(roomId);
       if (response.success) {
         // 채팅방 정보 새로고침
         await get().fetchChatRoom(roomId);
       }
     } catch (error: any) {
-      set({ error: '모집 마감에 실패했습니다.' });
+      set({ error: '모집 완료에 실패했습니다.' });
       throw error;
     }
   },

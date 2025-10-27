@@ -277,12 +277,12 @@ const ChatRoomPage = ({
 
   const handleConfirm = async () => {
     if (roomId && currentRoom) {
-      if (window.confirm('모집을 마감하시겠습니까?')) {
+      if (window.confirm('모집을 완료하시겠습니까?')) {
         try {
           await closeRecruitment(parseInt(roomId, 10));
-          alert('모집이 마감되었습니다.');
+          alert('모집이 완료되었습니다.');
         } catch (error) {
-          alert('모집 마감에 실패했습니다.');
+          alert('모집 완료에 실패했습니다.');
         }
       }
     }
