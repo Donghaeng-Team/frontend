@@ -47,7 +47,12 @@ export class ChatWebSocketClient {
           : (import.meta.env.VITE_WS_BASE_URL || 'https://bytogether.net');
 
         const url = `${wsBaseURL}/ws/v1/chat/private`;
-        return new SockJS(url) as any;
+
+        // SockJS 옵션: API Gateway를 통과하면서 WebSocket Upgrade 헤더가 손실되므로
+        // xhr 전송만 사용 (WebSocket 비활성화)
+        return new SockJS(url, null, {
+          transports: ['xhr-streaming', 'xhr-polling']
+        }) as any;
       },
 
       // STOMP 연결 헤더에도 토큰 추가
