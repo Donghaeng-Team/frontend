@@ -39,11 +39,11 @@ export class ChatWebSocketClient {
     // STOMP 클라이언트 생성
     this.client = new Client({
       webSocketFactory: () => {
-        // 개발: http://localhost:8080
-        // 프로덕션: https://bytogether.net
+        // 개발: 상대 경로 (Vite 프록시가 localhost:8086으로 전달)
+        // 프로덕션: 절대 URL (https://bytogether.net)
         const isDev = import.meta.env.DEV;
         const wsBaseURL = isDev
-          ? (import.meta.env.VITE_WS_BASE_URL || 'http://localhost:8080')
+          ? '' // Vite 프록시 사용
           : (import.meta.env.VITE_WS_BASE_URL || 'https://bytogether.net');
 
         const url = `${wsBaseURL}/ws/v1/chat/private`;
