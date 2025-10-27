@@ -18,27 +18,9 @@ export default defineConfig(({ mode }) => {
         usePolling: true  // WSL이나 Docker 사용 시
       },
       proxy: {
-        // 채팅 API를 Chat Service로 프록시 (더 구체적인 경로가 먼저 와야 함)
-        '/api/v1/chat': {
-          target: 'http://localhost:8086',
-          changeOrigin: true,
-          secure: false,
-          timeout: 10000,
-          configure: (proxy, _options) => {
-            proxy.on('error', (err, _req, _res) => {
-              console.log('[Chat API Proxy] error', err);
-            });
-            proxy.on('proxyReq', (_proxyReq, req, _res) => {
-              console.log('[Chat API Proxy] Request:', req.method, req.url);
-            });
-            proxy.on('proxyRes', (proxyRes, req, _res) => {
-              console.log('[Chat API Proxy] Response:', proxyRes.statusCode, req.url);
-            });
-          },
-        },
-        // WebSocket 프록시 (채팅)
+        // WebSocket 프록시 (API Gateway를 거침)
         '/ws': {
-          target: 'http://localhost:8086',
+          target: env.VITE_API_BASE_URL || 'http://localhost:8080',
           changeOrigin: true,
           secure: false,
           ws: true, // WebSocket 프록시 활성화
@@ -54,7 +36,7 @@ export default defineConfig(({ mode }) => {
             });
           },
         },
-        // 나머지 API 요청을 API Gateway로 프록시
+        // 모든 API 요청을 API Gateway로 프록시
         '/api': {
           target: env.VITE_API_BASE_URL || 'http://localhost:8080',
           changeOrigin: true,
