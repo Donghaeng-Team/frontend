@@ -103,69 +103,70 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
   const getWishStorageKey = (marketId: number, userId: number) =>
     `product_wished_${marketId}_${userId}`;
 
+  // 상품 데이터 로드 함수 (재사용 가능하도록 별도 정의)
+  const loadProduct = async () => {
+    if (!id) {
+      alert('상품 ID가 없습니다.');
+      navigate('/products');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await productService.getProduct(id);
+
+      if (!response.success || !response.data) {
+        throw new Error('상품을 찾을 수 없습니다.');
+      }
+
+      console.log('✅ 상품 데이터:', response.data);
+      console.log('📸 이미지 정보:', response.data.images);
+      setProduct(response.data);
+
+      // 좋아요 상태 확인 (로그인 사용자만)
+      if (authUser && authUser.userId) {
+        try {
+          const wishlistResponse = await productService.getWishlistedProducts({ pageSize: 100 });
+          let initialWished = false;
+
+          if (wishlistResponse.success && wishlistResponse.data) {
+            const markets = (wishlistResponse.data as any).markets || [];
+            const isInWishlist = markets.some(
+              (market: any) => market.marketId === response.data.marketId
+            );
+            initialWished = isInWishlist;
+          }
+
+          // localStorage와 동기화
+          const storageKey = getWishStorageKey(response.data.marketId, authUser.userId);
+          localStorage.setItem(storageKey, initialWished.toString());
+          setIsWished(initialWished);
+        } catch (wishlistError: any) {
+          // 404는 위시리스트가 비어있는 정상 상태이므로 무시
+          if (wishlistError?.response?.status !== 404) {
+            console.error('좋아요 상태 확인 실패:', wishlistError);
+          }
+
+          // localStorage에서 복원 시도
+          const storageKey = getWishStorageKey(response.data.marketId, authUser.userId);
+          const storedWished = localStorage.getItem(storageKey);
+          setIsWished(storedWished === 'true');
+        }
+      }
+    } catch (error: any) {
+      console.error('❌ 상품 로드 실패:', error);
+      console.warn('⚠️ Using fallback mock product data');
+
+      // Fallback: mock 데이터 사용
+      const mockProduct = generateFallbackMockProduct(id);
+      setProduct(mockProduct);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // 상품 데이터 로드 및 좋아요 상태 확인
   useEffect(() => {
-    const loadProduct = async () => {
-      if (!id) {
-        alert('상품 ID가 없습니다.');
-        navigate('/products');
-        return;
-      }
-
-      try {
-        setLoading(true);
-        const response = await productService.getProduct(id);
-
-        if (!response.success || !response.data) {
-          throw new Error('상품을 찾을 수 없습니다.');
-        }
-
-        console.log('✅ 상품 데이터:', response.data);
-        console.log('📸 이미지 정보:', response.data.images);
-        setProduct(response.data);
-
-        // 좋아요 상태 확인 (로그인 사용자만)
-        if (authUser && authUser.userId) {
-          try {
-            const wishlistResponse = await productService.getWishlistedProducts({ pageSize: 100 });
-            let initialWished = false;
-
-            if (wishlistResponse.success && wishlistResponse.data) {
-              const markets = (wishlistResponse.data as any).markets || [];
-              const isInWishlist = markets.some(
-                (market: any) => market.marketId === response.data.marketId
-              );
-              initialWished = isInWishlist;
-            }
-
-            // localStorage와 동기화
-            const storageKey = getWishStorageKey(response.data.marketId, authUser.userId);
-            localStorage.setItem(storageKey, initialWished.toString());
-            setIsWished(initialWished);
-          } catch (wishlistError: any) {
-            // 404는 위시리스트가 비어있는 정상 상태이므로 무시
-            if (wishlistError?.response?.status !== 404) {
-              console.error('좋아요 상태 확인 실패:', wishlistError);
-            }
-
-            // localStorage에서 복원 시도
-            const storageKey = getWishStorageKey(response.data.marketId, authUser.userId);
-            const storedWished = localStorage.getItem(storageKey);
-            setIsWished(storedWished === 'true');
-          }
-        }
-      } catch (error: any) {
-        console.error('❌ 상품 로드 실패:', error);
-        console.warn('⚠️ Using fallback mock product data');
-
-        // Fallback: mock 데이터 사용
-        const mockProduct = generateFallbackMockProduct(id);
-        setProduct(mockProduct);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadProduct();
   }, [id, navigate, authUser]);
 
@@ -318,6 +319,9 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
 
         // 채팅방 목록 새로고침 (백그라운드에서)
         fetchChatRooms();
+
+        // 상품 정보 새로고침 (참여자 수 및 참여자 목록 업데이트)
+        await loadProduct();
       }
 
       // PC에서는 모달로, 모바일에서는 페이지 이동
