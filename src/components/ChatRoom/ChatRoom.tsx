@@ -141,11 +141,23 @@ const ChatRoom: FC<ChatRoomProps> = ({
       <div className="chat-room-actions">
         {role === 'seller' ? (
           <>
-            <button className="chat-room-action-btn extend-time" onClick={onExtendTime}>
-              ⏰ 시간 연장
+            <button
+              className="chat-room-action-btn extend-time"
+              onClick={onExtendTime}
+              disabled={recruitmentStatus.status === 'closing' || recruitmentStatus.status === 'closed'}
+            >
+              {recruitmentStatus.status === 'closing' || recruitmentStatus.status === 'closed'
+                ? '🔒 시간 연장'
+                : '⏰ 시간 연장'}
             </button>
-            <button className="chat-room-action-btn confirm" onClick={onConfirm}>
-              ✅ 모집 확정
+            <button
+              className="chat-room-action-btn confirm"
+              onClick={onConfirm}
+              disabled={recruitmentStatus.status === 'closing' || recruitmentStatus.status === 'closed'}
+            >
+              {recruitmentStatus.status === 'closing' || recruitmentStatus.status === 'closed'
+                ? '🔒 모집 확정'
+                : '✅ 모집 확정'}
             </button>
           </>
         ) : (
