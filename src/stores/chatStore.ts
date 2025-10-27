@@ -279,6 +279,22 @@ export const useChatStore = create<ChatState>((set, get) => ({
     try {
       const response = await chatService.closeRecruitment(roomId);
       if (response.success) {
+        // 구매자가 아닌 참여자들 강퇴
+        const { participants, currentRoom } = get();
+        if (participants && currentRoom) {
+          const nonBuyersToKick = participants.filter(p => !p.isBuyer && !p.isCreator);
+
+          // 강퇴 API 병렬 호출
+          const kickPromises = nonBuyersToKick.map(participant =>
+            chatService.kickParticipant(roomId, participant.userId).catch(err => {
+              console.error(`참여자 ${participant.userId} 강퇴 실패:`, err);
+              // 개별 강퇴 실패는 무시하고 계속 진행
+            })
+          );
+
+          await Promise.all(kickPromises);
+        }
+
         // 채팅방 정보 새로고침
         await get().fetchChatRoom(roomId);
       }
