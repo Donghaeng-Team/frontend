@@ -101,11 +101,14 @@ const ChatRoomPage = ({
     .map((msg) => {
       const messageType = msg.senderId === user?.userId ? 'my' : msg.messageType === 'SYSTEM' ? 'system' : 'buyer';
 
-      // 시스템 메시지의 경우 숫자(userId)를 닉네임으로 교체
+      // 시스템 메시지의 경우 'system' 또는 숫자(userId)를 닉네임으로 교체
       let messageContent = msg.messageContent;
       if (messageType === 'system' && msg.senderNickname) {
+        // "system님이 구매를 취소했습니다" → "홍길동님이 구매를 취소했습니다"
         // "1님이 참가했습니다" → "홍길동님이 참가했습니다"
-        messageContent = messageContent.replace(/^\d+/, msg.senderNickname);
+        messageContent = messageContent
+          .replace(/^system/i, msg.senderNickname)
+          .replace(/^\d+/, msg.senderNickname);
       }
 
       return {
