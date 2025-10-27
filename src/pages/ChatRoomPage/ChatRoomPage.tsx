@@ -108,8 +108,11 @@ const ChatRoomPage = ({
       if (messageType === 'system' && msg.senderNickname) {
         // "system님이 구매를 취소했습니다" → "홍길동님이 구매를 취소했습니다"
         // "1님이 참가했습니다" → "홍길동님이 참가했습니다"
+        // "system님이 구매를 신청했습니다" → "홍길동님이 구매를 신청했습니다"
         messageContent = messageContent
+          .replace(/system님/gi, `${msg.senderNickname}님`)
           .replace(/^system/i, msg.senderNickname)
+          .replace(/^\d+님/, `${msg.senderNickname}님`)
           .replace(/^\d+/, msg.senderNickname);
       }
 
