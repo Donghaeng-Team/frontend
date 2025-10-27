@@ -234,12 +234,27 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
   // 참여자 목록 (구매자만 표시: isCreator 또는 isBuyer가 true인 경우)
   const participants: Participant[] = product?.participants
     ?.filter((p: ParticipantResponse) => p.isCreator || p.isBuyer)
-    ?.map((p: ParticipantResponse) => ({
-      id: p.userId.toString(),
-      name: p.nickname,
-      avatar: p.profileImage || undefined,
-      color: p.isCreator ? '#ff5e2f' : '#3399ff'
-    })) || [];
+    ?.map((p: ParticipantResponse) => {
+      if (import.meta.env.DEV) {
+        console.log('[ProductDetail] Participant:', {
+          nickname: p.nickname,
+          profileImage: p.profileImage,
+          isCreator: p.isCreator,
+          isBuyer: p.isBuyer
+        });
+      }
+      return {
+        id: p.userId.toString(),
+        name: p.nickname,
+        avatar: p.profileImage || undefined,
+        color: p.isCreator ? '#ff5e2f' : '#3399ff'
+      };
+    }) || [];
+
+  if (import.meta.env.DEV && product) {
+    console.log('[ProductDetail] Total participants from API:', product.participants?.length);
+    console.log('[ProductDetail] Filtered participants (buyers only):', participants.length);
+  }
 
   const faqItems: AccordionItem[] = [
     {
