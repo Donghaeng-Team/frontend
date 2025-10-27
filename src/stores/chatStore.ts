@@ -80,6 +80,17 @@ export const useChatStore = create<ChatState>((set, get) => ({
       if (response.success && response.data) {
         set({ currentRoom: response.data });
 
+        // 참여자 목록도 함께 로드
+        try {
+          const participantsResponse = await chatService.getParticipants(response.data.marketId);
+          if (participantsResponse.success && participantsResponse.data) {
+            set({ participants: participantsResponse.data.participants });
+          }
+        } catch (error) {
+          // 참여자 로드 실패해도 계속 진행
+          console.error('참여자 목록 조회 실패:', error);
+        }
+
         // 메시지도 함께 로드
         try {
           const messagesResponse = await chatService.getMessages(roomId, { size: 50 });
