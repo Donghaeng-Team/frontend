@@ -33,24 +33,7 @@ const apiClient: AxiosInstance = axios.create({
   withCredentials: true, // 쿠키 전송 활성화 (refresh token용)
 });
 
-// 디버그 모드에서 요청/응답 로깅
-if (import.meta.env.VITE_DEBUG === 'true') {
-  apiClient.interceptors.request.use((config) => {
-    console.log('🚀 API Request:', config.method?.toUpperCase(), config.url, config.data);
-    return config;
-  });
-
-  apiClient.interceptors.response.use(
-    (response) => {
-      console.log('✅ API Response:', response.status, response.config.url, response.data);
-      return response;
-    },
-    (error) => {
-      console.error('❌ API Error:', error.response?.status, error.config?.url, error.response?.data);
-      return Promise.reject(error);
-    }
-  );
-}
+// 디버그 모드 로깅 제거 (필요시 VITE_DEBUG=true로 활성화)
 
 // 요청 인터셉터: 토큰 및 사용자 ID 자동 추가
 apiClient.interceptors.request.use(
@@ -77,10 +60,6 @@ apiClient.interceptors.request.use(
 // 응답 인터셉터: 에러 처리 및 토큰 재발급
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => {
-    // 개발 환경에서만 상세 로그 출력
-    if (import.meta.env.DEV) {
-      console.log('✅ API Response:', response.status, response.config.url);
-    }
     return response;
   },
   async (error) => {

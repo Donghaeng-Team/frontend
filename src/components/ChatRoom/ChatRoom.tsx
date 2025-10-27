@@ -128,7 +128,9 @@ const ChatRoom: FC<ChatRoomProps> = ({
       {/* Recruitment Status */}
       <div className="chat-room-recruitment-status">
         <span className="chat-room-recruitment-count">
-          🔥 모집중 {recruitmentStatus.current}/{recruitmentStatus.max}명
+          {recruitmentStatus.status === 'closing' || recruitmentStatus.status === 'closed'
+            ? `✅ 모집완료 ${recruitmentStatus.current}/${recruitmentStatus.max}명`
+            : `🔥 모집중 ${recruitmentStatus.current}/${recruitmentStatus.max}명`}
         </span>
         <span className="chat-room-time-remaining">
           ⏰ {recruitmentStatus.timeRemaining}
@@ -139,18 +141,36 @@ const ChatRoom: FC<ChatRoomProps> = ({
       <div className="chat-room-actions">
         {role === 'seller' ? (
           <>
-            <button className="chat-room-action-btn extend-time" onClick={onExtendTime}>
-              ⏰ 시간 연장
+            <button
+              className="chat-room-action-btn extend-time"
+              onClick={onExtendTime}
+              disabled={recruitmentStatus.status === 'closing' || recruitmentStatus.status === 'closed'}
+            >
+              {recruitmentStatus.status === 'closing' || recruitmentStatus.status === 'closed'
+                ? '🔒 시간 연장'
+                : '⏰ 시간 연장'}
             </button>
-            <button className="chat-room-action-btn confirm" onClick={onConfirm}>
-              ✅ 모집 확정
+            <button
+              className="chat-room-action-btn confirm"
+              onClick={onConfirm}
+              disabled={recruitmentStatus.status === 'closing' || recruitmentStatus.status === 'closed'}
+            >
+              {recruitmentStatus.status === 'closing' || recruitmentStatus.status === 'closed'
+                ? '🔒 모집 확정'
+                : '✅ 모집 확정'}
             </button>
           </>
         ) : (
           <>
             {isBuyer ? (
-              <button className="chat-room-action-btn cancel" onClick={onCancel}>
-                ❌ 구매 취소
+              <button
+                className="chat-room-action-btn cancel"
+                onClick={onCancel}
+                disabled={recruitmentStatus.status === 'closing' || recruitmentStatus.status === 'closed'}
+              >
+                {recruitmentStatus.status === 'closing' || recruitmentStatus.status === 'closed'
+                  ? '🔒 구매 취소'
+                  : '❌ 구매 취소'}
               </button>
             ) : (
               <>

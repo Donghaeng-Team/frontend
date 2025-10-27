@@ -103,69 +103,70 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
   const getWishStorageKey = (marketId: number, userId: number) =>
     `product_wished_${marketId}_${userId}`;
 
+  // 상품 데이터 로드 함수 (재사용 가능하도록 별도 정의)
+  const loadProduct = async () => {
+    if (!id) {
+      alert('상품 ID가 없습니다.');
+      navigate('/products');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await productService.getProduct(id);
+
+      if (!response.success || !response.data) {
+        throw new Error('상품을 찾을 수 없습니다.');
+      }
+
+      console.log('✅ 상품 데이터:', response.data);
+      console.log('📸 이미지 정보:', response.data.images);
+      setProduct(response.data);
+
+      // 좋아요 상태 확인 (로그인 사용자만)
+      if (authUser && authUser.userId) {
+        try {
+          const wishlistResponse = await productService.getWishlistedProducts({ pageSize: 100 });
+          let initialWished = false;
+
+          if (wishlistResponse.success && wishlistResponse.data) {
+            const markets = (wishlistResponse.data as any).markets || [];
+            const isInWishlist = markets.some(
+              (market: any) => market.marketId === response.data.marketId
+            );
+            initialWished = isInWishlist;
+          }
+
+          // localStorage와 동기화
+          const storageKey = getWishStorageKey(response.data.marketId, authUser.userId);
+          localStorage.setItem(storageKey, initialWished.toString());
+          setIsWished(initialWished);
+        } catch (wishlistError: any) {
+          // 404는 위시리스트가 비어있는 정상 상태이므로 무시
+          if (wishlistError?.response?.status !== 404) {
+            console.error('좋아요 상태 확인 실패:', wishlistError);
+          }
+
+          // localStorage에서 복원 시도
+          const storageKey = getWishStorageKey(response.data.marketId, authUser.userId);
+          const storedWished = localStorage.getItem(storageKey);
+          setIsWished(storedWished === 'true');
+        }
+      }
+    } catch (error: any) {
+      console.error('❌ 상품 로드 실패:', error);
+      console.warn('⚠️ Using fallback mock product data');
+
+      // Fallback: mock 데이터 사용
+      const mockProduct = generateFallbackMockProduct(id);
+      setProduct(mockProduct);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // 상품 데이터 로드 및 좋아요 상태 확인
   useEffect(() => {
-    const loadProduct = async () => {
-      if (!id) {
-        alert('상품 ID가 없습니다.');
-        navigate('/products');
-        return;
-      }
-
-      try {
-        setLoading(true);
-        const response = await productService.getProduct(id);
-
-        if (!response.success || !response.data) {
-          throw new Error('상품을 찾을 수 없습니다.');
-        }
-
-        console.log('✅ 상품 데이터:', response.data);
-        console.log('📸 이미지 정보:', response.data.images);
-        setProduct(response.data);
-
-        // 좋아요 상태 확인 (로그인 사용자만)
-        if (authUser && authUser.userId) {
-          try {
-            const wishlistResponse = await productService.getWishlistedProducts({ pageSize: 100 });
-            let initialWished = false;
-
-            if (wishlistResponse.success && wishlistResponse.data) {
-              const markets = (wishlistResponse.data as any).markets || [];
-              const isInWishlist = markets.some(
-                (market: any) => market.marketId === response.data.marketId
-              );
-              initialWished = isInWishlist;
-            }
-
-            // localStorage와 동기화
-            const storageKey = getWishStorageKey(response.data.marketId, authUser.userId);
-            localStorage.setItem(storageKey, initialWished.toString());
-            setIsWished(initialWished);
-          } catch (wishlistError: any) {
-            // 404는 위시리스트가 비어있는 정상 상태이므로 무시
-            if (wishlistError?.response?.status !== 404) {
-              console.error('좋아요 상태 확인 실패:', wishlistError);
-            }
-
-            // localStorage에서 복원 시도
-            const storageKey = getWishStorageKey(response.data.marketId, authUser.userId);
-            const storedWished = localStorage.getItem(storageKey);
-            setIsWished(storedWished === 'true');
-          }
-        }
-      } catch (error: any) {
-        console.error('❌ 상품 로드 실패:', error);
-        console.warn('⚠️ Using fallback mock product data');
-
-        // Fallback: mock 데이터 사용
-        const mockProduct = generateFallbackMockProduct(id);
-        setProduct(mockProduct);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadProduct();
   }, [id, navigate, authUser]);
 
@@ -230,13 +231,30 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
     productChatRoomId: product?.chatRoomId
   });
 
-  // 참여자 목록 (MarketDetailResponse의 participants 사용)
-  const participants: Participant[] = product?.participants?.map((p: ParticipantResponse) => ({
-    id: p.userId.toString(),
-    name: p.nickname,
-    avatar: p.profileImage || undefined,
-    color: p.isCreator ? '#ff5e2f' : p.isBuyer ? '#3399ff' : '#999999'
-  })) || [];
+  // 참여자 목록 (구매자만 표시: isCreator 또는 isBuyer가 true인 경우)
+  const participants: Participant[] = product?.participants
+    ?.filter((p: ParticipantResponse) => p.isCreator || p.isBuyer)
+    ?.map((p: ParticipantResponse) => {
+      if (import.meta.env.DEV) {
+        console.log('[ProductDetail] Participant:', {
+          nickname: p.nickname,
+          profileImage: p.profileImage,
+          isCreator: p.isCreator,
+          isBuyer: p.isBuyer
+        });
+      }
+      return {
+        id: p.userId.toString(),
+        name: p.nickname || '알 수 없음',
+        avatar: p.profileImage || undefined,
+        color: p.isCreator ? '#ff5e2f' : '#3399ff'
+      };
+    }) || [];
+
+  if (import.meta.env.DEV && product) {
+    console.log('[ProductDetail] Total participants from API:', product.participants?.length);
+    console.log('[ProductDetail] Filtered participants (buyers only):', participants.length);
+  }
 
   const faqItems: AccordionItem[] = [
     {
@@ -556,7 +574,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
                     🔥 {product.recruitNow}/{product.recruitMax}명 참여중
                   </span>
                   <span className="time-badge">
-                    ⏰ {new Date(product.endTime) > new Date() ? '모집중' : '마감'}
+                    ⏰ {product.status === 'ENDED' ? '종료됨' : new Date(product.endTime) > new Date() ? '모집중' : '마감'}
                   </span>
                 </div>
 
@@ -581,8 +599,9 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
                       onClick={() => navigate(`/products/${product.marketId}/edit`)}
                       className="edit-button"
                       style={{ flex: 1 }}
+                      disabled={product.status === 'ENDED'}
                     >
-                      ✏️ 수정하기
+                      {product.status === 'ENDED' ? '🔒 종료됨' : '✏️ 수정하기'}
                     </Button>
                     <button
                       onClick={handleJoinChat}
@@ -598,8 +617,19 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
                     <button
                       onClick={handleJoinChat}
                       className={`chat-button ${isJoinedChat ? 'chat-button-joined' : ''}`}
+                      disabled={product.status === 'ENDED' && !isJoinedChat}
                     >
-                      {isBuyer ? '💳 구매중' : isJoinedChat ? '💬 참여중' : '💬 채팅방 참여'}
+                      {product.status === 'ENDED' && !isJoinedChat
+                        ? '🔒 종료됨'
+                        : product.status === 'ENDED' && isBuyer
+                        ? '💳 구매중'
+                        : product.status === 'ENDED' && isJoinedChat
+                        ? '💬 참여중'
+                        : isBuyer
+                        ? '💳 구매중'
+                        : isJoinedChat
+                        ? '💬 참여중'
+                        : '💬 채팅방 참여'}
                     </button>
                     <button
                       onClick={handleWish}
@@ -647,8 +677,8 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
 
             <h4>⏰ 공동구매 진행 안내</h4>
             <div className="description-group">
-              <p>• 목표 수량: {product.recruitMax}개</p>
-              <p>• 현재 수량: {product.recruitNow}개</p>
+              <p>• 목표 인원: {product.recruitMax}명</p>
+              <p>• 현재 인원: {product.recruitNow}명</p>
               <p>• 모집 마감: {new Date(product.endTime).toLocaleDateString('ko-KR')}</p>
               <p>• 거래 장소: {product.locationText}</p>
             </div>
@@ -667,9 +697,22 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
                   <div
                     key={participant.id}
                     className="participant-avatar"
-                    style={{ backgroundColor: participant.color }}
+                    title={participant.name}
                   >
-                    {participant.name}
+                    {participant.avatar ? (
+                      <img
+                        src={participant.avatar}
+                        alt={participant.name}
+                        style={{ borderColor: participant.color }}
+                      />
+                    ) : (
+                      <div
+                        className="participant-avatar-placeholder"
+                        style={{ backgroundColor: participant.color }}
+                      >
+                        {participant.name ? participant.name.charAt(0) : '?'}
+                      </div>
+                    )}
                   </div>
                 ))}
                 {product.recruitNow > 5 && (
