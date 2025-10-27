@@ -85,6 +85,27 @@ export const useChatStore = create<ChatState>((set, get) => ({
       if (response.success && response.data) {
         set({ currentRoom: response.data });
 
+        // 이전 채팅 메시지 로드
+        try {
+          const messagesResponse = await chatService.getMessages(roomId, { size: 50 });
+          if (messagesResponse.success && messagesResponse.data) {
+            // 최신 메시지가 아래로 오도록 정렬 (오래된 것부터)
+            const sortedMessages = messagesResponse.data.messages.sort((a, b) => 
+              new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime()
+            );
+            set({ messages: sortedMessages });
+            if (import.meta.env.DEV) {
+              console.log(`[채팅] ${sortedMessages.length}개의 이전 메시지를 불러왔습니다.`);
+            }
+          }
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('[채팅] 이전 메시지 로드 실패:', error);
+          }
+          // 메시지 로드 실패해도 채팅방은 계속 진행
+          set({ messages: [] });
+        }
+
         // WebSocket 구독 설정 (연결 대기)
         const subscribeWhenReady = (retryCount = 0) => {
           const { wsClient } = get();
@@ -126,6 +147,25 @@ export const useChatStore = create<ChatState>((set, get) => ({
         console.log('[채팅] 이미 참여 중인 채팅방입니다. 채팅방 정보를 가져옵니다.');
         // 채팅방 정보만 조회
         get().fetchChatRoom(roomId);
+
+        // 이전 채팅 메시지 로드
+        try {
+          const messagesResponse = await chatService.getMessages(roomId, { size: 50 });
+          if (messagesResponse.success && messagesResponse.data) {
+            const sortedMessages = messagesResponse.data.messages.sort((a, b) => 
+              new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime()
+            );
+            set({ messages: sortedMessages });
+            if (import.meta.env.DEV) {
+              console.log(`[채팅] ${sortedMessages.length}개의 이전 메시지를 불러왔습니다.`);
+            }
+          }
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('[채팅] 이전 메시지 로드 실패:', error);
+          }
+          set({ messages: [] });
+        }
 
         // WebSocket 구독 설정 (연결 대기)
         const subscribeWhenReady = (retryCount = 0) => {
