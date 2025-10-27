@@ -245,7 +245,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
       }
       return {
         id: p.userId.toString(),
-        name: p.nickname,
+        name: p.nickname || '알 수 없음',
         avatar: p.profileImage || undefined,
         color: p.isCreator ? '#ff5e2f' : '#3399ff'
       };
@@ -698,7 +698,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
                         className="participant-avatar-placeholder"
                         style={{ backgroundColor: participant.color }}
                       >
-                        {participant.name.charAt(0)}
+                        {participant.name ? participant.name.charAt(0) : '?'}
                       </div>
                     )}
                   </div>
