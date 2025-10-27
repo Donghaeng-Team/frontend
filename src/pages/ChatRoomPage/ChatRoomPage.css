@@ -13,7 +13,7 @@
   max-width: none;
 }
 
-/* 모바일 뷰 */
+/* 모바일 뷰 (페이지로 열렸을 때만) */
 @media (max-width: 768px) {
   /* BottomNav를 위한 padding */
   .chat-room-page {
@@ -23,4 +23,15 @@
   .chat-room-page .chat-room {
     height: calc(100vh - 60px);
   }
+}
+
+/* 모달 안에서 렌더링될 때는 모바일 스타일 무시 */
+.chat-modal-container .chat-room-page {
+  padding-bottom: 0 !important;
+  min-height: 100%;
+}
+
+.chat-modal-container .chat-room-page .chat-room {
+  height: 100% !important;
+  max-height: 100% !important;
 }
