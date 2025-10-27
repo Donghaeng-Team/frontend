@@ -1,7 +1,7 @@
 import { Client } from '@stomp/stompjs';
 import type { StompSubscription } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
-import type { WebSocketChatMessage } from '../types';
+import type { ChatMessageResponse } from '../types';
 
 // WebSocket 연결 상태
 export type ConnectionStatus = 'connected' | 'disconnected' | 'connecting' | 'error';
@@ -133,7 +133,7 @@ export class ChatWebSocketClient {
    */
   subscribeToRoom(
     roomId: number,
-    onMessage: (message: WebSocketChatMessage) => void
+    onMessage: (message: ChatMessageResponse) => void
   ): void {
     if (!this.client?.connected) {
       if (import.meta.env.DEV) {
@@ -155,7 +155,10 @@ export class ChatWebSocketClient {
       `/topic/rooms.${roomId}.messages`,
       (message) => {
         try {
-          const data: WebSocketChatMessage = JSON.parse(message.body);
+          const data: ChatMessageResponse = JSON.parse(message.body);
+          if (import.meta.env.DEV) {
+            console.log('[실시간 채팅] 수신된 메시지:', data);
+          }
           onMessage(data);
         } catch (error) {
           if (import.meta.env.DEV) {

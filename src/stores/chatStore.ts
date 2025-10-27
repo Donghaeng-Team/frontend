@@ -117,30 +117,14 @@ export const useChatStore = create<ChatState>((set, get) => ({
             if (import.meta.env.DEV) {
               console.log(`[채팅] 방 ${roomId}에 WebSocket 구독 시작`);
             }
-            wsClient.subscribeToRoom(roomId, (message: WebSocketChatMessage) => {
+            wsClient.subscribeToRoom(roomId, (message: ChatMessageResponse) => {
               if (import.meta.env.DEV) {
                 console.log('[채팅] WebSocket 메시지 수신:', message);
               }
-              // WebSocket 메시지 타입에 따라 messageType 결정
-              let messageType: 'TEXT' | 'SYSTEM' | 'DEADLINE_EXTEND' = 'TEXT';
-              if (message.type === 'SYSTEM' || message.type === 'JOIN' || message.type === 'LEAVE') {
-                messageType = 'SYSTEM';
-              }
-
-              // 시스템 메시지의 경우 숫자를 닉네임으로 교체
-              let messageContent = message.message;
-              if (messageType === 'SYSTEM' && message.senderNickname) {
-                messageContent = messageContent.replace(/^\d+/, message.senderNickname);
-              }
-
-              get().addMessage({
-                id: Date.now(),
-                senderId: message.senderId,
-                senderNickname: message.senderNickname,
-                messageContent: messageContent,
-                messageType: messageType,
-                sentAt: message.timestamp,
-              });
+              
+              // 백엔드가 ChatMessageResponse를 그대로 전송하므로
+              // messageType, messageContent, sentAt 필드를 직접 사용
+              get().addMessage(message);
             });
           } else if (retryCount < 10) {
             // 연결 대기 (최대 10번, 5초)
