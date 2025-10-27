@@ -658,7 +658,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
         {/* 참여자 현황 섹션 */}
         <section className="participants-section">
           <h2 className="section-title">
-            👥 참여자 현황 ({product.recruitNow}/{product.recruitMax}개)
+            👥 참여자 현황 ({product.recruitNow}/{product.recruitMax})
           </h2>
           <div className="participants-list">
             {participants.length > 0 ? (
