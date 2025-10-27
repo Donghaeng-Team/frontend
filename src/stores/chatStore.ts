@@ -163,6 +163,14 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
 
   addMessage: (message) => {
+    if (import.meta.env.DEV) {
+      console.log('[addMessage] 실시간 메시지 추가:', {
+        messageContent: message.messageContent,
+        senderNickname: message.senderNickname,
+        senderId: message.senderId,
+        messageType: message.messageType
+      });
+    }
     set({ messages: [...get().messages, message] });
   },
 

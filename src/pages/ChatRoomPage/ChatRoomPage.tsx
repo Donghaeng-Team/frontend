@@ -105,19 +105,31 @@ const ChatRoomPage = ({
 
       // 시스템 메시지의 경우 'system' 또는 숫자(userId)를 닉네임으로 교체
       let messageContent = msg.messageContent;
-      if (messageType === 'system' && msg.senderNickname) {
-        // 모든 가능한 패턴 처리:
-        // "system님이 구매를 취소했습니다" → "홍길동님이 구매를 취소했습니다"
-        // "1님이 참가했습니다" → "홍길동님이 참가했습니다"
-        // "system님이 구매를 신청했습니다" → "홍길동님이 구매를 신청했습니다"
-        // "system님이 채팅방을 나갔습니다" → "홍길동님이 채팅방을 나갔습니다"
-        messageContent = messageContent
-          .replace(/system님/gi, `${msg.senderNickname}님`)  // 'system님' 전체 교체
-          .replace(/^system\s+/i, `${msg.senderNickname} `)  // 줄 시작 'system '
-          .replace(/^system$/i, msg.senderNickname)          // 줄 전체가 'system'
-          .replace(/^\d+님/g, `${msg.senderNickname}님`)      // '1님', '2님' 등
-          .replace(/^\d+\s+/g, `${msg.senderNickname} `)      // '1 ', '2 ' 등
-          .replace(/^\d+$/g, msg.senderNickname);             // 줄 전체가 숫자
+      if (messageType === 'system') {
+        // senderNickname이 "system"이 아닌 실제 닉네임인 경우만 교체
+        if (msg.senderNickname && msg.senderNickname.toLowerCase() !== 'system') {
+          // "HyunJun님이 참가하셨습니다" - 이미 닉네임이 포함된 경우는 그대로 사용
+          messageContent = msg.messageContent;
+        } else {
+          // senderNickname이 "system"이거나 없는 경우: 메시지에서 userId 추출 후 닉네임으로 교체
+          // "4님이 공동구매 참가를 취소하셨습니다" → userId=4를 찾아서 닉네임으로 교체
+
+          // 메시지 앞부분에서 숫자 추출 (예: "4님이" → 4)
+          const userIdMatch = messageContent.match(/^(\d+)님/);
+
+          if (userIdMatch) {
+            const extractedUserId = parseInt(userIdMatch[1], 10);
+
+            // 현재 사용자 본인인지 확인
+            if (extractedUserId === user?.userId && user?.nickName) {
+              messageContent = messageContent.replace(/^\d+님/, `${user.nickName}님`);
+            } else {
+              // TODO: 다른 사용자의 닉네임은 participants에서 조회 필요
+              // 현재는 userId 그대로 표시
+              messageContent = messageContent;
+            }
+          }
+        }
       }
 
       return {
