@@ -252,12 +252,12 @@
 }
 
 /* 모달 안에서 렌더링될 때는 모바일 스타일 무시 */
-.chat-modal-container .chat-list-page {
+.modal-container .chat-list-page {
   padding-bottom: 0 !important;
   min-height: 100%;
 }
 
-.chat-modal-container .chat-list-container {
+.modal-container .chat-list-container {
   height: 100% !important;
   max-height: 100% !important;
 }

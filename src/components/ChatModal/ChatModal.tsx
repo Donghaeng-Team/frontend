@@ -1,7 +1,7 @@
-import { type FC, useState, useEffect } from 'react';
+import { type FC, useState } from 'react';
+import Modal from '../Modal';
 import ChatList from '../../pages/ChatList/ChatList';
 import ChatRoomPage from '../../pages/ChatRoomPage/ChatRoomPage';
-import './ChatModal.css';
 
 interface ChatModalProps {
   isOpen: boolean;
@@ -17,22 +17,6 @@ const ChatModal: FC<ChatModalProps> = ({
 }) => {
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(initialRoomId || null);
 
-  // 모달 열릴 때 body 스크롤 막기
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-
-    // cleanup: 컴포넌트 언마운트 시 스크롤 복원
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
-
-  if (!isOpen) return null;
-
   const handleRoomSelect = (roomId: number) => {
     setSelectedRoomId(roomId.toString());
   };
@@ -42,26 +26,20 @@ const ChatModal: FC<ChatModalProps> = ({
   };
 
   return (
-    <div className="chat-modal-overlay" onClick={(e) => {
-      if (e.target === e.currentTarget) {
-        onClose();
-      }
-    }}>
-      <div className="chat-modal-container">
-        {!selectedRoomId ? (
-          <ChatList
-            onRoomSelect={handleRoomSelect}
-            showBottomNav={false}
-          />
-        ) : (
-          <ChatRoomPage
-            roomId={selectedRoomId}
-            onBack={handleBack}
-            showBottomNav={false}
-          />
-        )}
-      </div>
-    </div>
+    <Modal isOpen={isOpen} onClose={onClose} className="chat-modal">
+      {!selectedRoomId ? (
+        <ChatList
+          onRoomSelect={handleRoomSelect}
+          showBottomNav={false}
+        />
+      ) : (
+        <ChatRoomPage
+          roomId={selectedRoomId}
+          onBack={handleBack}
+          showBottomNav={false}
+        />
+      )}
+    </Modal>
   );
 };
 

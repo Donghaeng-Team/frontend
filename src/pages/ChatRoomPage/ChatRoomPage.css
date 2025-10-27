@@ -26,12 +26,12 @@
 }
 
 /* 모달 안에서 렌더링될 때는 모바일 스타일 무시 */
-.chat-modal-container .chat-room-page {
+.modal-container .chat-room-page {
   padding-bottom: 0 !important;
   min-height: 100%;
 }
 
-.chat-modal-container .chat-room-page .chat-room {
+.modal-container .chat-room-page .chat-room {
   height: 100% !important;
   max-height: 100% !important;
 }
