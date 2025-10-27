@@ -129,8 +129,9 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
             let initialWished = false;
 
             if (wishlistResponse.success && wishlistResponse.data) {
-              const isInWishlist = wishlistResponse.data.content.some(
-                (item: any) => item.marketId === response.data.marketId
+              const markets = (wishlistResponse.data as any).markets || [];
+              const isInWishlist = markets.some(
+                (market: any) => market.marketId === response.data.marketId
               );
               initialWished = isInWishlist;
             }
@@ -372,8 +373,9 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
       try {
         const wishlistResponse = await productService.getWishlistedProducts({ pageSize: 100 });
         if (wishlistResponse.success && wishlistResponse.data) {
-          const isInWishlist = wishlistResponse.data.content.some(
-            (item: any) => item.marketId === product.marketId
+          const markets = (wishlistResponse.data as any).markets || [];
+          const isInWishlist = markets.some(
+            (market: any) => market.marketId === product.marketId
           );
           setIsWished(isInWishlist);
           localStorage.setItem(storageKey, isInWishlist.toString());
