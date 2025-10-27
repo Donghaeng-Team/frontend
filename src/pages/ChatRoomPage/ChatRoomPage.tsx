@@ -32,6 +32,7 @@ const ChatRoomPage = ({
     messages,
     fetchChatRoom,
     joinChatRoom,
+    leaveChatRoom,
     sendMessage,
     addMessage,
     confirmBuyer,
@@ -57,9 +58,16 @@ const ChatRoomPage = ({
       }
       fetchChatRoom(numericRoomId);
     }
-    // cleanup에서 hasJoinedRef를 false로 만들지 않음
-    // (컴포넌트 언마운트 시에만 초기화하면 됨)
-  }, [roomId, user, joinChatRoom]);
+
+    // cleanup: 채팅방 나갈 때 구독 해제
+    return () => {
+      if (roomId) {
+        const numericRoomId = parseInt(roomId, 10);
+        leaveChatRoom(numericRoomId);
+        hasJoinedRef.current = false;
+      }
+    };
+  }, [roomId, user, fetchChatRoom, leaveChatRoom]);
 
   // ChatRoomStatus를 RecruitmentStatus의 status 타입으로 변환
   const convertChatRoomStatus = (status: ChatRoomStatus): 'active' | 'closing' | 'closed' => {
