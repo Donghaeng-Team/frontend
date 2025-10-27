@@ -566,16 +566,25 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
 
               <div className="action-buttons">
                 {isAuthor ? (
-                  // 작성자일 때: 수정 버튼만 표시
-                  <Button
-                    variant="primary"
-                    size="large"
-                    onClick={() => navigate(`/products/${product.marketId}/edit`)}
-                    className="edit-button"
-                    style={{ width: '100%' }}
-                  >
-                    ✏️ 수정하기
-                  </Button>
+                  // 작성자일 때: 수정 버튼 + 채팅방 바로가기 버튼
+                  <>
+                    <Button
+                      variant="primary"
+                      size="large"
+                      onClick={() => navigate(`/products/${product.marketId}/edit`)}
+                      className="edit-button"
+                      style={{ flex: 1 }}
+                    >
+                      ✏️ 수정하기
+                    </Button>
+                    <button
+                      onClick={handleJoinChat}
+                      className="chat-button chat-button-joined"
+                      style={{ flex: 1 }}
+                    >
+                      💬 채팅방
+                    </button>
+                  </>
                 ) : (
                   // 일반 사용자일 때: 채팅방 참여 + 좋아요 버튼
                   <>
