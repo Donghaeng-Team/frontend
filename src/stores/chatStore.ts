@@ -23,6 +23,7 @@ interface ChatState {
   disconnectWebSocket: () => void;
   fetchChatRooms: () => Promise<void>;
   fetchChatRoom: (roomId: number) => Promise<void>;
+  fetchParticipants: (marketId: number) => Promise<void>;
   joinChatRoom: (roomId: number) => Promise<void>;
   leaveChatRoom: (roomId: number) => void;
   exitChatRoom: (roomId: number) => Promise<void>;
@@ -96,6 +97,18 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }
   },
 
+  fetchParticipants: async (marketId) => {
+    try {
+      const response = await chatService.getParticipants(marketId);
+      if (response.success && response.data) {
+        set({ participants: response.data.participants });
+      }
+    } catch (error: any) {
+      console.error('참여자 목록 조회 실패:', error);
+      set({ participants: [] });
+    }
+  },
+
   joinChatRoom: async (roomId) => {
     try {
       // 채팅방 정보 조회 (이미 참가한 채팅방)
@@ -107,19 +120,30 @@ export const useChatStore = create<ChatState>((set, get) => ({
       if (response.success && response.data) {
         set({ currentRoom: response.data });
 
+        // 참여자 목록 로드
+        try {
+          const participantsResponse = await chatService.getParticipants(response.data.marketId);
+          if (participantsResponse.success && participantsResponse.data) {
+            set({ participants: participantsResponse.data.participants });
+          }
+        } catch (error) {
+          // 참여자 로드 실패해도 채팅방은 계속 진행
+          set({ participants: [] });
+        }
+
         // 이전 채팅 메시지 로드
         try {
           const messagesResponse = await chatService.getMessages(roomId, { size: 50 });
           if (messagesResponse.success && messagesResponse.data) {
             // 최신 메시지가 아래로 오도록 정렬 (오래된 것부터)
-            const sortedMessages = messagesResponse.data.messages.sort((a, b) => 
+            const sortedMessages = messagesResponse.data.messages.sort((a, b) =>
               new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime()
             );
             set({ messages: sortedMessages });
-      
+
           }
         } catch (error) {
-    
+
           // 메시지 로드 실패해도 채팅방은 계속 진행
           set({ messages: [] });
         }
@@ -172,6 +196,22 @@ export const useChatStore = create<ChatState>((set, get) => ({
       });
     }
     set({ messages: [...get().messages, message] });
+
+    // 시스템 메시지이고 참가/퇴장/구매 관련 메시지인 경우 참여자 목록 새로고침
+    if (message.messageType === 'SYSTEM') {
+      const { currentRoom } = get();
+      if (currentRoom && (
+        message.messageContent.includes('참가하셨습니다') ||
+        message.messageContent.includes('나가셨습니다') ||
+        message.messageContent.includes('구매') ||
+        message.messageContent.includes('취소')
+      )) {
+        // 참여자 목록 새로고침 (비동기로 실행, 실패해도 메시지는 표시됨)
+        get().fetchParticipants(currentRoom.marketId).catch(err => {
+          console.error('참여자 목록 새로고침 실패:', err);
+        });
+      }
+    }
   },
 
   confirmBuyer: async (roomId) => {

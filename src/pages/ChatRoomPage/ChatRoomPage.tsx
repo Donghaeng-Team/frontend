@@ -31,6 +31,7 @@ const ChatRoomPage = ({
     wsStatus,
     currentRoom,
     messages,
+    participants,
     fetchChatRoom,
     joinChatRoom,
     leaveChatRoom,
@@ -166,9 +167,12 @@ const ChatRoomPage = ({
             if (extractedUserId === user?.userId && user?.nickName) {
               messageContent = messageContent.replace(/^\d+님/, `${user.nickName}님`);
             } else {
-              // TODO: 다른 사용자의 닉네임은 participants에서 조회 필요
-              // 현재는 userId 그대로 표시
-              messageContent = messageContent;
+              // participants에서 닉네임 찾기
+              const participant = participants.find(p => p.userId === extractedUserId);
+              if (participant?.nickname) {
+                messageContent = messageContent.replace(/^\d+님/, `${participant.nickname}님`);
+              }
+              // 찾지 못하면 userId 그대로 표시
             }
           }
         }
