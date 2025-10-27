@@ -200,8 +200,17 @@ const ChatRoomPage = ({
         try {
           await exitChatRoom(parseInt(roomId, 10));
           navigate('/');
-        } catch (error) {
-          alert('채팅방 나가기에 실패했습니다.');
+        } catch (error: any) {
+          console.error('채팅방 나가기 오류:', error);
+          // 백엔드 데이터베이스 오류(joined_at null)가 발생하더라도
+          // 로컬 상태는 정리하고 홈으로 이동
+          if (error?.response?.status === 500) {
+            alert('채팅방에서 나갔습니다. (서버 이력 저장 오류 발생)');
+            leaveChatRoom(parseInt(roomId, 10)); // 로컬 상태 정리
+            navigate('/');
+          } else {
+            alert('채팅방 나가기에 실패했습니다.');
+          }
         }
       }
     }
