@@ -128,7 +128,9 @@ const ChatRoom: FC<ChatRoomProps> = ({
       {/* Recruitment Status */}
       <div className="chat-room-recruitment-status">
         <span className="chat-room-recruitment-count">
-          🔥 모집중 {recruitmentStatus.current}/{recruitmentStatus.max}명
+          {recruitmentStatus.status === 'closing' || recruitmentStatus.status === 'closed'
+            ? `✅ 모집완료 ${recruitmentStatus.current}/${recruitmentStatus.max}명`
+            : `🔥 모집중 ${recruitmentStatus.current}/${recruitmentStatus.max}명`}
         </span>
         <span className="chat-room-time-remaining">
           ⏰ {recruitmentStatus.timeRemaining}
