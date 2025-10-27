@@ -39,16 +39,14 @@ export class ChatWebSocketClient {
     // STOMP 클라이언트 생성
     this.client = new Client({
       webSocketFactory: () => {
-        // 개발: 상대 경로 (Vite proxy 사용, CORS 회피)
-        // 프로덕션: 절대 URL (https://bytogether.net)
+        // 개발: http://localhost:8080
+        // 프로덕션: https://bytogether.net
         const isDev = import.meta.env.DEV;
-        const wsBaseURL = isDev ? '' : (import.meta.env.VITE_WS_BASE_URL || 'https://bytogether.net');
+        const wsBaseURL = isDev
+          ? (import.meta.env.VITE_WS_BASE_URL || 'http://localhost:8080')
+          : (import.meta.env.VITE_WS_BASE_URL || 'https://bytogether.net');
 
-        // SockJS 생성 시 토큰을 쿼리 파라미터로 전달
-        let url = `${wsBaseURL}/ws/v1/chat/private`;
-        if (accessToken) {
-          url += `?token=${encodeURIComponent(accessToken)}`;
-        }
+        const url = `${wsBaseURL}/ws/v1/chat/private`;
         return new SockJS(url) as any;
       },
 
