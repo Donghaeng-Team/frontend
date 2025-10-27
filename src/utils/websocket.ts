@@ -35,6 +35,8 @@ export class ChatWebSocketClient {
 
     const accessToken = getAccessToken();
     const refreshToken = getRefreshToken();
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const userId = user?.userId;
 
     // STOMP 클라이언트 생성
     this.client = new Client({
@@ -55,10 +57,11 @@ export class ChatWebSocketClient {
         }) as any;
       },
 
-      // STOMP 연결 헤더에도 토큰 추가
-      connectHeaders: accessToken ? {
+      // STOMP 연결 헤더에 토큰 및 사용자 ID 추가
+      connectHeaders: accessToken && userId ? {
         'Authorization': `Bearer ${accessToken}`,
         'X-Refresh-Token': refreshToken || '',
+        'X-User-Id': userId.toString(),
       } : {},
 
       debug: () => {
@@ -250,7 +253,7 @@ export class ChatWebSocketClient {
   sendMessage(roomId: number, message: string, userId: number, nickname: string): void {
     if (!this.client?.connected) {
       if (import.meta.env.DEV) {
-        console.error('[WebSocket] Not connected. Cannot send message');
+        console.error('[실시간 채팅] 연결되지 않음 - 메시지를 보낼 수 없습니다');
       }
       return;
     }
@@ -266,7 +269,7 @@ export class ChatWebSocketClient {
     });
 
     if (import.meta.env.DEV) {
-      console.log('[WebSocket] Message sent to room', roomId, ':', payload);
+      console.log(`[실시간 채팅] 메시지 전송 완료 - 방 ${roomId}:`, message);
     }
   }
 

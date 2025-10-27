@@ -150,8 +150,15 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   sendMessage: (roomId, message, userId, nickname) => {
     const { wsClient } = get();
+    if (import.meta.env.DEV) {
+      console.log('[채팅] 메시지 전송 시도:', { roomId, message, userId, nickname, connected: wsClient?.isConnected() });
+    }
     if (wsClient?.isConnected()) {
       wsClient.sendMessage(roomId, message, userId, nickname);
+    } else {
+      if (import.meta.env.DEV) {
+        console.error('[채팅] WebSocket이 연결되지 않았습니다. 메시지를 보낼 수 없습니다.');
+      }
     }
   },
 
