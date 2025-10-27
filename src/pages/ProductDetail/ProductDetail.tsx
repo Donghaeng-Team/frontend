@@ -667,9 +667,22 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
                   <div
                     key={participant.id}
                     className="participant-avatar"
-                    style={{ backgroundColor: participant.color }}
+                    title={participant.name}
                   >
-                    {participant.name}
+                    {participant.avatar ? (
+                      <img
+                        src={participant.avatar}
+                        alt={participant.name}
+                        style={{ borderColor: participant.color }}
+                      />
+                    ) : (
+                      <div
+                        className="participant-avatar-placeholder"
+                        style={{ backgroundColor: participant.color }}
+                      >
+                        {participant.name.charAt(0)}
+                      </div>
+                    )}
                   </div>
                 ))}
                 {product.recruitNow > 5 && (
