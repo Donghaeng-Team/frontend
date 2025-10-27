@@ -162,7 +162,7 @@ const Header: React.FC<HeaderProps> = ({
                     onFavoriteClick?.();
                   }}
                 >
-                  <span className="icon">♥</span>
+                  <span className="icon">❤️</span>
                   <span>찜한 상품</span>
                 </button>
 
@@ -245,7 +245,7 @@ const Header: React.FC<HeaderProps> = ({
                   onFavoriteClick?.();
                 }}
               >
-                <span className="icon">♥</span>
+                <span className="icon">❤️</span>
               </button>
 
               <button
