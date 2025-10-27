@@ -6,6 +6,7 @@ import type { TabItem } from '../../components/Tab';
 import Badge from '../../components/Badge';
 import Button from '../../components/Button';
 import { productService, type Product } from '../../api/services/product';
+import { cartService } from '../../api/services/cart';
 import { useAuthStore } from '../../stores/authStore';
 import './PurchaseHistory.css';
 
@@ -110,11 +111,36 @@ const PurchaseHistory: React.FC = () => {
 
         setCompletedItems([...myCompleted, ...joinedCompleted]);
 
-        // 좋아요한 상품
-        const likedResponse = await productService.getWishlistedProducts();
-        if (likedResponse.success && likedResponse.data) {
-          const items = likedResponse.data.content.map(p => convertProductToPurchaseItem(p, 'participant'));
-          setLikedItems(items);
+        // 좋아요한 상품 (cartService 사용)
+        if (authUser?.userId) {
+          const likedResponse = await cartService.getMyCarts(authUser.userId, {
+            pageNum: 0,
+            pageSize: 100
+          });
+          if (likedResponse.success && likedResponse.data) {
+            const items = likedResponse.data.markets.map((market: any) => ({
+              id: market.marketId.toString(),
+              title: market.title,
+              category: market.categoryId,
+              price: market.price,
+              image: market.thumbnailImageUrl,
+              status: market.status === 'RECRUITING' ? 'recruiting' as const : 
+                      market.status === 'ENDED' ? 'completed' as const : 
+                      'cancelled' as const,
+              participants: {
+                current: market.recruitNow,
+                max: market.recruitMax
+              },
+              seller: {
+                name: market.nickname,
+                avatar: market.userProfileImageUrl
+              },
+              location: market.emdName,
+              date: new Date().toISOString().split('T')[0],
+              role: 'participant' as const
+            }));
+            setLikedItems(items);
+          }
         }
       } catch (error) {
         console.error('데이터 로드 실패:', error);
@@ -309,7 +335,12 @@ const PurchaseHistory: React.FC = () => {
     if (!confirm('좋아요를 취소하시겠습니까?')) return;
 
     try {
-      const response = await productService.toggleWishlist(productId);
+      if (!authUser?.userId) {
+        alert('로그인이 필요합니다.');
+        return;
+      }
+
+      const response = await cartService.deleteCart(authUser.userId, parseInt(productId, 10));
       if (response.success) {
         alert('좋아요가 취소되었습니다.');
         // 데이터 다시 로드
