@@ -40,6 +40,7 @@ const ChatRoomPage = ({
     addMessage,
     confirmBuyer,
     cancelBuyer,
+    closeRecruitment,
     extendDeadline,
   } = useChatStore();
   const { user } = useAuthStore();
@@ -276,11 +277,13 @@ const ChatRoomPage = ({
 
   const handleConfirm = async () => {
     if (roomId && currentRoom) {
-      try {
-        await confirmBuyer(parseInt(roomId, 10));
-        alert('구매자가 확정되었습니다.');
-      } catch (error) {
-        alert('구매자 확정에 실패했습니다.');
+      if (window.confirm('모집을 마감하시겠습니까?')) {
+        try {
+          await closeRecruitment(parseInt(roomId, 10));
+          alert('모집이 마감되었습니다.');
+        } catch (error) {
+          alert('모집 마감에 실패했습니다.');
+        }
       }
     }
   };
