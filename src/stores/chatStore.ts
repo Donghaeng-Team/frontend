@@ -81,7 +81,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   joinChatRoom: async (roomId) => {
     try {
-      const response = await chatService.joinChatRoom(roomId);
+      // 채팅방 정보 조회 (이미 참가한 채팅방)
+      const response = await chatService.getChatRoom(roomId);
       if (response.success && response.data) {
         set({ currentRoom: response.data });
 
@@ -140,65 +141,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
         subscribeWhenReady();
       }
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.message;
-
-      // "이미 참여중인 채팅방입니다" 에러는 무시 (이미 참여중이면 정상)
-      if (errorMessage === '이미 참여중인 채팅방입니다') {
-        console.log('[채팅] 이미 참여 중인 채팅방입니다. 채팅방 정보를 가져옵니다.');
-        // 채팅방 정보만 조회
-        get().fetchChatRoom(roomId);
-
-        // 이전 채팅 메시지 로드
-        try {
-          const messagesResponse = await chatService.getMessages(roomId, { size: 50 });
-          if (messagesResponse.success && messagesResponse.data) {
-            const sortedMessages = messagesResponse.data.messages.sort((a, b) => 
-              new Date(a.sentAt).getTime() - new Date(b.sentAt).getTime()
-            );
-            set({ messages: sortedMessages });
-            if (import.meta.env.DEV) {
-              console.log(`[채팅] ${sortedMessages.length}개의 이전 메시지를 불러왔습니다.`);
-            }
-          }
-        } catch (error) {
-          if (import.meta.env.DEV) {
-            console.error('[채팅] 이전 메시지 로드 실패:', error);
-          }
-          set({ messages: [] });
-        }
-
-        // WebSocket 구독 설정 (연결 대기)
-        const subscribeWhenReady = (retryCount = 0) => {
-          const { wsClient } = get();
-          if (wsClient?.isConnected()) {
-            wsClient.subscribeToRoom(roomId, (message: WebSocketChatMessage) => {
-              let messageType: 'TEXT' | 'SYSTEM' | 'DEADLINE_EXTEND' = 'TEXT';
-              if (message.type === 'SYSTEM' || message.type === 'JOIN' || message.type === 'LEAVE') {
-                messageType = 'SYSTEM';
-              }
-
-              let messageContent = message.message;
-              if (messageType === 'SYSTEM' && message.senderNickname) {
-                messageContent = messageContent.replace(/^\d+/, message.senderNickname);
-              }
-
-              get().addMessage({
-                id: Date.now(),
-                senderId: message.senderId,
-                senderNickname: message.senderNickname,
-                messageContent: messageContent,
-                messageType: messageType,
-                sentAt: message.timestamp,
-              });
-            });
-          } else if (retryCount < 10) {
-            // 연결 대기 (최대 10번, 5초)
-            setTimeout(() => subscribeWhenReady(retryCount + 1), 500);
-          }
-        };
-        subscribeWhenReady();
-      } else {
-        set({ error: '채팅방 참여에 실패했습니다.' });
+      set({ error: '채팅방 정보를 불러오는데 실패했습니다.' });
+      if (import.meta.env.DEV) {
+        console.error('[채팅] 채팅방 입장 실패:', error);
       }
     }
   },
