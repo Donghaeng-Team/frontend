@@ -748,18 +748,6 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
           }}
           chatRooms={transformChatRoomsForUI(chatRooms)}
           initialRoomId={product.chatRoomId?.toString()}
-          initialProductInfo={{
-            name: product.title,
-            price: product.price,
-            image: product.images?.[0]?.imageUrl ? convertToCloudFrontUrl(product.images[0].imageUrl) : undefined
-          }}
-          initialRecruitmentStatus={{
-            current: product.recruitNow || 0,
-            max: product.recruitMax,
-            timeRemaining: '진행 중',
-            status: 'active'
-          }}
-          initialRole="buyer"
         />
       )}
 

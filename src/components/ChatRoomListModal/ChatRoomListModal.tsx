@@ -85,10 +85,16 @@ const ChatRoomListModal: FC<ChatRoomListModalProps> = ({
                     key={room.id}
                     className="chat-room-item"
                     onClick={() => {
-                      if (onRoomClick) {
-                        onRoomClick(room.id);
-                      } else {
+                      const isMobile = window.innerWidth <= 768;
+
+                      if (isMobile) {
+                        // 모바일: 페이지로 이동
                         navigate(`/chat/${room.id}`);
+                      } else {
+                        // PC: 모달 안에서 표시
+                        if (onRoomClick) {
+                          onRoomClick(room.id);
+                        }
                       }
                     }}
                   >
