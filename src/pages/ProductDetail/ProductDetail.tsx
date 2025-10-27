@@ -574,7 +574,7 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
                     🔥 {product.recruitNow}/{product.recruitMax}명 참여중
                   </span>
                   <span className="time-badge">
-                    ⏰ {new Date(product.endTime) > new Date() ? '모집중' : '마감'}
+                    ⏰ {product.status === 'ENDED' ? '종료됨' : new Date(product.endTime) > new Date() ? '모집중' : '마감'}
                   </span>
                 </div>
 
@@ -621,6 +621,10 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
                     >
                       {product.status === 'ENDED' && !isJoinedChat
                         ? '🔒 종료됨'
+                        : product.status === 'ENDED' && isBuyer
+                        ? '💳 구매중'
+                        : product.status === 'ENDED' && isJoinedChat
+                        ? '💬 참여중'
                         : isBuyer
                         ? '💳 구매중'
                         : isJoinedChat
