@@ -120,14 +120,8 @@ export const chatService = {
     hours: number
   ): Promise<ApiResponse<ExtendDeadlineResponse>> => {
     const response = await apiClient.patch(
-      `/api/v1/chat/private/${roomId}/extend`,
-      {},
-      {
-        params: { hours },
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
+      `/api/v1/chat/private/${roomId}/extend?hours=${hours}`,
+      null
     );
     return response.data;
   },
