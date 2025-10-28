@@ -1,0 +1,56 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - button "📍 위치 설정 ▽" [ref=e4] [cursor=pointer]:
+      - generic [ref=e5]: 📍
+      - generic [ref=e6]: 위치 설정
+      - generic [ref=e7]: ▽
+  - generic [ref=e8]:
+    - main [ref=e9]:
+      - generic [ref=e10]:
+        - generic [ref=e12]:
+          - heading "🏘️ 우리 동네 소식" [level=1] [ref=e13]
+          - paragraph [ref=e14]: 동네 이웃들과 공동구매 정보와 일상을 나누어요
+        - generic [ref=e16]:
+          - generic [ref=e17]:
+            - button "전체" [ref=e18] [cursor=pointer]
+            - button "동네 소식" [ref=e19] [cursor=pointer]
+            - button "공구 후기" [ref=e20] [cursor=pointer]
+            - button "질문 답변" [ref=e21] [cursor=pointer]
+          - generic [ref=e22]:
+            - textbox "🔍 게시글 검색..." [ref=e24]
+            - button "✏️ 글쓰기" [ref=e25] [cursor=pointer]
+        - generic [ref=e28]:
+          - generic [ref=e29]: 🔍
+          - heading "아직 게시글이 없어요" [level=3] [ref=e30]
+          - paragraph [ref=e31]: 우리 동네의 첫 번째 이야기를 남겨보세요!
+          - button "✏️ 첫 글 작성하기" [ref=e32] [cursor=pointer]
+    - generic [ref=e34]:
+      - generic:
+        - generic:
+          - generic: 맨 위로
+          - button "맨 위로 가기": ⬆️
+        - generic:
+          - generic: 커뮤니티 글쓰기
+          - button "커뮤니티 글쓰기": 💬
+        - generic:
+          - generic: 공동구매 글쓰기
+          - button "공동구매 글쓰기": 🛒
+      - button "글쓰기 메뉴" [ref=e35] [cursor=pointer]:
+        - generic [ref=e36]: ✏️
+    - navigation [ref=e37]:
+      - button "🏠 홈" [ref=e38] [cursor=pointer]:
+        - generic [ref=e39]: 🏠
+        - generic [ref=e40]: 홈
+      - button "💬 커뮤니티" [ref=e41] [cursor=pointer]:
+        - generic [ref=e42]: 💬
+        - generic [ref=e43]: 커뮤니티
+      - button "💭 채팅" [ref=e44] [cursor=pointer]:
+        - generic [ref=e45]: 💭
+        - generic [ref=e46]: 채팅
+      - button "👤 MY" [ref=e47] [cursor=pointer]:
+        - generic [ref=e48]: 👤
+        - generic [ref=e49]: MY
+```
