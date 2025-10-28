@@ -89,10 +89,10 @@ const MyPage: React.FC<MyPageProps> = () => {
         // 참여중인 상품 개수
         let participatingCount = 0;
         try {
-          const participatingResponse = await productService.getMyJoinedProducts();
+          const participatingResponse = await productService.getMyJoinedProducts({ pageNum: 0, pageSize: 100 });
           if (participatingResponse.success && participatingResponse.data) {
-            const content = participatingResponse.data.content || [];
-            participatingCount = content.filter(p => p.status === 'active').length;
+            const markets = (participatingResponse.data as any).markets || [];
+            participatingCount = markets.filter((m: any) => m.status === 'RECRUITING').length;
           }
         } catch (error: any) {
           if (error?.response?.status !== 404) {
@@ -103,18 +103,10 @@ const MyPage: React.FC<MyPageProps> = () => {
         // 완료된 상품 개수
         let completedCount = 0;
         try {
-          const myCompletedResponse = await productService.getMyProducts();
-          const joinedCompletedResponse = await productService.getMyJoinedProducts();
-
-          const myCompleted = myCompletedResponse.success && myCompletedResponse.data
-            ? ((myCompletedResponse.data as any).markets || []).filter((m: any) => m.status === 'ENDED').length
+          const completedResponse = await productService.getMyCompletedProducts({ pageNum: 0, pageSize: 100 });
+          completedCount = completedResponse.success && completedResponse.data
+            ? ((completedResponse.data as any).markets || []).length
             : 0;
-
-          const joinedCompleted = joinedCompletedResponse.success && joinedCompletedResponse.data
-            ? (joinedCompletedResponse.data.content || []).filter(p => p.status === 'completed').length
-            : 0;
-
-          completedCount = myCompleted + joinedCompleted;
         } catch (error: any) {
           if (error?.response?.status !== 404) {
             console.error('완료된 상품 로드 실패:', error);
