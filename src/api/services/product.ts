@@ -102,7 +102,11 @@ export const productService = {
     formData.append('longitude', data.longitude.toString());
     formData.append('locationText', data.locationText);
 
-    const response = await apiClient.post('/api/v1/market/private', formData);
+    const response = await apiClient.post('/api/v1/market/private', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      }
+    });
     
     return response.data;
   },
