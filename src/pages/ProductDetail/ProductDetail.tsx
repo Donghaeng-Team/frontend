@@ -300,14 +300,12 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
   ];
 
   const handleJoinChat = async () => {
-    // 인증 확인
-    if (!authUser) {
-      alert('로그인이 필요한 기능입니다.');
+    if (!authUser || !authUser.userId) {
+      alert('로그인이 필요합니다.');
       navigate('/login');
       return;
     }
 
-    // 채팅방 ID 확인
     if (!product?.chatRoomId) {
       alert('채팅방 정보를 불러올 수 없습니다.');
       console.error('❌ chatRoomId is missing');
@@ -317,9 +315,9 @@ const ProductDetail: React.FC<ProductDetailProps> = () => {
     try {
       // 아직 참여하지 않은 경우에만 joinChatRoom API 호출
       if (!isJoinedChat) {
-        console.log('✅ 채팅방 참여 API 호출:', product.chatRoomId);
+        console.log('✅ 채팅방 참여 API 호출 - marketId:', product.marketId);
         try {
-          await chatService.joinChatRoom(product.chatRoomId);
+          await chatService.joinChatRoom(product.marketId);
           console.log('✅ 채팅방 참여 성공');
         } catch (joinError: any) {
           // "이미 참여중인 채팅방입니다" 에러는 정상 케이스로 처리
