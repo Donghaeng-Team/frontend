@@ -472,8 +472,8 @@ const MyPage: React.FC<MyPageProps> = () => {
               </div>
             </div>
 
-            {/* 알림 설정 */}
-            <div className="menu-item-expandable">
+            {/* 알림 설정 - 임시 숨김 */}
+            {/* <div className="menu-item-expandable">
               <button 
                 className="menu-item-header"
                 onClick={() => handleSectionToggle('notifications')}
@@ -521,7 +521,7 @@ const MyPage: React.FC<MyPageProps> = () => {
                   </div>
                 </div>
               )}
-            </div>
+            </div> */}
 
             {/* 고객센터 */}
             <div className="menu-item-expandable">
