@@ -164,11 +164,8 @@ const ChatRoom: FC<ChatRoomProps> = ({
             <button
               className="chat-room-action-btn complete"
               onClick={onComplete}
-              disabled={recruitmentStatus.status !== 'closing' && recruitmentStatus.status !== 'closed'}
             >
-              {recruitmentStatus.status === 'closing' || recruitmentStatus.status === 'closed'
-                ? '🏁 판매 종료'
-                : '🔒 판매 종료'}
+              🏁 판매 종료
             </button>
           </>
         ) : (
