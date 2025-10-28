@@ -376,24 +376,7 @@ const PurchaseHistory: React.FC = () => {
     navigate(`/products/${productId}`);
   };
 
-  // 참여 취소
-  const handleCancelParticipation = async (productId: string) => {
-    if (!confirm('정말 참여를 취소하시겠습니까?')) return;
-
-    try {
-      const response = await productService.leaveProduct(productId);
-      if (response.success) {
-        alert('참여가 취소되었습니다.');
-        // 데이터 다시 로드
-        setParticipatingItems(prev => prev.filter(item => item.id !== productId));
-      }
-    } catch (error) {
-      console.error('참여 취소 실패:', error);
-      alert('참여 취소 중 오류가 발생했습니다.');
-    }
-  };
-
-  // 좋아요 취소
+// 좋아요 취소
   const handleRemoveWishlist = async (productId: string) => {
     if (!confirm('좋아요를 취소하시겠습니까?')) return;
 
@@ -470,9 +453,6 @@ const PurchaseHistory: React.FC = () => {
           <>
             <Button size="small" variant="outline" onClick={(e) => { e.stopPropagation(); navigate(`/products/${item.id}/edit`); }}>수정</Button>
           </>
-        )}
-        {item.status === 'recruiting' && item.role === 'participant' && activeTab !== 'liked' && (
-          <Button size="small" variant="outline" onClick={(e) => { e.stopPropagation(); handleCancelParticipation(item.id); }}>참여 취소</Button>
         )}
         {item.status === 'completed' && (
           <Button size="small" variant="outline" onClick={(e) => { e.stopPropagation(); handleCardClick(item.id); }}>상세보기</Button>
