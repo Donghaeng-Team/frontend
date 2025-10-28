@@ -309,12 +309,6 @@ const MyPage: React.FC<MyPageProps> = () => {
       icon: '📦',
       label: '공동구매 내역',
       onClick: () => navigate('/purchase-history')
-    },
-    {
-      id: 'my-posts',
-      icon: '📝',
-      label: '내가 작성한 글',
-      onClick: () => navigate(`/community?search=${encodeURIComponent(profile.name)}`)
     }
   ];
 
