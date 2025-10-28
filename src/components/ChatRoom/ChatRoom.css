@@ -42,6 +42,9 @@
     cursor: pointer;
     transition: all 0.2s;
     font-family: inherit;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   
   .chat-room-leave-btn:hover {
@@ -136,6 +139,10 @@
     cursor: pointer;
     transition: all 0.2s;
     font-family: inherit;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 8px;
   }
   
   .chat-room-action-btn.extend-time {
@@ -325,6 +332,10 @@
     cursor: pointer;
     transition: all 0.2s;
     font-family: inherit;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 8px;
   }
   
   .chat-room-send-btn:hover {

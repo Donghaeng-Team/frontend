@@ -81,6 +81,12 @@ export interface PostListResponse {
   commentCount: number;
   /** 조회 수 */
   viewCount: number;
+  /** 작성자 정보 */
+  userDto?: {
+    id: number;
+    name: string;
+    profileThumbnailImageUrl: string | null;
+  };
 }
 
 /**

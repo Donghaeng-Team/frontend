@@ -309,12 +309,6 @@ const MyPage: React.FC<MyPageProps> = () => {
       icon: '📦',
       label: '공동구매 내역',
       onClick: () => navigate('/purchase-history')
-    },
-    {
-      id: 'my-posts',
-      icon: '📝',
-      label: '내가 작성한 글',
-      onClick: () => navigate(`/community?search=${encodeURIComponent(profile.name)}`)
     }
   ];
 
@@ -478,8 +472,8 @@ const MyPage: React.FC<MyPageProps> = () => {
               </div>
             </div>
 
-            {/* 알림 설정 */}
-            <div className="menu-item-expandable">
+            {/* 알림 설정 - 임시 숨김 */}
+            {/* <div className="menu-item-expandable">
               <button 
                 className="menu-item-header"
                 onClick={() => handleSectionToggle('notifications')}
@@ -527,7 +521,7 @@ const MyPage: React.FC<MyPageProps> = () => {
                   </div>
                 </div>
               )}
-            </div>
+            </div> */}
 
             {/* 고객센터 */}
             <div className="menu-item-expandable">

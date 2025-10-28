@@ -16,6 +16,7 @@ import type {
   UserMarketIdsResponse,
   ParticipatingStaticsResponse,
 } from '../../types';
+import { getUser } from '../../utils/token';
 
 // ========================================
 // 채팅방 관리 API
@@ -157,7 +158,15 @@ export const chatService = {
    * POST /api/v1/chat/private/{roomId}/complete
    */
   completePurchase: async (roomId: number): Promise<ApiResponse<string>> => {
-    const response = await apiClient.post(`/api/v1/chat/private/${roomId}/complete`);
+    const user = getUser();
+    if (!user?.userId) {
+      throw new Error('로그인이 필요합니다.');
+    }
+    const response = await apiClient.post(`/api/v1/chat/private/${roomId}/complete`, null, {
+      headers: {
+        'X-User-Id': user.userId.toString(),
+      },
+    });
     return response.data;
   },
 

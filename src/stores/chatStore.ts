@@ -33,6 +33,7 @@ interface ChatState {
   cancelBuyer: (roomId: number) => Promise<void>;
   closeRecruitment: (roomId: number) => Promise<void>;
   extendDeadline: (roomId: number, hours: number) => Promise<void>;
+  completePurchase: (roomId: number) => Promise<void>;
   clearError: () => void;
   reset: () => void;
 }
@@ -313,6 +314,19 @@ export const useChatStore = create<ChatState>((set, get) => ({
       }
     } catch (error: any) {
       set({ error: '시간 연장에 실패했습니다.' });
+      throw error;
+    }
+  },
+
+  completePurchase: async (roomId) => {
+    try {
+      const response = await chatService.completePurchase(roomId);
+      if (response.success) {
+        // 채팅방 정보 새로고침
+        await get().fetchChatRoom(roomId);
+      }
+    } catch (error: any) {
+      set({ error: '판매 종료에 실패했습니다.' });
       throw error;
     }
   },
