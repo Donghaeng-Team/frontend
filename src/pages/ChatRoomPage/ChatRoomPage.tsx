@@ -342,23 +342,14 @@ const ChatRoomPage = ({
         alert('판매자만 판매 종료를 할 수 있습니다.');
         return;
       }
-      if (window.confirm('판매를 종료하시겠습니까? 모든 참가자가 강퇴되며 이 작업은 되돌릴 수 없습니다.')) {
+      if (window.confirm('판매를 종료하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
         try {
           const numericRoomId = parseInt(roomId, 10);
           
-          // 모든 참가자 강퇴 (판매자 본인 제외)
-          if (participants && participants.length > 0) {
-            const kickPromises = participants
-              .filter(p => p.userId !== user.userId)
-              .map(p => chatService.kickParticipant(numericRoomId, p.userId));
-            
-            await Promise.all(kickPromises);
-          }
+          // 모집 취소 API 호출
+          await chatService.cancelRecruitment(numericRoomId);
           
-          // 판매 종료 API 호출 (채팅방 상태 변경)
-          await chatService.completePurchase(numericRoomId);
-          
-          alert('판매가 종료되었습니다. 모든 참가자가 강퇴되었습니다.');
+          alert('판매가 종료되었습니다.');
           
           // 채팅방 나가기
           await exitChatRoom(numericRoomId);
