@@ -11,11 +11,12 @@ export type ChatRoomStatus =
   | 'CANCELLED';           // 취소됨
 
 export type ParticipantStatus =
-  | 'ACTIVE'                // 활성
-  | 'LEFT_VOLUNTARY'        // 자발적 퇴장
-  | 'LEFT_NOT_BUYER'        // 구매자 아니어서 퇴장
-  | 'LEFT_COMPLETED'        // 완료 후 퇴장
-  | 'BANNED';               // 강퇴됨
+  | 'ACTIVE'                        // 활성
+  | 'LEFT_VOLUNTARY'                // 자발적 퇴장
+  | 'LEFT_RECRUITMENT_CLOSED'       // 구매자 아니어서 퇴장
+  | 'LEFT_RECRUITMENT_CANCELED'     // 채팅방 중도종료시
+  | 'LEFT_COMPLETED'                // 완료 후 퇴장
+  | 'BANNED';                       // 강퇴됨
 
 export type MessageType =
   | 'TEXT'                  // 일반 텍스트
