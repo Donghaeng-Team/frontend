@@ -513,7 +513,7 @@ const ProductRegister: React.FC = () => {
       console.log('  locationText:', typeof requestData.locationText, `"${requestData.locationText}"`);
 
       // Swagger 기반 CreateMarketRequest 생성
-      const response = await productService.createProduct(requestData, authUser.userId!);
+      const response = await productService.createProduct(requestData);
 
       if (response.success) {
         // 성공 시 임시 저장 데이터 삭제

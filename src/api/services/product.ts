@@ -79,7 +79,7 @@ export const productService = {
   },
 
   // 상품 생성 (multipart/form-data)
-  createProduct: async (data: ProductCreateRequest, userId: number): Promise<ApiResponse<{ marketId: number }>> => {
+  createProduct: async (data: ProductCreateRequest): Promise<ApiResponse<{ marketId: number }>> => {
 
     const formData = new FormData();
     
@@ -102,12 +102,7 @@ export const productService = {
     formData.append('longitude', data.longitude.toString());
     formData.append('locationText', data.locationText);
 
-    const response = await apiClient.post('/api/v1/market/private', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-        'X-User-Id': userId.toString()
-      }
-    });
+    const response = await apiClient.post('/api/v1/market/private', formData);
     
     return response.data;
   },
