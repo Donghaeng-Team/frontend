@@ -355,6 +355,9 @@ const ChatRoomPage = ({
             await Promise.all(kickPromises);
           }
           
+          // 판매 종료 API 호출 (채팅방 상태 변경)
+          await chatService.completePurchase(numericRoomId);
+          
           alert('판매가 종료되었습니다. 모든 참가자가 강퇴되었습니다.');
           
           // 채팅방 나가기
