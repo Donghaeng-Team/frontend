@@ -563,11 +563,11 @@ const PurchaseHistory: React.FC = () => {
                 <option value="electronics">전자제품</option>
               </select>
               
-              <input
+              {/* <input
                 type="text"
                 className="filter-search"
                 placeholder="상품명 검색..."
-              />
+              /> */}
             </div>
           </div>
 
