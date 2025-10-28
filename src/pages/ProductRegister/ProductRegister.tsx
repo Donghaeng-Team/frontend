@@ -533,9 +533,11 @@ const ProductRegister: React.FC = () => {
       } else {
         alert('상품 등록에 실패했습니다.');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('상품 등록 실패:', error);
-      alert('상품 등록 중 오류가 발생했습니다.');
+      console.error('에러 응답:', error.response?.data);
+      const errorMessage = error.response?.data?.message || '상품 등록 중 오류가 발생했습니다.';
+      alert(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
