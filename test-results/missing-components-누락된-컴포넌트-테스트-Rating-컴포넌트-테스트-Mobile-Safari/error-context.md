@@ -1,0 +1,555 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - main [ref=e4]:
+    - generic [ref=e5]:
+      - heading "🛒 함께사요 - 컴포넌트 시스템" [level=1] [ref=e6]
+      - generic [ref=e7]:
+        - heading "Buttons" [level=2] [ref=e8]
+        - generic [ref=e9]:
+          - button "Primary" [ref=e10] [cursor=pointer]
+          - button "Secondary" [ref=e11] [cursor=pointer]
+          - button "Outline" [ref=e12] [cursor=pointer]
+          - button "Text" [ref=e13] [cursor=pointer]
+          - button "💬 카카오로 시작하기" [ref=e14] [cursor=pointer]
+          - button "🔍 구글로 시작하기" [ref=e15] [cursor=pointer]
+          - button "Disabled" [disabled] [ref=e16]
+          - button "Small" [ref=e17] [cursor=pointer]
+          - button "Large" [ref=e18] [cursor=pointer]
+      - generic [ref=e19]:
+        - heading "Inputs" [level=2] [ref=e20]
+        - generic [ref=e21]:
+          - textbox "기본 Input" [ref=e24]
+          - generic [ref=e25]:
+            - textbox "에러 상태" [ref=e27]
+            - generic [ref=e28]: 에러 메시지입니다
+          - textbox "비활성화" [disabled] [ref=e31]
+          - generic [ref=e34]:
+            - generic: 🔍
+            - searchbox "상품 검색..." [ref=e35]
+      - generic [ref=e36]:
+        - heading "Form Fields" [level=2] [ref=e37]
+        - generic [ref=e38]:
+          - generic [ref=e39]:
+            - generic [ref=e40]: 이메일 *
+            - textbox "이메일 *" [ref=e42]:
+              - /placeholder: example@email.com
+          - generic [ref=e43]:
+            - generic [ref=e44]: 비밀번호 *
+            - textbox "비밀번호 *" [ref=e46]:
+              - /placeholder: 8자 이상 입력하세요
+      - generic [ref=e47]:
+        - heading "Checkbox & Toggle Switch" [level=2] [ref=e48]
+        - generic [ref=e49]:
+          - generic [ref=e50] [cursor=pointer]:
+            - checkbox "체크박스 1"
+            - generic [ref=e52]: 체크박스 1
+          - generic [ref=e53] [cursor=pointer]:
+            - checkbox "✓ 체크박스 2 (체크됨)" [checked]
+            - generic [ref=e55]: ✓
+            - generic [ref=e56]: 체크박스 2 (체크됨)
+          - generic [ref=e57]:
+            - checkbox "비활성화" [disabled]
+            - generic [ref=e59]: 비활성화
+          - generic [ref=e60]:
+            - generic [ref=e61]: 알림 설정
+            - switch [ref=e62] [cursor=pointer]
+          - generic [ref=e64]:
+            - generic [ref=e65]: 이메일 수신
+            - switch [checked] [ref=e66] [cursor=pointer]
+      - generic [ref=e68]:
+        - heading "Badge & Avatar" [level=2] [ref=e69]
+        - generic [ref=e70]:
+          - generic [ref=e71]:
+            - generic [ref=e74]: 홍길
+            - generic [ref=e75]: "5"
+          - generic [ref=e76]:
+            - generic [ref=e79]: 김철
+            - generic [ref=e80]: "99"
+          - generic [ref=e81]:
+            - button "알림" [ref=e82] [cursor=pointer]
+            - generic [ref=e83]: 99+
+          - generic [ref=e87]: 이영
+          - generic [ref=e91]: 박민
+          - generic [ref=e94]: 사용
+          - generic [ref=e97]: 김개
+          - generic [ref=e101]: 이디
+      - generic [ref=e103]:
+        - heading "Dropdown" [level=2] [ref=e104]
+        - generic [ref=e105]:
+          - button "선택하세요 ▼" [ref=e107] [cursor=pointer]:
+            - generic [ref=e108]: 선택하세요
+            - generic [ref=e109]: ▼
+          - button "선택하세요 ▼" [ref=e111] [cursor=pointer]:
+            - generic [ref=e112]: 선택하세요
+            - generic [ref=e113]: ▼
+          - button "비활성화 ▼" [disabled] [ref=e115]:
+            - generic [ref=e116]: 비활성화
+            - generic [ref=e117]: ▼
+      - generic [ref=e118]:
+        - heading "Tabs" [level=2] [ref=e119]
+        - generic [ref=e120]:
+          - generic [ref=e121]:
+            - button "탭 1" [ref=e122] [cursor=pointer]:
+              - generic [ref=e123]: 탭 1
+            - button "탭 2" [ref=e124] [cursor=pointer]:
+              - generic [ref=e125]: 탭 2
+            - button "탭 3" [disabled] [ref=e126]:
+              - generic [ref=e127]: 탭 3
+            - button "탭 4" [ref=e128] [cursor=pointer]:
+              - generic [ref=e129]: 탭 4
+          - generic [ref=e131]: 탭 1 내용입니다
+        - generic [ref=e132]:
+          - generic [ref=e133]:
+            - button "탭 1" [ref=e134] [cursor=pointer]:
+              - generic [ref=e135]: 탭 1
+            - button "탭 2" [ref=e136] [cursor=pointer]:
+              - generic [ref=e137]: 탭 2
+            - button "탭 3" [disabled] [ref=e138]:
+              - generic [ref=e139]: 탭 3
+            - button "탭 4" [ref=e140] [cursor=pointer]:
+              - generic [ref=e141]: 탭 4
+          - generic [ref=e143]: 탭 1 내용입니다
+        - generic [ref=e144]:
+          - generic [ref=e145]:
+            - button "탭 1" [ref=e146] [cursor=pointer]:
+              - generic [ref=e147]: 탭 1
+            - button "탭 2" [ref=e148] [cursor=pointer]:
+              - generic [ref=e149]: 탭 2
+            - button "탭 3" [disabled] [ref=e150]:
+              - generic [ref=e151]: 탭 3
+            - button "탭 4" [ref=e152] [cursor=pointer]:
+              - generic [ref=e153]: 탭 4
+          - generic [ref=e155]: 탭 1 내용입니다
+      - generic [ref=e156]:
+        - heading "Slider - 동네 범위 선택" [level=2] [ref=e157]
+        - generic [ref=e159]:
+          - generic [ref=e160] [cursor=pointer]:
+            - button [ref=e161]
+            - button [ref=e162]
+            - button [ref=e163]
+            - button [ref=e164]
+          - generic [ref=e166]:
+            - button "내동네" [ref=e167] [cursor=pointer]
+            - button "먼 동네" [ref=e168] [cursor=pointer]
+      - generic [ref=e169]:
+        - heading "Progress" [level=2] [ref=e170]
+        - generic [ref=e171]:
+          - generic [ref=e176]: 60%
+          - generic [ref=e181]: 100%
+          - generic [ref=e186]: 50%
+          - generic [ref=e191]: 70%
+          - generic [ref=e192]:
+            - generic [ref=e193]:
+              - img [ref=e194]
+              - generic [ref=e197]: 75%
+            - generic [ref=e198]:
+              - img [ref=e199]
+              - generic [ref=e202]: 85%
+            - generic [ref=e203]:
+              - img [ref=e204]
+              - generic [ref=e207]: 95%
+          - button "진행률 증가" [ref=e208] [cursor=pointer]
+      - generic [ref=e209]:
+        - heading "Pagination" [level=2] [ref=e210]
+        - generic [ref=e211]:
+          - generic [ref=e212]: 1-10 / 총 123개
+          - generic [ref=e213]:
+            - button "‹" [disabled] [ref=e214]
+            - button "1" [ref=e215] [cursor=pointer]
+            - button "2" [ref=e216] [cursor=pointer]
+            - button "3" [ref=e217] [cursor=pointer]
+            - button "4" [ref=e218] [cursor=pointer]
+            - button "5" [ref=e219] [cursor=pointer]
+            - generic [ref=e220]: •••
+            - button "13" [ref=e221] [cursor=pointer]
+            - button "›" [ref=e222] [cursor=pointer]
+        - generic [ref=e223]:
+          - generic [ref=e224]:
+            - button "‹" [disabled] [ref=e225]
+            - button "1" [ref=e226] [cursor=pointer]
+            - button "2" [ref=e227] [cursor=pointer]
+            - button "3" [ref=e228] [cursor=pointer]
+            - button "4" [ref=e229] [cursor=pointer]
+            - button "5" [ref=e230] [cursor=pointer]
+            - generic [ref=e231]: •••
+            - button "25" [ref=e232] [cursor=pointer]
+            - button "›" [ref=e233] [cursor=pointer]
+          - combobox [ref=e234] [cursor=pointer]:
+            - option "10개씩"
+            - option "20개씩" [selected]
+            - option "30개씩"
+            - option "50개씩"
+          - generic [ref=e235]:
+            - generic [ref=e236]: 이동
+            - spinbutton [ref=e237]
+      - heading "Skeleton Loading" [level=2] [ref=e239]
+      - generic [ref=e265]:
+        - heading "Accordion" [level=2] [ref=e266]
+        - generic [ref=e267]:
+          - generic [ref=e268]:
+            - generic [ref=e269]:
+              - generic [ref=e270] [cursor=pointer]:
+                - generic [ref=e271]: 공동구매란 무엇인가요?
+                - generic [ref=e272]: ›
+              - generic [ref=e274]: 공동구매는 여러 사람이 함께 상품을 구매하여 더 저렴한 가격에 구매할 수 있는 서비스입니다.
+            - generic [ref=e275]:
+              - generic [ref=e276] [cursor=pointer]:
+                - generic [ref=e277]: 배송은 어떻게 되나요?
+                - generic [ref=e278]: ›
+              - generic [ref=e279]: 공동구매 모집이 완료되면 지정된 장소로 배송됩니다. 개별 배송도 가능합니다.
+            - generic [ref=e280]:
+              - generic [ref=e281]:
+                - generic [ref=e282]: 환불 정책
+                - generic [ref=e283]: ›
+              - generic [ref=e284]: 상품 수령 후 7일 이내 환불 가능합니다.
+          - generic [ref=e285]:
+            - generic [ref=e286]:
+              - generic [ref=e287] [cursor=pointer]:
+                - generic [ref=e288]: ›
+                - generic [ref=e289]: 공동구매란 무엇인가요?
+              - generic [ref=e290]: 공동구매는 여러 사람이 함께 상품을 구매하여 더 저렴한 가격에 구매할 수 있는 서비스입니다.
+            - generic [ref=e291]:
+              - generic [ref=e292] [cursor=pointer]:
+                - generic [ref=e293]: ›
+                - generic [ref=e294]: 배송은 어떻게 되나요?
+              - generic [ref=e295]: 공동구매 모집이 완료되면 지정된 장소로 배송됩니다. 개별 배송도 가능합니다.
+            - generic [ref=e296]:
+              - generic [ref=e297]:
+                - generic [ref=e298]: ›
+                - generic [ref=e299]: 환불 정책
+              - generic [ref=e300]: 상품 수령 후 7일 이내 환불 가능합니다.
+      - generic [ref=e301]:
+        - heading "Cards" [level=2] [ref=e302]
+        - generic [ref=e303]:
+          - generic [ref=e304]:
+            - generic [ref=e305]:
+              - heading "기본 카드" [level=3] [ref=e306]
+              - paragraph [ref=e307]: 서브타이틀
+            - generic [ref=e308]: 카드 내용이 들어갑니다.
+          - generic [ref=e309]:
+            - heading "Elevated 카드" [level=3] [ref=e311]
+            - generic [ref=e312]: 그림자가 있는 카드입니다
+          - generic [ref=e313]:
+            - heading "클릭 가능한 카드" [level=3] [ref=e315]
+            - generic [ref=e316]: 마우스를 올려보세요
+      - generic [ref=e317]:
+        - heading "Stat Cards" [level=2] [ref=e318]
+        - generic [ref=e319]:
+          - generic [ref=e322]:
+            - paragraph [ref=e323]: 진행중인 공동구매
+            - generic [ref=e324]:
+              - generic [ref=e325]: "3"
+              - generic [ref=e326]: 건
+          - generic [ref=e329]:
+            - paragraph [ref=e330]: 참여중인 공동구매
+            - generic [ref=e331]:
+              - generic [ref=e332]: "12"
+              - generic [ref=e333]: 건
+          - generic [ref=e336]:
+            - paragraph [ref=e337]: 완료된 공동구매
+            - generic [ref=e338]:
+              - generic [ref=e339]: "28"
+              - generic [ref=e340]: 건
+            - generic [ref=e341]: ↑ 15%
+          - generic [ref=e344]:
+            - paragraph [ref=e345]: 좋아요한 상품
+            - generic [ref=e346]:
+              - generic [ref=e347]: "8"
+              - generic [ref=e348]: 개
+      - generic [ref=e349]:
+        - heading "Product Cards" [level=2] [ref=e350]
+        - generic [ref=e351]:
+          - generic [ref=e353] [cursor=pointer]:
+            - generic [ref=e356]: 22% OFF
+            - generic [ref=e357]:
+              - generic [ref=e358]: 식품
+              - heading "유기농 사과 10kg (부사)" [level=4] [ref=e359]
+              - generic [ref=e361]:
+                - generic [ref=e363]: ₩2,334
+                - generic [ref=e365]: 최대 20명 모집 시 ₩1,750
+              - generic [ref=e366]:
+                - generic [ref=e367]:
+                  - generic [ref=e368]: 사
+                  - generic [ref=e369]: 사과조아
+                - generic [ref=e370]: 15/20명 모집
+                - generic [ref=e371]: • 서초동
+          - generic [ref=e376] [cursor=pointer]:
+            - generic [ref=e377]: 생활용품
+            - heading "프리미엄 화장지 30롤" [level=4] [ref=e378]
+            - generic [ref=e380]:
+              - generic [ref=e382]: ₩2,363
+              - generic [ref=e384]: 최대 10명 모집 시 ₩1,890
+            - generic [ref=e385]:
+              - generic [ref=e386]:
+                - generic [ref=e387]: 생
+                - generic [ref=e388]: 생활마트
+              - generic [ref=e389]: 8/10명 모집
+              - generic [ref=e390]: • 방배동
+          - generic [ref=e395] [cursor=pointer]:
+            - generic [ref=e396]: 육아용품
+            - heading "기저귀 대형 4박스" [level=4] [ref=e397]
+            - generic [ref=e399]:
+              - generic [ref=e401]: ₩6,527
+              - generic [ref=e403]: 최대 20명 모집 시 ₩6,200
+            - generic [ref=e404]:
+              - generic [ref=e405]:
+                - generic [ref=e406]: 아
+                - generic [ref=e407]: 아기사랑
+              - generic [ref=e408]: 19/20명 모집
+              - generic [ref=e409]: • 역삼동
+      - generic [ref=e410]:
+        - heading "Modal & Toast" [level=2] [ref=e411]
+        - generic [ref=e412]:
+          - button "Modal 열기" [ref=e413] [cursor=pointer]
+          - button "Toast 표시" [ref=e414] [cursor=pointer]
+      - generic [ref=e415]:
+        - heading "Category Selector - 4단계" [level=2] [ref=e416]
+        - generic [ref=e417]:
+          - generic [ref=e418]:
+            - generic [ref=e419]:
+              - generic [ref=e420]: 대분류
+              - generic [ref=e421]:
+                - generic [ref=e422] [cursor=pointer]: 식품
+                - generic [ref=e423] [cursor=pointer]: 생활용품
+            - generic [ref=e424]:
+              - generic [ref=e425]: 중분류
+              - generic [ref=e427]: 중분류 선택
+            - generic [ref=e428]:
+              - generic [ref=e429]: 소분류
+              - generic [ref=e431]: 소분류 선택
+            - generic [ref=e432]:
+              - generic [ref=e433]: 세부분류
+              - generic [ref=e435]: 세부분류 선택
+          - generic [ref=e436]:
+            - button "대분류로 이동" [ref=e437] [cursor=pointer]
+            - button "중분류로 이동" [ref=e438] [cursor=pointer]
+            - button "소분류로 이동" [ref=e439] [cursor=pointer]
+            - button "세부분류로 이동" [ref=e440] [cursor=pointer]
+      - generic [ref=e441]:
+        - heading "Category Selector - 3단계" [level=2] [ref=e442]
+        - generic [ref=e443]:
+          - generic [ref=e444]:
+            - generic [ref=e445]:
+              - generic [ref=e446]: 대분류
+              - generic [ref=e447]:
+                - generic [ref=e448] [cursor=pointer]: 식품
+                - generic [ref=e449] [cursor=pointer]: 생활용품
+            - generic [ref=e450]:
+              - generic [ref=e451]: 중분류
+              - generic [ref=e453]: 중분류 선택
+            - generic [ref=e454]:
+              - generic [ref=e455]: 소분류
+              - generic [ref=e457]: 소분류 선택
+          - generic [ref=e458]:
+            - button "대분류로 이동" [ref=e459] [cursor=pointer]
+            - button "중분류로 이동" [ref=e460] [cursor=pointer]
+            - button "소분류로 이동" [ref=e461] [cursor=pointer]
+      - generic [ref=e462]:
+        - heading "Category Filter" [level=2] [ref=e463]
+        - generic [ref=e464]:
+          - heading "카테고리" [level=3] [ref=e465]
+          - generic [ref=e466]:
+            - button "식품 (45)" [ref=e467] [cursor=pointer]:
+              - generic [ref=e468]: 식품
+              - generic [ref=e469]: (45)
+            - button "생활용품 (32)" [ref=e470] [cursor=pointer]:
+              - generic [ref=e471]: 생활용품
+              - generic [ref=e472]: (32)
+            - button "육아용품 (28)" [ref=e473] [cursor=pointer]:
+              - generic [ref=e474]: 육아용품
+              - generic [ref=e475]: (28)
+            - button "반려동물 (15)" [ref=e476] [cursor=pointer]:
+              - generic [ref=e477]: 반려동물
+              - generic [ref=e478]: (15)
+      - generic [ref=e479]:
+        - heading "Breadcrumb" [level=2] [ref=e480]
+        - navigation "Breadcrumb" [ref=e481]:
+          - list [ref=e482]:
+            - listitem [ref=e483]:
+              - link "홈" [ref=e484]:
+                - /url: /
+              - generic [ref=e485]: /
+            - listitem [ref=e486]:
+              - link "카테고리" [ref=e487]:
+                - /url: /category
+              - generic [ref=e488]: /
+            - listitem [ref=e489]:
+              - link "식품" [ref=e490]:
+                - /url: /category/food
+              - generic [ref=e491]: /
+            - listitem [ref=e492]:
+              - generic [ref=e493]: 과일
+        - navigation "Breadcrumb" [ref=e494]:
+          - list [ref=e495]:
+            - listitem [ref=e496]:
+              - link "홈" [ref=e497]:
+                - /url: /
+              - generic [ref=e498]: ">"
+            - listitem [ref=e499]:
+              - link "카테고리" [ref=e500]:
+                - /url: /category
+              - generic [ref=e501]: ">"
+            - listitem [ref=e502]:
+              - link "식품" [ref=e503]:
+                - /url: /category/food
+              - generic [ref=e504]: ">"
+            - listitem [ref=e505]:
+              - generic [ref=e506]: 과일
+      - generic [ref=e507]:
+        - heading "Divider" [level=2] [ref=e508]
+        - generic [ref=e509]:
+          - paragraph [ref=e510]: 위쪽 텍스트
+          - separator [ref=e511]
+          - paragraph [ref=e512]: 아래쪽 텍스트
+          - separator [ref=e513]:
+            - generic [ref=e514]: 또는
+          - paragraph [ref=e515]: 더 아래쪽 텍스트
+      - generic [ref=e517]:
+        - heading "Rating" [level=2] [ref=e518]
+        - generic [ref=e519]:
+          - generic [ref=e520]:
+            - paragraph [ref=e521]: "인터랙티브 Rating:"
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic: ★
+                - generic:
+                  - generic:
+                    - generic: ★
+                - generic:
+                  - generic:
+                    - generic: ★
+                - generic:
+                  - generic:
+                    - generic: ★
+                - generic:
+                  - generic:
+                    - generic: ★
+          - generic [ref=e522]:
+            - paragraph [ref=e523]: "읽기 전용 Rating:"
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic: ★
+                - generic:
+                  - generic:
+                    - generic: ★
+                - generic:
+                  - generic:
+                    - generic: ★
+                - generic:
+                  - generic:
+                    - generic: ★
+                - generic:
+                  - generic:
+                    - generic: ★
+          - generic [ref=e524]:
+            - paragraph [ref=e525]: "반별 Rating:"
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic: ★
+                  - generic:
+                    - generic: ★
+                - generic:
+                  - generic:
+                    - generic: ★
+                  - generic:
+                    - generic: ★
+                - generic:
+                  - generic:
+                    - generic: ★
+                  - generic:
+                    - generic: ★
+                - generic:
+                  - generic:
+                    - generic: ★
+                  - generic:
+                    - generic: ★
+                - generic:
+                  - generic:
+                    - generic: ★
+                  - generic:
+                    - generic: ★
+      - generic [ref=e526]:
+        - heading "DatePicker" [level=2] [ref=e527]
+        - generic [ref=e528]:
+          - button "📅 날짜를 선택하세요" [ref=e530] [cursor=pointer]:
+            - generic [ref=e531]: 📅
+            - generic [ref=e532]: 날짜를 선택하세요
+          - button "📅 비활성화" [disabled] [ref=e534]:
+            - generic [ref=e535]: 📅
+            - generic [ref=e536]: 비활성화
+      - generic [ref=e537]:
+        - heading "TimePicker" [level=2] [ref=e538]
+        - generic [ref=e539]:
+          - button "🕐시간을 선택하세요" [ref=e541] [cursor=pointer]
+          - button "🕐12시간 형식" [ref=e543] [cursor=pointer]
+      - generic [ref=e544]:
+        - heading "Tooltip" [level=2] [ref=e545]
+        - generic [ref=e546]:
+          - button "Top Tooltip" [ref=e548] [cursor=pointer]
+          - button "Right Tooltip" [ref=e550] [cursor=pointer]
+          - button "Click Tooltip" [ref=e552] [cursor=pointer]
+      - generic [ref=e553]:
+        - heading "Comment" [level=2] [ref=e554]
+        - generic [ref=e556]:
+          - heading "댓글 3" [level=3] [ref=e558]
+          - generic [ref=e559]:
+            - generic [ref=e560]:
+              - generic [ref=e563]: 김철
+              - generic [ref=e564]: 김철수
+            - textbox "댓글을 작성해주세요..." [ref=e565]
+            - button "댓글 작성" [disabled] [ref=e567]
+          - generic [ref=e568]:
+            - generic [ref=e569]:
+              - generic [ref=e570]:
+                - generic [ref=e573]: 김철
+                - generic [ref=e574]:
+                  - generic [ref=e575]: 김철수
+                  - generic [ref=e576]: 2024. 1. 15.
+                - generic [ref=e577]:
+                  - button "수정" [ref=e578] [cursor=pointer]
+                  - button "삭제" [ref=e579] [cursor=pointer]
+              - generic [ref=e580]: 정말 좋은 상품이네요! 저도 참여하고 싶습니다.
+            - generic [ref=e581]:
+              - generic [ref=e582]:
+                - generic [ref=e585]: 이영
+                - generic [ref=e586]:
+                  - generic [ref=e587]: 이영희
+                  - generic [ref=e588]: 2024. 1. 15.
+              - generic [ref=e589]: 저도 동감합니다!
+            - generic [ref=e590]:
+              - generic [ref=e591]:
+                - generic [ref=e594]: 박민
+                - generic [ref=e595]:
+                  - generic [ref=e596]: 박민수
+                  - generic [ref=e597]: 2024. 1. 14.
+              - generic [ref=e598]: 배송은 언제쯤 될까요?
+      - generic [ref=e599]:
+        - heading "Chat Components - 채팅" [level=2] [ref=e600]
+        - generic [ref=e601]:
+          - button "채팅방 목록 열기" [ref=e602] [cursor=pointer]
+          - generic [ref=e603]:
+            - button "구매자 뷰" [ref=e604] [cursor=pointer]
+            - button "판매자 뷰" [ref=e605] [cursor=pointer]
+            - button "채팅방 열기" [ref=e606] [cursor=pointer]
+  - navigation [ref=e607]:
+    - button "🏠 홈" [ref=e608] [cursor=pointer]:
+      - generic [ref=e609]: 🏠
+      - generic [ref=e610]: 홈
+    - button "💬 커뮤니티" [ref=e611] [cursor=pointer]:
+      - generic [ref=e612]: 💬
+      - generic [ref=e613]: 커뮤니티
+    - button "💭 채팅" [ref=e614] [cursor=pointer]:
+      - generic [ref=e615]: 💭
+      - generic [ref=e616]: 채팅
+    - button "👤 MY" [ref=e617] [cursor=pointer]:
+      - generic [ref=e618]: 👤
+      - generic [ref=e619]: MY
+```

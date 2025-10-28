@@ -1,0 +1,64 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - link "🛒 함께 사요" [ref=e7] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e8]: 🛒
+        - generic [ref=e9]: 함께 사요
+      - navigation [ref=e10]:
+        - button "📍 위치 설정 ▽" [ref=e11] [cursor=pointer]:
+          - generic [ref=e12]: 📍
+          - generic [ref=e13]: 위치 설정
+          - generic [ref=e14]: ▽
+        - link "공동구매" [ref=e15] [cursor=pointer]:
+          - /url: /products
+        - link "커뮤니티" [ref=e16] [cursor=pointer]:
+          - /url: /community
+      - link "로그인" [ref=e18] [cursor=pointer]:
+        - /url: /login
+  - main [ref=e19]:
+    - generic [ref=e20]:
+      - generic [ref=e22]:
+        - heading "🏘️ 우리 동네 소식" [level=1] [ref=e23]
+        - paragraph [ref=e24]: 동네 이웃들과 공동구매 정보와 일상을 나누어요
+      - generic [ref=e26]:
+        - generic [ref=e27]:
+          - button "전체" [ref=e28] [cursor=pointer]
+          - button "동네 소식" [ref=e29] [cursor=pointer]
+          - button "공구 후기" [ref=e30] [cursor=pointer]
+          - button "질문 답변" [ref=e31] [cursor=pointer]
+        - generic [ref=e32]:
+          - textbox "🔍 게시글 검색..." [ref=e34]
+          - button "✏️ 글쓰기" [ref=e35] [cursor=pointer]
+      - generic [ref=e37]:
+        - generic [ref=e38]: 게시글을 불러오는 중...
+        - generic [ref=e42]: 게시글 불러오는 중...
+  - contentinfo [ref=e43]:
+    - generic [ref=e45]:
+      - paragraph [ref=e46]: © 2025 함께 사요. All rights reserved.
+      - generic [ref=e47]:
+        - link "이용약관" [ref=e48] [cursor=pointer]:
+          - /url: /terms
+        - generic [ref=e49]: "|"
+        - link "개인정보처리방침" [ref=e50] [cursor=pointer]:
+          - /url: /privacy
+        - generic [ref=e51]: "|"
+        - link "고객센터" [ref=e52] [cursor=pointer]:
+          - /url: /support
+  - generic [ref=e53]:
+    - generic:
+      - generic:
+        - generic: 맨 위로
+        - button "맨 위로 가기": ⬆️
+      - generic:
+        - generic: 커뮤니티 글쓰기
+        - button "커뮤니티 글쓰기": 💬
+      - generic:
+        - generic: 공동구매 글쓰기
+        - button "공동구매 글쓰기": 🛒
+    - button "글쓰기 메뉴" [ref=e54] [cursor=pointer]:
+      - generic [ref=e55]: ✏️
+```

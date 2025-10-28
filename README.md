@@ -30,11 +30,16 @@
 - **React Router DOM 7.9.1** - 클라이언트 사이드 라우팅
 - **Zustand 5.0.8** - 경량 전역 상태 관리
 
-### API & Data Fetching
+### API & Communication
 - **Axios 1.12.2** - HTTP 클라이언트 및 API 통신
+- **@stomp/stompjs 7.2.1** - WebSocket/STOMP 프로토콜 (실시간 채팅)
+- **sockjs-client 1.6.1** - WebSocket 폴백
 
 ### Maps & Location
 - **@vis.gl/react-google-maps 1.5.5** - Google Maps 연동
+
+### Testing
+- **Playwright 1.56.1** - E2E 테스트 프레임워크
 
 ### Styling
 - **CSS Modules** - 컴포넌트 레벨 스타일링
@@ -61,11 +66,14 @@
 - 이미지 업로드 (S3 Presigned URL)
 - 카테고리별 게시글 필터링
 
-### 🗨️ 채팅 (UI 구현 완료)
-- 실시간 채팅방
-- 상품별 채팅방 생성
-- 읽지 않은 메시지 알림
-- 참여자 관리
+### 🗨️ 채팅
+- **WebSocket/STOMP 기반 실시간 채팅**
+- 상품별 채팅방 생성 및 관리
+- 실시간 메시지 송수신
+- 참여자 관리 및 상태 추적
+- 구매자 확정 및 모집 완료 기능
+- 시스템 메시지 (입장/퇴장/구매 알림)
+- 마감 시간 연장 기능
 
 ### 👤 마이페이지
 - 프로필 관리
@@ -90,6 +98,14 @@
 - Bottom Navigation (모바일)
 - FAB(Floating Action Button) 버튼
 - 데스크톱/모바일 최적화
+
+### 🧪 E2E 테스트
+- **Playwright 기반 자동화 테스트**
+- 네비게이션 테스트 (주요 페이지 접근)
+- 폼 유효성 검사 테스트 (로그인, 회원가입)
+- 컴포넌트 테스트 (Button, Modal, Input 등)
+- 페이지 기능 테스트 (상품 목록, 커뮤니티 등)
+- 다중 브라우저 지원 (Chromium, Firefox, WebKit, Mobile)
 
 ---
 
@@ -138,9 +154,12 @@ VITE_CHAT_API_URL=http://localhost:8086
 # Google Maps API 키
 VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 
+# WebSocket 설정 (채팅)
+VITE_WS_BASE_URL=ws://localhost:8080/ws
+
 # 기타 설정
 VITE_DEBUG=false
-VITE_API_TIMEOUT=10000
+VITE_API_TIMEOUT=30000
 ```
 
 > **참고**: 각 마이크로서비스별 포트:
@@ -229,13 +248,20 @@ bytogether/
 │   │   └── reset.css         # CSS 리셋
 │   ├── App.tsx               # 앱 루트 컴포넌트
 │   └── main.tsx              # 앱 진입점
+├── tests/                    # Playwright E2E 테스트
+│   ├── basic.spec.ts        # 기본 테스트
+│   ├── navigation.spec.ts   # 네비게이션 테스트
+│   ├── forms.spec.ts        # 폼 유효성 검사 테스트
+│   ├── pages.spec.ts        # 페이지 기능 테스트
+│   └── components.spec.ts   # 컴포넌트 테스트
 ├── .env.example              # 환경 변수 예시
 ├── .gitignore                # Git 무시 파일
 ├── package.json              # 프로젝트 의존성
 ├── tsconfig.json             # TypeScript 설정
+├── playwright.config.ts      # Playwright 테스트 설정
 ├── vite.config.ts            # Vite 설정
 ├── README.md                 # 프로젝트 문서
-└── CHAT_SYSTEM_TODO.md       # 채팅 시스템 TODO
+└── PLAYWRIGHT_TEST_GUIDE.md  # Playwright 테스트 가이드
 ```
 
 ---
@@ -285,11 +311,16 @@ bytogether/
 - `deleteComment()` - 댓글 삭제
 
 ### 채팅 (chat.ts)
-- `getChatRooms()` - 채팅방 목록
-- `getChatRoom()` - 채팅방 상세
-- `getMessages()` - 메시지 목록
-- `sendMessage()` - 메시지 전송
-- `markAsRead()` - 읽음 처리
+- `getChatRoomList()` - 채팅방 목록 조회
+- `getChatRoom()` - 채팅방 상세 조회
+- `getMessages()` - 메시지 목록 조회 (페이징)
+- `getParticipants()` - 참여자 목록 조회
+- `leaveChatRoom()` - 채팅방 나가기
+- `confirmBuyer()` - 구매자 확정
+- `cancelBuyer()` - 구매 취소
+- `closeRecruitment()` - 모집 완료
+- `extendDeadline()` - 마감 시간 연장
+- `kickParticipant()` - 참여자 강퇴
 
 ### 이미지 (image.ts)
 - `getPresignedUrl()` - S3 Presigned URL 발급
@@ -327,31 +358,76 @@ bytogether/
 }
 ```
 
+### chatStore (Zustand)
+```typescript
+{
+  wsClient: ChatWebSocketClient | null,    // WebSocket 클라이언트
+  wsStatus: ConnectionStatus,              // 연결 상태
+  chatRooms: ChatRoomResponse[],           // 채팅방 목록
+  currentRoom: ChatRoomResponse | null,    // 현재 채팅방
+  messages: ChatMessageResponse[],         // 메시지 목록
+  participants: ParticipantResponse[],     // 참여자 목록
+  
+  initializeWebSocket: () => void,         // WebSocket 초기화
+  disconnectWebSocket: () => void,         // WebSocket 연결 해제
+  fetchChatRooms: () => Promise<void>,     // 채팅방 목록 조회
+  joinChatRoom: (roomId) => Promise<void>, // 채팅방 입장
+  sendMessage: (roomId, message, userId, nickname) => void, // 메시지 전송
+  confirmBuyer: (roomId) => Promise<void>, // 구매자 확정
+  closeRecruitment: (roomId) => Promise<void>, // 모집 완료
+  extendDeadline: (roomId, hours) => Promise<void>, // 시간 연장
+}
+```
+
 ---
 
 ## 📜 스크립트
 
-### `npm run dev`
+### 개발 및 빌드
+
+#### `npm run dev`
 개발 모드로 앱을 실행합니다.
 - 핫 모듈 교체(HMR) 지원
 - 빠른 개발 서버 (Vite)
-- 포트: 5173 (기본값)
+- 포트: 3000 (설정됨)
+- API 프록시 자동 설정 (`/api`, `/ws`, `/upload-url`)
 
-### `npm run build`
+#### `npm run build`
 프로덕션용으로 앱을 빌드합니다.
 - TypeScript 타입 체크 (`tsc -b`)
 - 코드 최적화 및 번들링
 - `dist` 폴더에 결과물 생성
 - Tree-shaking 및 코드 압축
 
-### `npm run preview`
+#### `npm run preview`
 빌드된 앱을 미리보기합니다.
 - 프로덕션 빌드 로컬 테스트용
 
-### `npm run lint`
+#### `npm run lint`
 ESLint를 실행하여 코드 품질을 체크합니다.
 - TypeScript 린팅 규칙 적용
 - 코드 스타일 가이드 검증
+
+### 테스트
+
+#### `npm run test`
+Playwright E2E 테스트를 실행합니다.
+- 모든 브라우저에서 테스트 실행
+- HTML 리포트 생성
+
+#### `npm run test:ui`
+Playwright UI 모드로 테스트를 실행합니다.
+- 인터랙티브 테스트 디버깅
+- 실시간 테스트 결과 확인
+
+#### `npm run test:headed`
+헤드 모드로 테스트를 실행합니다.
+- 브라우저 창을 표시하며 테스트 실행
+
+#### `npm run test:debug`
+디버그 모드로 테스트를 실행합니다.
+- 단계별 테스트 실행
+- Playwright Inspector 활성화
 
 ---
 
@@ -416,11 +492,18 @@ ESLint를 실행하여 코드 품질을 체크합니다.
 
 ### 포트가 이미 사용 중인 경우
 
-개발 서버 기본 포트(5173)가 이미 사용 중이면 Vite가 자동으로 다른 포트를 선택합니다.
+개발 서버는 포트 3000을 사용합니다 (`vite.config.ts`에서 설정).
 
-특정 포트를 사용하려면:
+포트가 사용 중인 경우 프로세스를 종료하거나 다른 포트를 사용하세요:
 ```bash
-npm run dev -- --port 3000
+# Windows에서 포트 사용 중인 프로세스 확인
+netstat -ano | findstr :3000
+
+# 프로세스 종료 (PID는 위 명령으로 확인)
+taskkill //F //PID <PID>
+
+# 또는 다른 포트 사용
+npm run dev -- --port 5173
 ```
 
 ### 빌드 에러
@@ -456,11 +539,26 @@ npx tsc --noEmit src/path/to/file.ts
 2. API 키 권한 확인 (Maps JavaScript API 활성화)
 3. API 키 제한 설정 확인
 
+### WebSocket 연결 오류
+
+1. 백엔드 WebSocket 서버 실행 확인 (포트 8080)
+2. `.env` 파일의 `VITE_WS_BASE_URL` 확인
+3. `vite.config.ts`의 `/ws` 프록시 설정 확인
+4. 브라우저 개발자 도구 Console/Network 탭에서 WebSocket 연결 상태 확인
+
+### E2E 테스트 실패
+
+1. **개발 서버 실행 확인**: `npm run dev`로 앱이 실행 중인지 확인
+2. **Playwright 브라우저 설치**: `npx playwright install`
+3. **API 서버 실행 확인**: 백엔드 서버가 실행 중인지 확인
+4. **특정 테스트만 실행**: `npm run test tests/basic.spec.ts`
+5. **디버그 모드 실행**: `npm run test:debug`
+
 ---
 
 ## 📄 문서
 
-- [채팅 시스템 TODO](./CHAT_SYSTEM_TODO.md) - 채팅 기능 백엔드 연동 가이드
+- [Playwright 테스트 가이드](./PLAYWRIGHT_TEST_GUIDE.md) - E2E 테스트 실행 및 작성 가이드
 
 ---
 

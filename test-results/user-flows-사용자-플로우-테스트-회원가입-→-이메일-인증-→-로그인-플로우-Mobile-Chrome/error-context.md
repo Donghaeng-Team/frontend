@@ -1,0 +1,47 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e5]:
+  - button "← 로그인으로" [ref=e6] [cursor=pointer]
+  - generic [ref=e7]: 🛒 함께 사요
+  - heading "회원가입" [level=1] [ref=e8]
+  - generic [ref=e9]:
+    - generic [ref=e10]:
+      - generic [ref=e11]: 이메일 *
+      - textbox "이메일 *" [ref=e13]:
+        - /placeholder: example@email.com
+        - text: test@example.com
+    - generic [ref=e14]:
+      - generic [ref=e15]: 닉네임 *
+      - textbox "닉네임 *" [ref=e17]:
+        - /placeholder: 홍길동
+        - text: 테스트유저
+    - generic [ref=e18]:
+      - generic [ref=e19]: 비밀번호 *
+      - textbox "비밀번호 *" [ref=e21]:
+        - /placeholder: 8자 이상, 영문+숫자 조합
+        - text: password123
+    - generic [ref=e22]:
+      - generic [ref=e23]: 비밀번호 확인 *
+      - textbox "비밀번호 확인 *" [active] [ref=e25]:
+        - /placeholder: 비밀번호를 다시 입력하세요
+        - text: password123
+    - generic [ref=e27]:
+      - generic [ref=e28] [cursor=pointer]:
+        - checkbox "전체 동의합니다"
+        - generic [ref=e30]: 전체 동의합니다
+      - generic [ref=e31] [cursor=pointer]:
+        - checkbox "[필수] 이용약관 동의"
+        - generic [ref=e33]: "[필수] 이용약관 동의"
+      - generic [ref=e34] [cursor=pointer]:
+        - checkbox "[필수] 개인정보 처리방침 동의"
+        - generic [ref=e36]: "[필수] 개인정보 처리방침 동의"
+      - generic [ref=e37] [cursor=pointer]:
+        - checkbox "[선택] 마케팅 정보 수신 동의"
+        - generic [ref=e39]: "[선택] 마케팅 정보 수신 동의"
+    - button "회원가입" [ref=e40] [cursor=pointer]
+  - generic [ref=e41]:
+    - paragraph [ref=e42]: 이미 회원이신가요?
+    - link "로그인하기" [ref=e43] [cursor=pointer]:
+      - /url: /login
+```

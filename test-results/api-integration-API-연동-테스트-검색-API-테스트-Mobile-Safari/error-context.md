@@ -1,0 +1,96 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - button "📍 위치 설정 ▽" [ref=e4] [cursor=pointer]:
+      - generic [ref=e5]: 📍
+      - generic [ref=e6]: 위치 설정
+      - generic [ref=e7]: ▽
+  - generic [ref=e8]:
+    - main [ref=e9]:
+      - generic [ref=e10]:
+        - generic [ref=e11]:
+          - button "필터 열기/닫기" [ref=e12] [cursor=pointer]:
+            - generic [ref=e13]: ▼
+            - generic [ref=e14]: 필터
+          - generic:
+            - generic [ref=e15]:
+              - heading "카테고리" [level=3] [ref=e16]
+              - generic [ref=e17]:
+                - generic [ref=e18]:
+                  - generic [ref=e19]:
+                    - generic [ref=e20]: 대분류
+                    - generic [ref=e21]:
+                      - generic [ref=e22] [cursor=pointer]: 가공식품
+                      - generic [ref=e23] [cursor=pointer]: 신선식품
+                  - generic [ref=e24]:
+                    - generic [ref=e25]: 중분류
+                    - generic [ref=e27]: 중분류 선택
+                  - generic [ref=e28]:
+                    - generic [ref=e29]: 소분류
+                    - generic [ref=e31]: 소분류 선택
+                  - generic [ref=e32]:
+                    - generic [ref=e33]: 세부분류
+                    - generic [ref=e35]: 세부분류 선택
+                - generic [ref=e36]:
+                  - button "대분류로 이동" [ref=e37] [cursor=pointer]
+                  - button "중분류로 이동" [ref=e38] [cursor=pointer]
+                  - button "소분류로 이동" [ref=e39] [cursor=pointer]
+                  - button "세부분류로 이동" [ref=e40] [cursor=pointer]
+            - generic [ref=e41]:
+              - heading "동네 범위" [level=3] [ref=e42]
+              - generic [ref=e44]:
+                - generic [ref=e45] [cursor=pointer]:
+                  - button [ref=e46]
+                  - button [ref=e47]
+                  - button [ref=e48]
+                  - button [ref=e49]
+                - generic [ref=e51]:
+                  - button "가까운 동네" [ref=e52] [cursor=pointer]
+                  - button "먼 동네" [ref=e53] [cursor=pointer]
+            - generic [ref=e54]:
+              - button "초기화" [disabled] [ref=e55]
+              - button "조건 적용" [disabled] [ref=e56]
+        - generic [ref=e57]:
+          - generic [ref=e58]:
+            - generic [ref=e59]:
+              - generic [ref=e60]: 전체 0개 (전체)
+              - generic [ref=e64]:
+                - generic: 🔍
+                - searchbox "상품 검색..." [active] [ref=e65]: 테스트
+            - button "최신순 ▼" [ref=e68] [cursor=pointer]:
+              - generic [ref=e69]: 최신순
+              - generic [ref=e70]: ▼
+          - generic [ref=e72]:
+            - generic [ref=e73]: 🔍
+            - heading "등록된 공동구매가 없습니다" [level=3] [ref=e74]
+            - paragraph [ref=e75]: 검색 조건을 변경하거나 필터를 초기화해보세요.
+            - button "필터 초기화" [ref=e76] [cursor=pointer]
+    - generic [ref=e77]:
+      - generic:
+        - generic:
+          - generic: 맨 위로
+          - button "맨 위로 가기": ⬆️
+        - generic:
+          - generic: 커뮤니티 글쓰기
+          - button "커뮤니티 글쓰기": 💬
+        - generic:
+          - generic: 공동구매 글쓰기
+          - button "공동구매 글쓰기": 🛒
+      - button "글쓰기 메뉴" [ref=e78] [cursor=pointer]:
+        - generic [ref=e79]: ✏️
+    - navigation [ref=e80]:
+      - button "🏠 홈" [ref=e81] [cursor=pointer]:
+        - generic [ref=e82]: 🏠
+        - generic [ref=e83]: 홈
+      - button "💬 커뮤니티" [ref=e84] [cursor=pointer]:
+        - generic [ref=e85]: 💬
+        - generic [ref=e86]: 커뮤니티
+      - button "💭 채팅" [ref=e87] [cursor=pointer]:
+        - generic [ref=e88]: 💭
+        - generic [ref=e89]: 채팅
+      - button "👤 MY" [ref=e90] [cursor=pointer]:
+        - generic [ref=e91]: 👤
+        - generic [ref=e92]: MY
+```
