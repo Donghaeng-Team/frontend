@@ -6,6 +6,7 @@ import type { ChatMessage } from '../../components/ChatRoom/ChatRoom';
 import { useChatStore } from '../../stores/chatStore';
 import { useAuthStore } from '../../stores/authStore';
 import type { ChatRoomStatus } from '../../types/chat';
+import { chatService } from '../../api/services/chat';
 import './ChatRoomPage.css';
 
 interface ChatRoomPageProps {
@@ -42,7 +43,6 @@ const ChatRoomPage = ({
     cancelBuyer,
     closeRecruitment,
     extendDeadline,
-    completePurchase,
   } = useChatStore();
   const { user } = useAuthStore();
 
@@ -337,16 +337,31 @@ const ChatRoomPage = ({
   };
 
   const handleComplete = async () => {
-    if (roomId && currentRoom) {
+    if (roomId && currentRoom && user?.userId) {
       if (!currentRoom.creator) {
         alert('판매자만 판매 종료를 할 수 있습니다.');
         return;
       }
-      if (window.confirm('판매를 종료하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+      if (window.confirm('판매를 종료하시겠습니까? 모든 참가자가 강퇴되며 이 작업은 되돌릴 수 없습니다.')) {
         try {
-          await completePurchase(parseInt(roomId, 10));
-          alert('판매가 종료되었습니다.');
+          const numericRoomId = parseInt(roomId, 10);
+          
+          // 모든 참가자 강퇴 (판매자 본인 제외)
+          if (participants && participants.length > 0) {
+            const kickPromises = participants
+              .filter(p => p.userId !== user.userId)
+              .map(p => chatService.kickParticipant(numericRoomId, p.userId));
+            
+            await Promise.all(kickPromises);
+          }
+          
+          alert('판매가 종료되었습니다. 모든 참가자가 강퇴되었습니다.');
+          
+          // 채팅방 나가기
+          await exitChatRoom(numericRoomId);
+          navigate('/chat');
         } catch (error) {
+          console.error('판매 종료 실패:', error);
           alert('판매 종료에 실패했습니다.');
         }
       }
