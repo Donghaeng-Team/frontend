@@ -160,22 +160,25 @@ export const productService = {
   },
 
   // 내가 참여한 상품 목록 (TODO: 백엔드 API 구현 대기)
-  getMyJoinedProducts: async (params: { page?: number; size?: number } = {}): Promise<ApiResponse<PaginationResponse<Product>>> => {
-    // 백엔드 API가 아직 없으므로 빈 응답 반환
-    return {
-      success: true,
-      message: '조회 성공',
-      data: {
-        content: [],
-        totalElements: 0,
-        totalPages: 0,
-        currentPage: 0,
-        size: params.size || 10,
-        hasNext: false,
-        hasPrevious: false
-      },
-      timestamp: new Date().toISOString()
-    };
+  getMyJoinedProducts: async (params: { pageNum?: number; pageSize?: number } = {}): Promise<ApiResponse<any>> => {
+    const response = await apiClient.get('/api/v1/market/private/participating', {
+      params: {
+        pageNum: params.pageNum || 0,
+        pageSize: params.pageSize || 100
+      }
+    });
+    return response.data;
+  },
+
+  // 내가 완료한 상품 목록
+  getMyCompletedProducts: async (params: { pageNum?: number; pageSize?: number } = {}): Promise<ApiResponse<any>> => {
+    const response = await apiClient.get('/api/v1/market/private/completed', {
+      params: {
+        pageNum: params.pageNum || 0,
+        pageSize: params.pageSize || 100
+      }
+    });
+    return response.data;
   },
 
   // 내가 등록한 상품 목록
