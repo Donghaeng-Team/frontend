@@ -42,6 +42,7 @@ const ChatRoomPage = ({
     cancelBuyer,
     closeRecruitment,
     extendDeadline,
+    completePurchase,
   } = useChatStore();
   const { user } = useAuthStore();
 
@@ -335,6 +336,23 @@ const ChatRoomPage = ({
     }
   };
 
+  const handleComplete = async () => {
+    if (roomId && currentRoom) {
+      if (!currentRoom.creator) {
+        alert('판매자만 판매 종료를 할 수 있습니다.');
+        return;
+      }
+      if (window.confirm('판매를 종료하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+        try {
+          await completePurchase(parseInt(roomId, 10));
+          alert('판매가 종료되었습니다.');
+        } catch (error) {
+          alert('판매 종료에 실패했습니다.');
+        }
+      }
+    }
+  };
+
   const handleSendMessage = (message: string) => {
     if (roomId && user && user.userId) {
       const numericRoomId = parseInt(roomId, 10);
@@ -356,6 +374,7 @@ const ChatRoomPage = ({
         onConfirm={handleConfirm}
         onApply={handleApply}
         onCancel={handleCancel}
+        onComplete={handleComplete}
         onSendMessage={handleSendMessage}
       />
       {showBottomNav && <BottomNav />}
