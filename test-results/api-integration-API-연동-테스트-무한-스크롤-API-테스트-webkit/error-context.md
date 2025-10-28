@@ -1,0 +1,96 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - link "🛒 함께 사요" [ref=e7]:
+        - /url: /
+        - generic [ref=e8]: 🛒
+        - generic [ref=e9]: 함께 사요
+      - navigation [ref=e10]:
+        - button "📍 위치 설정 ▽" [ref=e11] [cursor=pointer]:
+          - generic [ref=e12]: 📍
+          - generic [ref=e13]: 위치 설정
+          - generic [ref=e14]: ▽
+        - link "공동구매" [ref=e15]:
+          - /url: /products
+        - link "커뮤니티" [ref=e16]:
+          - /url: /community
+      - link "로그인" [ref=e18]:
+        - /url: /login
+  - main [ref=e19]:
+    - generic [ref=e20]:
+      - generic [ref=e22]:
+        - generic [ref=e23]:
+          - heading "카테고리" [level=3] [ref=e24]
+          - generic [ref=e26]:
+            - generic [ref=e27]:
+              - generic [ref=e28]: 대분류
+              - generic [ref=e29]:
+                - generic [ref=e30] [cursor=pointer]: 가공식품
+                - generic [ref=e31] [cursor=pointer]: 신선식품
+            - generic [ref=e32]:
+              - generic [ref=e33]: 중분류
+              - generic [ref=e35]: 중분류 선택
+            - generic [ref=e36]:
+              - generic [ref=e37]: 소분류
+              - generic [ref=e39]: 소분류 선택
+            - generic [ref=e40]:
+              - generic [ref=e41]: 세부분류
+              - generic [ref=e43]: 세부분류 선택
+        - generic [ref=e44]:
+          - heading "동네 범위" [level=3] [ref=e45]
+          - generic [ref=e47]:
+            - generic [ref=e48] [cursor=pointer]:
+              - button [ref=e49]
+              - button [ref=e50]
+              - button [ref=e51]
+              - button [ref=e52]
+            - generic [ref=e54]:
+              - button "가까운 동네" [ref=e55] [cursor=pointer]
+              - button "먼 동네" [ref=e56] [cursor=pointer]
+        - generic [ref=e57]:
+          - button "초기화" [disabled] [ref=e58]
+          - button "조건 적용" [disabled] [ref=e59]
+      - generic [ref=e60]:
+        - generic [ref=e61]:
+          - generic [ref=e62]:
+            - generic [ref=e63]: 전체 0개 (전체)
+            - generic [ref=e67]:
+              - generic: 🔍
+              - searchbox "상품 검색..." [ref=e68]
+          - button "최신순 ▼" [ref=e71] [cursor=pointer]:
+            - generic [ref=e72]: 최신순
+            - generic [ref=e73]: ▼
+        - generic [ref=e75]:
+          - generic [ref=e76]: 🔍
+          - heading "등록된 공동구매가 없습니다" [level=3] [ref=e77]
+          - paragraph [ref=e78]: 첫 번째 공동구매를 등록해보세요!
+          - button "공동구매 등록하기" [ref=e79] [cursor=pointer]
+  - contentinfo [ref=e80]:
+    - generic [ref=e82]:
+      - paragraph [ref=e83]: © 2025 함께 사요. All rights reserved.
+      - generic [ref=e84]:
+        - link "이용약관" [ref=e85]:
+          - /url: /terms
+        - generic [ref=e86]: "|"
+        - link "개인정보처리방침" [ref=e87]:
+          - /url: /privacy
+        - generic [ref=e88]: "|"
+        - link "고객센터" [ref=e89]:
+          - /url: /support
+  - generic [ref=e90]:
+    - generic:
+      - generic:
+        - generic: 맨 위로
+        - button "맨 위로 가기": ⬆️
+      - generic:
+        - generic: 커뮤니티 글쓰기
+        - button "커뮤니티 글쓰기": 💬
+      - generic:
+        - generic: 공동구매 글쓰기
+        - button "공동구매 글쓰기": 🛒
+    - button "글쓰기 메뉴" [ref=e91] [cursor=pointer]:
+      - generic [ref=e92]: ✏️
+```
