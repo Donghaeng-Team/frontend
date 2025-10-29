@@ -27,7 +27,7 @@ export default function EMailVerification() {
       }
       try {
         const response = await axios.post(
-          "http://localhost:8080/api/v1/user/public/verify",
+          "https://bytogether.net/api/v1/user/public/verify",
           {
             email: email,
             token: token,
