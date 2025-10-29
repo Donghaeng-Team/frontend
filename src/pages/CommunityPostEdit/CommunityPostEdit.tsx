@@ -320,8 +320,8 @@ const CommunityPostEdit: React.FC = () => {
       }
 
       const response = await communityService.updatePost(
-        authUser.userId,
         postId,
+        authUser.userId,
         updateData
       );
 
