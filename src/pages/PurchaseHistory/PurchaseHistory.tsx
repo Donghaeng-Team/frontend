@@ -100,7 +100,10 @@ const PurchaseHistory: React.FC = () => {
       const response = await productService.getMyProducts({ pageNum, pageSize: PAGE_SIZE });
       if (response.success && response.data) {
         const markets = (response.data as any).markets || [];
-        const items = markets.map((market: any) => ({
+        const items = markets
+          // 완료된 구매(ENDED, CANCELLED 상태) 제외
+          .filter((market: any) => market.status !== 'ENDED' && market.status !== 'CANCELLED')
+          .map((market: any) => ({
           id: market.marketId.toString(),
           title: market.title,
           category: market.categoryId,
@@ -148,7 +151,10 @@ const PurchaseHistory: React.FC = () => {
       const response = await productService.getMyJoinedProducts({ pageNum, pageSize: PAGE_SIZE });
       if (response.success && response.data) {
         const markets = (response.data as any).markets || [];
-        const items = markets.map((market: any) => ({
+        const items = markets
+          // 내가 주최한 것 제외
+          .filter((market: any) => authUser?.nickName !== market.nickname)
+          .map((market: any) => ({
           id: market.marketId.toString(),
           title: market.title,
           category: market.categoryId,
