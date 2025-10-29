@@ -25,7 +25,7 @@ const processQueue = (error: any, token: string | null = null) => {
 const apiClient: AxiosInstance = axios.create({
   // 개발: http://localhost:8080 (Docker 백엔드 직접 호출)
   // 프로덕션: https://bytogether.net
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://bytogether.net',
   timeout: Number(import.meta.env.VITE_API_TIMEOUT) || 30000, // 기본값을 30초로 증가
   headers: {
     'Content-Type': 'application/json',
@@ -96,7 +96,7 @@ apiClient.interceptors.response.use(
       try {
         // 토큰 재발급 요청 (백엔드가 쿠키에서 refresh token을 읽음)
         const response = await axios.post(
-          `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/v1/user/public/refresh`,
+          `${import.meta.env.VITE_API_BASE_URL || 'https://bytogether.net'}/api/v1/user/public/refresh`,
           {},
           { withCredentials: true } // 쿠키 전송 활성화
         );

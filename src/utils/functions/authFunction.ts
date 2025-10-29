@@ -4,7 +4,7 @@ const handleAuth = async () => {
   try {
     console.log("refresh API 호출 시작")
     const response = await axios.post(
-      "http://localhost:8080/api/v1/user/public/refresh",
+      "https://bytogether.net/api/v1/user/public/refresh",
       {},
       {
         withCredentials: true,
