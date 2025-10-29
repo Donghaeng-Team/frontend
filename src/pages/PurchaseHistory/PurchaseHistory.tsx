@@ -106,7 +106,11 @@ const PurchaseHistory: React.FC = () => {
             date: new Date().toISOString().split('T')[0],
             role: 'host' as const
           }));
-          setHostingItems(items);
+          // 최신순 정렬 (marketId 내림차순)
+          const sortedItems = items.sort((a: any, b: any) => 
+            parseInt(b.id) - parseInt(a.id)
+          );
+          setHostingItems(sortedItems);
         }
 
         // 참여중인 상품
@@ -134,7 +138,11 @@ const PurchaseHistory: React.FC = () => {
             date: new Date().toISOString().split('T')[0],
             role: 'participant' as const
           }));
-          setParticipatingItems(items);
+          // 최신순 정렬 (marketId 내림차순)
+          const sortedItems = items.sort((a: any, b: any) => 
+            parseInt(b.id) - parseInt(a.id)
+          );
+          setParticipatingItems(sortedItems);
         }
 
         // 완료된 상품
@@ -160,7 +168,11 @@ const PurchaseHistory: React.FC = () => {
             date: new Date().toISOString().split('T')[0],
             role: 'host' as const
           }));
-          setCompletedItems(items);
+          // 최신순 정렬 (marketId 내림차순)
+          const sortedItems = items.sort((a: any, b: any) => 
+            parseInt(b.id) - parseInt(a.id)
+          );
+          setCompletedItems(sortedItems);
         }
 
         // 좋아요한 상품 (cartService 사용)
@@ -192,7 +204,11 @@ const PurchaseHistory: React.FC = () => {
                 date: new Date().toISOString().split('T')[0],
                 role: 'participant' as const
               }));
-              setLikedItems(items);
+              // 최신순 정렬 (marketId 내림차순)
+              const sortedItems = items.sort((a: any, b: any) => 
+                parseInt(b.id) - parseInt(a.id)
+              );
+              setLikedItems(sortedItems);
             }
           } catch (likedError: any) {
             // 404는 좋아요한 항목이 없는 정상 상태
