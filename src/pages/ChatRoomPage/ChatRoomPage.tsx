@@ -351,9 +351,8 @@ const ChatRoomPage = ({
           
           alert('판매가 종료되었습니다.');
           
-          // 채팅방 나가기
-          // await exitChatRoom(numericRoomId);
-          // navigate('/chat');
+          // 공동구매 목록으로 이동
+          navigate('/products');
         } catch (error) {
           console.error('판매 종료 실패:', error);
           alert('판매 종료에 실패했습니다.');
