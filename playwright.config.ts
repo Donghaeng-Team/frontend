@@ -1,10 +1,20 @@
 import { defineConfig, devices } from '@playwright/test';
+import { join } from 'path';
+import { homedir } from 'os';
+
+/**
+ * 다운로드 폴더 경로 설정
+ * OS별 다운로드 폴더: Windows, Mac, Linux 모두 지원
+ */
+const downloadsDir = join(homedir(), 'Downloads', 'playwright-test-results');
 
 /**
  * @see https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
   testDir: './tests',
+  /* 테스트 결과 저장 경로 (다운로드 폴더) */
+  outputDir: downloadsDir,
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -22,6 +32,9 @@ export default defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+    
+    /* Take screenshot on failure */
+    screenshot: 'only-on-failure',
   },
 
   /* Configure projects for major browsers */
