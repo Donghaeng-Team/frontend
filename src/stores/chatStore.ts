@@ -21,6 +21,8 @@ interface ChatState {
 
   initializeWebSocket: (onStatusChange?: (status: ConnectionStatus) => void) => void;
   disconnectWebSocket: () => void;
+  subscribeToUserNotifications: (userId: number, onNotification: (notification: any) => void) => void;
+  unsubscribeFromUserNotifications: () => void;
   fetchChatRooms: () => Promise<void>;
   fetchChatRoom: (roomId: number) => Promise<void>;
   fetchParticipants: (marketId: number) => Promise<void>;
@@ -63,12 +65,26 @@ export const useChatStore = create<ChatState>((set, get) => ({
     set({ wsClient: null, wsStatus: 'disconnected' });
   },
 
+  subscribeToUserNotifications: (userId, onNotification) => {
+    const { wsClient } = get();
+    wsClient?.subscribeToUserNotifications(userId, onNotification);
+  },
+
+  unsubscribeFromUserNotifications: () => {
+    const { wsClient } = get();
+    wsClient?.unsubscribeFromUserNotifications();
+  },
+
   fetchChatRooms: async () => {
     try {
       set({ chatRoomsLoading: true, error: null });
       const response = await chatService.getChatRoomList();
       if (response.success && response.data) {
-        set({ chatRooms: response.data.chatRooms, chatRoomsLoading: false });
+        // CANCELLED 상태인 채팅방 필터링
+        const activeChatRooms = response.data.chatRooms.filter(
+          room => room.status !== 'CANCELLED'
+        );
+        set({ chatRooms: activeChatRooms, chatRoomsLoading: false });
       }
     } catch (error: any) {
       set({ error: '채팅방 목록을 불러오는데 실패했습니다.', chatRoomsLoading: false });

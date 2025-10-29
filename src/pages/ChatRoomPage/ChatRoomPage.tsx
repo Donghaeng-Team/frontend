@@ -29,6 +29,8 @@ const ChatRoomPage = ({
   const {
     initializeWebSocket,
     disconnectWebSocket,
+    subscribeToUserNotifications,
+    unsubscribeFromUserNotifications,
     wsStatus,
     currentRoom,
     messages,
@@ -54,6 +56,27 @@ const ChatRoomPage = ({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // 빈 배열: 마운트/언마운트 시에만 실행
+
+  // 사용자 알림 구독 (강퇴 알림 처리)
+  useEffect(() => {
+    if (user?.userId && wsStatus === 'connected') {
+      subscribeToUserNotifications(user.userId, (notification) => {
+        if (import.meta.env.DEV) {
+          console.log('[ChatRoomPage] Received notification:', notification);
+        }
+
+        // 강퇴 알림 처리
+        if (notification.type === 'KICKED' || notification.type === 'KICK') {
+          alert('채팅방에서 강퇴되었습니다.');
+          navigate('/products');
+        }
+      });
+
+      return () => {
+        unsubscribeFromUserNotifications();
+      };
+    }
+  }, [user?.userId, wsStatus, subscribeToUserNotifications, unsubscribeFromUserNotifications, navigate]);
 
   // 채팅방 정보 로드 (중복 방지)
   useEffect(() => {
@@ -351,9 +374,8 @@ const ChatRoomPage = ({
           
           alert('판매가 종료되었습니다.');
           
-          // 채팅방 나가기
-          await exitChatRoom(numericRoomId);
-          navigate('/chat');
+          // 공동구매 목록으로 이동
+          navigate('/products');
         } catch (error) {
           console.error('판매 종료 실패:', error);
           alert('판매 종료에 실패했습니다.');
