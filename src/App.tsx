@@ -21,6 +21,7 @@ import ComponentShowcase from "./pages/ComponentShowcase"
 import Callback from "./pages/Auth/Callback"
 import EMailVerification from "./pages/EmailVerification/EmailVerification"
 import PasswordVerification from "./pages/PasswordVerification/PasswordVerification"
+import PasswordResetRequest from "./pages/PasswordResetRequest/PasswordResetRequest"
 import ChatRoomPage from "./pages/ChatRoomPage"
 import ChatList from "./pages/ChatList"
 
@@ -45,6 +46,7 @@ function App() {
         <Route path="/auth/callback" element={<Callback />} />
         <Route path="/verify/email" element={<EMailVerification />} />
         <Route path="/verify/password" element={<PasswordVerification />} />
+        <Route path="/password-reset-request" element={<PasswordResetRequest />} />
         <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
 
         {/* 마이페이지 */}

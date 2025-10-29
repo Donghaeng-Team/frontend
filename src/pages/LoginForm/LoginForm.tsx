@@ -151,6 +151,17 @@ const LoginForm: React.FC = () => {
             >
               {loading ? '로그인 중...' : '로그인'}
             </Button>
+
+            <div className="login-form-forgot-password">
+              <button
+                className="login-form-forgot-password-link"
+                onClick={() => navigate('/password-reset-request')}
+                type="button"
+                disabled={loading}
+              >
+                비밀번호를 잊으셨나요?
+              </button>
+            </div>
           </form>
 
           <div className="login-form-footer">
