@@ -119,14 +119,12 @@ const PurchaseHistory: React.FC = () => {
           },
           location: market.emdName,
           date: new Date().toISOString().split('T')[0],
-          role: 'host' as const
+          // 닉네임 비교로 주최자 여부 판단
+          role: (authUser?.nickName === market.nickname) ? 'host' as const : 'participant' as const
         }));
 
-        setHostingItems(prev => {
-          const newItems = pageNum === 0 ? items : [...prev, ...items];
-          // 최신순 정렬 (marketId 내림차순)
-          return newItems.sort((a: any, b: any) => parseInt(b.id) - parseInt(a.id));
-        });
+        // 백엔드 응답 그대로 출력 (정렬 없음)
+        setHostingItems(prev => pageNum === 0 ? items : [...prev, ...items]);
 
         setHostingPage({
           pageNum: pageNum + 1,
@@ -138,7 +136,7 @@ const PurchaseHistory: React.FC = () => {
       console.error('주최한 상품 로드 실패:', error);
       setHostingPage(prev => ({ ...prev, loading: false, hasMore: false }));
     }
-  }, [hostingPage.loading, hostingPage.hasMore]);
+  }, [hostingPage.loading, hostingPage.hasMore, authUser]);
 
   // 참여중인 상품 로드
   const loadParticipatingItems = useCallback(async (pageNum: number) => {
@@ -169,13 +167,12 @@ const PurchaseHistory: React.FC = () => {
           },
           location: market.emdName,
           date: new Date().toISOString().split('T')[0],
-          role: 'participant' as const
+          // 닉네임 비교로 주최자 여부 판단
+          role: (authUser?.nickName === market.nickname) ? 'host' as const : 'participant' as const
         }));
 
-        setParticipatingItems(prev => {
-          const newItems = pageNum === 0 ? items : [...prev, ...items];
-          return newItems.sort((a: any, b: any) => parseInt(b.id) - parseInt(a.id));
-        });
+        // 백엔드 응답 그대로 출력 (정렬 없음)
+        setParticipatingItems(prev => pageNum === 0 ? items : [...prev, ...items]);
 
         setParticipatingPage({
           pageNum: pageNum + 1,
@@ -187,7 +184,7 @@ const PurchaseHistory: React.FC = () => {
       console.error('참여중인 상품 로드 실패:', error);
       setParticipatingPage(prev => ({ ...prev, loading: false, hasMore: false }));
     }
-  }, [participatingPage.loading, participatingPage.hasMore]);
+  }, [participatingPage.loading, participatingPage.hasMore, authUser]);
 
   // 완료된 상품 로드
   const loadCompletedItems = useCallback(async (pageNum: number) => {
@@ -216,13 +213,12 @@ const PurchaseHistory: React.FC = () => {
           },
           location: market.emdName,
           date: new Date().toISOString().split('T')[0],
-          role: 'host' as const
+          // 닉네임 비교로 주최자 여부 판단
+          role: (authUser?.nickName === market.nickname) ? 'host' as const : 'participant' as const
         }));
 
-        setCompletedItems(prev => {
-          const newItems = pageNum === 0 ? items : [...prev, ...items];
-          return newItems.sort((a: any, b: any) => parseInt(b.id) - parseInt(a.id));
-        });
+        // 백엔드 응답 그대로 출력 (정렬 없음)
+        setCompletedItems(prev => pageNum === 0 ? items : [...prev, ...items]);
 
         setCompletedPage({
           pageNum: pageNum + 1,
@@ -234,7 +230,7 @@ const PurchaseHistory: React.FC = () => {
       console.error('완료된 상품 로드 실패:', error);
       setCompletedPage(prev => ({ ...prev, loading: false, hasMore: false }));
     }
-  }, [completedPage.loading, completedPage.hasMore]);
+  }, [completedPage.loading, completedPage.hasMore, authUser]);
 
   // 좋아요한 상품 로드
   const loadLikedItems = useCallback(async (pageNum: number) => {
@@ -268,13 +264,12 @@ const PurchaseHistory: React.FC = () => {
           },
           location: market.emdName,
           date: new Date().toISOString().split('T')[0],
-          role: 'participant' as const
+          // 닉네임 비교로 주최자 여부 판단
+          role: (authUser?.nickName === market.nickname) ? 'host' as const : 'participant' as const
         }));
 
-        setLikedItems(prev => {
-          const newItems = pageNum === 0 ? items : [...prev, ...items];
-          return newItems.sort((a: any, b: any) => parseInt(b.id) - parseInt(a.id));
-        });
+        // 백엔드 응답 그대로 출력 (정렬 없음)
+        setLikedItems(prev => pageNum === 0 ? items : [...prev, ...items]);
 
         setLikedPage({
           pageNum: pageNum + 1,
