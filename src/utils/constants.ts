@@ -1,7 +1,7 @@
 // 환경 변수 관리
 export const ENV = {
-  API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
-  WS_BASE_URL: import.meta.env.VITE_WS_BASE_URL || 'ws://localhost:8080/ws',
+  API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'https://bytogether.net',
+  WS_BASE_URL: import.meta.env.VITE_WS_BASE_URL || 'wss://bytogether.net/ws',
   APP_TITLE: import.meta.env.VITE_APP_TITLE || '함께 사요',
   APP_VERSION: import.meta.env.VITE_APP_VERSION || '1.0.0',
   NODE_ENV: import.meta.env.VITE_NODE_ENV || 'development',

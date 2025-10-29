@@ -77,7 +77,7 @@ export default function PasswordVerification() {
     e.preventDefault()
     try {
       const response = await axios.post(
-        "http://localhost:8080/api/v1/user/public/password/confirm-reset",
+        "https://bytogether.net/api/v1/user/public/password/confirm-reset",
         {
           email: email,
           token: token,
