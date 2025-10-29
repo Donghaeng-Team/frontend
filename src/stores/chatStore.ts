@@ -68,7 +68,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
       set({ chatRoomsLoading: true, error: null });
       const response = await chatService.getChatRoomList();
       if (response.success && response.data) {
-        set({ chatRooms: response.data.chatRooms, chatRoomsLoading: false });
+        // CANCELLED 상태인 채팅방 필터링
+        const activeChatRooms = response.data.chatRooms.filter(
+          room => room.status !== 'CANCELLED'
+        );
+        set({ chatRooms: activeChatRooms, chatRoomsLoading: false });
       }
     } catch (error: any) {
       set({ error: '채팅방 목록을 불러오는데 실패했습니다.', chatRoomsLoading: false });
