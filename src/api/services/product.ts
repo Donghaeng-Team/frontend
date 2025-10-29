@@ -47,8 +47,13 @@ export interface ProductCreateRequest {
   locationText: string;
 }
 
-export interface ProductUpdateRequest extends Partial<ProductCreateRequest> {
+export interface ProductUpdateRequest {
   id: string;
+  images?: File[]; // multipart/form-data로 전송
+  title: string;
+  categoryId: string;
+  endTime: string; // ISO 8601 datetime
+  content: string;
 }
 
 export interface ProductSearchParams {
@@ -113,49 +118,59 @@ export const productService = {
   },
 
   // 상품 수정
-  updateProduct: async (data: ProductUpdateRequest): Promise<ApiResponse<Product>> => {
-    const { id, ...updateData } = data;
+  updateProduct: async (data: ProductUpdateRequest, userId: number): Promise<ApiResponse<Product>> => {
+    const { id, images, ...updateData } = data;
+    const formData = new FormData();
 
-    if (updateData.images && updateData.images.length > 0) {
-      const formData = new FormData();
-
-      updateData.images.forEach((image) => {
+    // 이미지 추가 (있는 경우)
+    if (images && images.length > 0) {
+      images.forEach((image) => {
         formData.append('images', image);
       });
-
-      Object.entries(updateData).forEach(([key, value]) => {
-        if (key !== 'images') {
-          formData.append(key, typeof value === 'object' ? JSON.stringify(value) : String(value));
-        }
-      });
-
-      const response = await apiClient.put(`/products/${id}`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      return response.data;
-    } else {
-      const response = await apiClient.put(`/products/${id}`, updateData);
-      return response.data;
     }
+
+    // 나머지 필수 필드 추가
+    formData.append('title', updateData.title);
+    formData.append('categoryId', updateData.categoryId);
+    formData.append('endTime', updateData.endTime);
+    formData.append('content', updateData.content);
+
+    const response = await apiClient.put(`/api/v1/market/private/${id}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'X-User-Id': userId.toString(),
+      },
+    });
+    return response.data;
   },
 
   // 상품 삭제
-  deleteProduct: async (id: string): Promise<ApiResponse<null>> => {
-    const response = await apiClient.delete(`/products/${id}`);
+  deleteProduct: async (id: string, userId: number): Promise<ApiResponse<null>> => {
+    const response = await apiClient.delete(`/api/v1/market/private/${id}`, {
+      headers: {
+        'X-User-Id': userId.toString(),
+      },
+    });
     return response.data;
   },
 
   // 상품 참여
-  joinProduct: async (productId: string, quantity: number): Promise<ApiResponse<null>> => {
-    const response = await apiClient.post(`/products/${productId}/join`, { quantity });
+  joinProduct: async (productId: string, quantity: number, userId: number): Promise<ApiResponse<null>> => {
+    const response = await apiClient.post(`/api/v1/market/private/${productId}/join`, { quantity }, {
+      headers: {
+        'X-User-Id': userId.toString(),
+      },
+    });
     return response.data;
   },
 
   // 상품 참여 취소
-  leaveProduct: async (productId: string): Promise<ApiResponse<null>> => {
-    const response = await apiClient.delete(`/products/${productId}/join`);
+  leaveProduct: async (productId: string, userId: number): Promise<ApiResponse<null>> => {
+    const response = await apiClient.delete(`/api/v1/market/private/${productId}/join`, {
+      headers: {
+        'X-User-Id': userId.toString(),
+      },
+    });
     return response.data;
   },
 
@@ -271,7 +286,7 @@ export const productService = {
 
   // 카테고리 목록 조회
   getCategories: async (): Promise<ApiResponse<string[]>> => {
-    const response = await apiClient.get('/products/categories');
+    const response = await apiClient.get('/api/v1/market/public/categories');
     return response.data;
   },
 };

@@ -313,11 +313,20 @@ const ProductEdit: React.FC = () => {
     setIsSaving(true);
 
     try {
+      if (!authUser?.userId) {
+        throw new Error('로그인이 필요합니다.');
+      }
+
+      if (!product) {
+        throw new Error('상품 정보를 찾을 수 없습니다.');
+      }
+
       const updateData: ProductUpdateRequest = {
         id,
         title,
+        categoryId: selectedCategories[0],
+        endTime: deadline,
         content: description,
-        price: Number(price),
       };
 
       // 새로운 이미지가 있으면 추가
@@ -325,7 +334,7 @@ const ProductEdit: React.FC = () => {
         updateData.images = images;
       }
 
-      const response = await productService.updateProduct(updateData);
+      const response = await productService.updateProduct(updateData, authUser.userId);
 
       if (!response.success) {
         throw new Error('상품 수정에 실패했습니다.');
