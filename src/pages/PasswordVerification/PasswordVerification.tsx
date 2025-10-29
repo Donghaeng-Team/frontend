@@ -1,14 +1,8 @@
 import axios from "axios"
 import { useState, useEffect } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
-
-interface passwordVerify {
-  email?: string
-  token?: string
-  type : "PASSWORD"
-  password: String
-  passwordConfirm: String
-}
+import Button from "../../components/Button"
+import "./PasswordVerification.css"
 
 export default function PasswordVerification() {
   const [searchParams] = useSearchParams()
@@ -20,6 +14,7 @@ export default function PasswordVerification() {
   const [passwordConfirm, setPasswordConfirm] = useState("")
   const [error, setError] = useState("")
   const [isValid, setIsValid] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   // URL 파라미터 검증
   if (!token || !email) {
@@ -27,7 +22,7 @@ export default function PasswordVerification() {
     return null
   }
 
-  //유효성 검사
+  // 유효성 검사
   const hasUpper = /[A-Z]/.test(password)
   const hasLower = /[a-z]/.test(password)
   const hasNumber = /\d/.test(password)
@@ -57,10 +52,23 @@ export default function PasswordVerification() {
     hasLength,
   ])
 
-  //비밀번호 변경
+  // 비밀번호 변경
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setPassword(value)
+    if (error) {
+      setError("")
+    }
+  }
+
+  // 비밀번호 확인 변경
+  const handlePasswordConfirmChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setPasswordConfirm(e.target.value)
+    if (error) {
+      setError("")
+    }
   }
 
   // 비밀번호 확인 입력 후 포커스 아웃 시 검사
@@ -72,9 +80,11 @@ export default function PasswordVerification() {
     }
   }
 
-  //Form제출
+  // Form 제출
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setLoading(true)
+
     try {
       const response = await axios.post(
         "https://bytogether.net/api/v1/user/public/password/confirm-reset",
@@ -92,66 +102,127 @@ export default function PasswordVerification() {
       }
     } catch (e) {
       console.error(e)
-      window.alert("비밀번호 변경에 실패하였습니다.")
+      setError("비밀번호 변경에 실패하였습니다. 다시 시도해주세요.")
+    } finally {
+      setLoading(false)
     }
-    // 1초 후 로그인 페이지로 이동
   }
+
   return (
-    <div>
-      <div>
-        <h2>새 비밀번호 설정</h2>
-        <p>새로운 비밀번호를 입력해 주세요</p>
-        <form onSubmit={handleSubmit}>
-          <div>
-            <label>새 비밀번호</label>
-            <input
-              type="password"
-              placeholder="새 비밀번호를 입력하세요"
-              value={password}
-              onChange={handlePasswordChange}
-              required
-            />
-            {/* 비밀번호 조건별 체크 UI */}
-            <div className="mt-2 space-y-1 text-xs">
-              <div>{hasUpper ? "✔" : "✖"} 영문 대문자 포함</div>
-              <div>{hasLower ? "✔" : "✖"} 영문 소문자 포함</div>
-              <div>{hasNumber ? "✔" : "✖"} 숫자 포함</div>
-              <div>{hasSpecial ? "✔" : "✖"} 특수문자 포함</div>
-              <div>{hasLength ? "✔" : "✖"} 8자 이상</div>
+    <div className="password-verification-page">
+      <div className="password-verification-container">
+        <div className="password-verification-box">
+          <div className="password-verification-logo">🔐</div>
+
+          <h1 className="password-verification-title">새 비밀번호 설정</h1>
+          <p className="password-verification-description">
+            안전한 비밀번호로 변경해 주세요
+          </p>
+
+          <form onSubmit={handleSubmit} className="password-verification-form">
+            <div className="form-group">
+              <label htmlFor="password" className="form-label">
+                새 비밀번호
+              </label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                placeholder="새 비밀번호를 입력하세요"
+                value={password}
+                onChange={handlePasswordChange}
+                className="form-input"
+                disabled={loading}
+                required
+              />
+
+              {/* 비밀번호 조건별 체크 UI */}
+              <div className="password-requirements">
+                <div className={`requirement ${hasUpper ? "valid" : ""}`}>
+                  <span className="requirement-icon">
+                    {hasUpper ? "✓" : "○"}
+                  </span>
+                  <span className="requirement-text">영문 대문자 포함</span>
+                </div>
+                <div className={`requirement ${hasLower ? "valid" : ""}`}>
+                  <span className="requirement-icon">
+                    {hasLower ? "✓" : "○"}
+                  </span>
+                  <span className="requirement-text">영문 소문자 포함</span>
+                </div>
+                <div className={`requirement ${hasNumber ? "valid" : ""}`}>
+                  <span className="requirement-icon">
+                    {hasNumber ? "✓" : "○"}
+                  </span>
+                  <span className="requirement-text">숫자 포함</span>
+                </div>
+                <div className={`requirement ${hasSpecial ? "valid" : ""}`}>
+                  <span className="requirement-icon">
+                    {hasSpecial ? "✓" : "○"}
+                  </span>
+                  <span className="requirement-text">특수문자 포함</span>
+                </div>
+                <div className={`requirement ${hasLength ? "valid" : ""}`}>
+                  <span className="requirement-icon">
+                    {hasLength ? "✓" : "○"}
+                  </span>
+                  <span className="requirement-text">8자 이상</span>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label>새 비밀번호 확인</label>
-            <input
-              type="password"
-              placeholder="새 비밀번호를 다시 입력하세요"
-              value={passwordConfirm}
-              onChange={(e) => setPasswordConfirm(e.target.value)}
-              onBlur={handlePasswordCheckBlur}
-              required
-            />
-            {passwordConfirm.length > 0 && password !== passwordConfirm && (
-              <p>비밀번호가 일치하지 않습니다</p>
-            )}
-          </div>
+            <div className="form-group">
+              <label htmlFor="passwordConfirm" className="form-label">
+                새 비밀번호 확인
+              </label>
+              <input
+                type="password"
+                id="passwordConfirm"
+                name="passwordConfirm"
+                placeholder="새 비밀번호를 다시 입력하세요"
+                value={passwordConfirm}
+                onChange={handlePasswordConfirmChange}
+                onBlur={handlePasswordCheckBlur}
+                className={`form-input ${
+                  passwordConfirm.length > 0 && password !== passwordConfirm
+                    ? "error"
+                    : ""
+                }`}
+                disabled={loading}
+                required
+              />
+              {passwordConfirm.length > 0 && password !== passwordConfirm && (
+                <span className="form-error">비밀번호가 일치하지 않습니다</span>
+              )}
+            </div>
 
-          {error && <div>{error}</div>}
-          <button type="submit" disabled={!isValid}>
-            비밀번호 변경
-          </button>
-          <div>
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault()
-                navigate("/login")
-              }}
+            {error && <div className="password-verification-error">{error}</div>}
+
+            <Button
+              type="submit"
+              variant="primary"
+              size="large"
+              fullWidth
+              disabled={!isValid || loading}
             >
-              로그인으로 돌아가기
-            </a>
-          </div>
-        </form>
+              {loading ? "변경 중..." : "비밀번호 변경"}
+            </Button>
+
+            <div className="password-verification-footer">
+              <button
+                className="password-verification-back-link"
+                onClick={(e) => {
+                  e.preventDefault()
+                  navigate("/login")
+                }}
+                type="button"
+                disabled={loading}
+              >
+                로그인으로 돌아가기
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   )
