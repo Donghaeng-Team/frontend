@@ -47,8 +47,13 @@ export interface ProductCreateRequest {
   locationText: string;
 }
 
-export interface ProductUpdateRequest extends Partial<ProductCreateRequest> {
+export interface ProductUpdateRequest {
   id: string;
+  images?: File[]; // multipart/form-data로 전송
+  title: string;
+  categoryId: string;
+  endTime: string; // ISO 8601 datetime
+  content: string;
 }
 
 export interface ProductSearchParams {
@@ -114,36 +119,29 @@ export const productService = {
 
   // 상품 수정
   updateProduct: async (data: ProductUpdateRequest, userId: number): Promise<ApiResponse<Product>> => {
-    const { id, ...updateData } = data;
+    const { id, images, ...updateData } = data;
+    const formData = new FormData();
 
-    if (updateData.images && updateData.images.length > 0) {
-      const formData = new FormData();
-
-      updateData.images.forEach((image) => {
+    // 이미지 추가 (있는 경우)
+    if (images && images.length > 0) {
+      images.forEach((image) => {
         formData.append('images', image);
       });
-
-      Object.entries(updateData).forEach(([key, value]) => {
-        if (key !== 'images') {
-          formData.append(key, typeof value === 'object' ? JSON.stringify(value) : String(value));
-        }
-      });
-
-      const response = await apiClient.put(`/api/v1/market/private/${id}`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          'X-User-Id': userId.toString(),
-        },
-      });
-      return response.data;
-    } else {
-      const response = await apiClient.put(`/api/v1/market/private/${id}`, updateData, {
-        headers: {
-          'X-User-Id': userId.toString(),
-        },
-      });
-      return response.data;
     }
+
+    // 나머지 필수 필드 추가
+    formData.append('title', updateData.title);
+    formData.append('categoryId', updateData.categoryId);
+    formData.append('endTime', updateData.endTime);
+    formData.append('content', updateData.content);
+
+    const response = await apiClient.put(`/api/v1/market/private/${id}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'X-User-Id': userId.toString(),
+      },
+    });
+    return response.data;
   },
 
   // 상품 삭제
