@@ -186,7 +186,7 @@ export const communityService = {
    */
   increaseViewCount: async (postId: number): Promise<ApiResponse<unknown>> => {
     const response = await apiClient.post(
-      `/api/v1/posts/public/${postId}`,
+      `/api/v1/posts/public/post/${postId}`,
       {}
     );
     return response.data;
