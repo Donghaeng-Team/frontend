@@ -8,6 +8,12 @@
   flex-direction: column;
   align-items: flex-end;
   gap: 15px;
+  pointer-events: none; /* 기본적으로 클릭 방지 */
+}
+
+/* 메인 버튼만 클릭 가능하도록 */
+.fab-container > * {
+  pointer-events: auto;
 }
 
 /* 배경 오버레이 */

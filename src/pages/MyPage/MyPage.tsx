@@ -89,10 +89,10 @@ const MyPage: React.FC<MyPageProps> = () => {
         // 참여중인 상품 개수
         let participatingCount = 0;
         try {
-          const participatingResponse = await productService.getMyJoinedProducts();
+          const participatingResponse = await productService.getMyJoinedProducts({ pageNum: 0, pageSize: 100 });
           if (participatingResponse.success && participatingResponse.data) {
-            const content = participatingResponse.data.content || [];
-            participatingCount = content.filter(p => p.status === 'active').length;
+            const markets = (participatingResponse.data as any).markets || [];
+            participatingCount = markets.filter((m: any) => m.status === 'RECRUITING').length;
           }
         } catch (error: any) {
           if (error?.response?.status !== 404) {
@@ -103,18 +103,10 @@ const MyPage: React.FC<MyPageProps> = () => {
         // 완료된 상품 개수
         let completedCount = 0;
         try {
-          const myCompletedResponse = await productService.getMyProducts();
-          const joinedCompletedResponse = await productService.getMyJoinedProducts();
-
-          const myCompleted = myCompletedResponse.success && myCompletedResponse.data
-            ? ((myCompletedResponse.data as any).markets || []).filter((m: any) => m.status === 'ENDED').length
+          const completedResponse = await productService.getMyCompletedProducts({ pageNum: 0, pageSize: 100 });
+          completedCount = completedResponse.success && completedResponse.data
+            ? ((completedResponse.data as any).markets || []).length
             : 0;
-
-          const joinedCompleted = joinedCompletedResponse.success && joinedCompletedResponse.data
-            ? (joinedCompletedResponse.data.content || []).filter(p => p.status === 'completed').length
-            : 0;
-
-          completedCount = myCompleted + joinedCompleted;
         } catch (error: any) {
           if (error?.response?.status !== 404) {
             console.error('완료된 상품 로드 실패:', error);
@@ -317,12 +309,6 @@ const MyPage: React.FC<MyPageProps> = () => {
       icon: '📦',
       label: '공동구매 내역',
       onClick: () => navigate('/purchase-history')
-    },
-    {
-      id: 'my-posts',
-      icon: '📝',
-      label: '내가 작성한 글',
-      onClick: () => navigate(`/community?search=${encodeURIComponent(profile.name)}`)
     }
   ];
 
@@ -486,8 +472,8 @@ const MyPage: React.FC<MyPageProps> = () => {
               </div>
             </div>
 
-            {/* 알림 설정 */}
-            <div className="menu-item-expandable">
+            {/* 알림 설정 - 임시 숨김 */}
+            {/* <div className="menu-item-expandable">
               <button 
                 className="menu-item-header"
                 onClick={() => handleSectionToggle('notifications')}
@@ -535,7 +521,7 @@ const MyPage: React.FC<MyPageProps> = () => {
                   </div>
                 </div>
               )}
-            </div>
+            </div> */}
 
             {/* 고객센터 */}
             <div className="menu-item-expandable">

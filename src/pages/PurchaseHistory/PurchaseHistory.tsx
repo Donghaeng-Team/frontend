@@ -106,54 +106,74 @@ const PurchaseHistory: React.FC = () => {
             date: new Date().toISOString().split('T')[0],
             role: 'host' as const
           }));
-          setHostingItems(items);
+          // 최신순 정렬 (marketId 내림차순)
+          const sortedItems = items.sort((a: any, b: any) => 
+            parseInt(b.id) - parseInt(a.id)
+          );
+          setHostingItems(sortedItems);
         }
 
         // 참여중인 상품
-        const participatingResponse = await productService.getMyJoinedProducts();
+        const participatingResponse = await productService.getMyJoinedProducts({ pageNum: 0, pageSize: 100 });
         if (participatingResponse.success && participatingResponse.data) {
-          const content = participatingResponse.data.content || [];
-          const items = content
-            .filter(p => p.status === 'active')
-            .map(p => convertProductToPurchaseItem(p, 'participant'));
-          setParticipatingItems(items);
+          const markets = (participatingResponse.data as any).markets || [];
+          const items = markets.map((market: any) => ({
+            id: market.marketId.toString(),
+            title: market.title,
+            category: market.categoryId,
+            price: market.price,
+            image: market.thumbnailImageUrl,
+            status: market.status === 'RECRUITING' ? 'recruiting' as const : 
+                    market.status === 'ENDED' ? 'completed' as const : 
+                    'cancelled' as const,
+            participants: {
+              current: market.recruitNow,
+              max: market.recruitMax
+            },
+            seller: {
+              name: market.nickname,
+              avatar: market.userProfileImageUrl
+            },
+            location: market.emdName,
+            date: new Date().toISOString().split('T')[0],
+            role: 'participant' as const
+          }));
+          // 최신순 정렬 (marketId 내림차순)
+          const sortedItems = items.sort((a: any, b: any) => 
+            parseInt(b.id) - parseInt(a.id)
+          );
+          setParticipatingItems(sortedItems);
         }
 
-        // 완료된 상품 (주최 + 참여)
-        const myCompletedResponse = await productService.getMyProducts();
-        const joinedCompletedResponse = await productService.getMyJoinedProducts();
-
-        const myCompleted = myCompletedResponse.success && myCompletedResponse.data
-          ? ((myCompletedResponse.data as any).markets || [])
-              .filter((m: any) => m.status === 'ENDED')
-              .map((market: any) => ({
-                id: market.marketId.toString(),
-                title: market.title,
-                category: market.categoryId,
-                price: market.price,
-                image: market.thumbnailImageUrl,
-                status: 'completed' as const,
-                participants: {
-                  current: market.recruitNow,
-                  max: market.recruitMax
-                },
-                seller: {
-                  name: market.nickname,
-                  avatar: market.userProfileImageUrl
-                },
-                location: market.emdName,
-                date: new Date().toISOString().split('T')[0],
-                role: 'host' as const
-              }))
-          : [];
-
-        const joinedCompleted = joinedCompletedResponse.success && joinedCompletedResponse.data
-          ? (joinedCompletedResponse.data.content || [])
-              .filter(p => p.status === 'completed')
-              .map(p => convertProductToPurchaseItem(p, 'participant'))
-          : [];
-
-        setCompletedItems([...myCompleted, ...joinedCompleted]);
+        // 완료된 상품
+        const completedResponse = await productService.getMyCompletedProducts({ pageNum: 0, pageSize: 100 });
+        if (completedResponse.success && completedResponse.data) {
+          const markets = (completedResponse.data as any).markets || [];
+          const items = markets.map((market: any) => ({
+            id: market.marketId.toString(),
+            title: market.title,
+            category: market.categoryId,
+            price: market.price,
+            image: market.thumbnailImageUrl,
+            status: 'completed' as const,
+            participants: {
+              current: market.recruitNow,
+              max: market.recruitMax
+            },
+            seller: {
+              name: market.nickname,
+              avatar: market.userProfileImageUrl
+            },
+            location: market.emdName,
+            date: new Date().toISOString().split('T')[0],
+            role: 'host' as const
+          }));
+          // 최신순 정렬 (marketId 내림차순)
+          const sortedItems = items.sort((a: any, b: any) => 
+            parseInt(b.id) - parseInt(a.id)
+          );
+          setCompletedItems(sortedItems);
+        }
 
         // 좋아요한 상품 (cartService 사용)
         if (authUser?.userId) {
@@ -184,7 +204,11 @@ const PurchaseHistory: React.FC = () => {
                 date: new Date().toISOString().split('T')[0],
                 role: 'participant' as const
               }));
-              setLikedItems(items);
+              // 최신순 정렬 (marketId 내림차순)
+              const sortedItems = items.sort((a: any, b: any) => 
+                parseInt(b.id) - parseInt(a.id)
+              );
+              setLikedItems(sortedItems);
             }
           } catch (likedError: any) {
             // 404는 좋아요한 항목이 없는 정상 상태
@@ -368,24 +392,7 @@ const PurchaseHistory: React.FC = () => {
     navigate(`/products/${productId}`);
   };
 
-  // 참여 취소
-  const handleCancelParticipation = async (productId: string) => {
-    if (!confirm('정말 참여를 취소하시겠습니까?')) return;
-
-    try {
-      const response = await productService.leaveProduct(productId);
-      if (response.success) {
-        alert('참여가 취소되었습니다.');
-        // 데이터 다시 로드
-        setParticipatingItems(prev => prev.filter(item => item.id !== productId));
-      }
-    } catch (error) {
-      console.error('참여 취소 실패:', error);
-      alert('참여 취소 중 오류가 발생했습니다.');
-    }
-  };
-
-  // 좋아요 취소
+// 좋아요 취소
   const handleRemoveWishlist = async (productId: string) => {
     if (!confirm('좋아요를 취소하시겠습니까?')) return;
 
@@ -461,20 +468,10 @@ const PurchaseHistory: React.FC = () => {
         {item.status === 'recruiting' && item.role === 'host' && (
           <>
             <Button size="small" variant="outline" onClick={(e) => { e.stopPropagation(); navigate(`/products/${item.id}/edit`); }}>수정</Button>
-            <Button size="small" variant="outline" onClick={(e) => { e.stopPropagation(); }}>모집 마감</Button>
           </>
-        )}
-        {item.status === 'recruiting' && item.role === 'participant' && activeTab !== 'liked' && (
-          <Button size="small" variant="outline" onClick={(e) => { e.stopPropagation(); handleCancelParticipation(item.id); }}>참여 취소</Button>
-        )}
-        {item.status === 'processing' && (
-          <Button size="small" variant="primary" onClick={(e) => { e.stopPropagation(); }}>채팅방 입장</Button>
         )}
         {item.status === 'completed' && (
-          <>
-            <Button size="small" variant="outline" onClick={(e) => { e.stopPropagation(); handleCardClick(item.id); }}>상세보기</Button>
-            <Button size="small" variant="primary" onClick={(e) => { e.stopPropagation(); }}>다시 구매</Button>
-          </>
+          <Button size="small" variant="outline" onClick={(e) => { e.stopPropagation(); handleCardClick(item.id); }}>상세보기</Button>
         )}
         {activeTab === 'liked' && (
           <Button size="small" variant="outline" onClick={(e) => { e.stopPropagation(); handleRemoveWishlist(item.id); }}>♥ 좋아요 취소</Button>
@@ -564,7 +561,7 @@ const PurchaseHistory: React.FC = () => {
         </div>
 
         <div className="purchase-history-content">
-          <div className="filter-section">
+          {/* <div className="filter-section">
             <div className="filter-row">
               <select className="filter-select">
                 <option value="">전체 기간</option>
@@ -581,14 +578,8 @@ const PurchaseHistory: React.FC = () => {
                 <option value="baby">육아용품</option>
                 <option value="electronics">전자제품</option>
               </select>
-              
-              <input
-                type="text"
-                className="filter-search"
-                placeholder="상품명 검색..."
-              />
             </div>
-          </div>
+          </div> */}
 
           <Tab
             items={tabItems}

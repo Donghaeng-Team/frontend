@@ -112,8 +112,8 @@ const ProductList: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [tempCategories, setTempCategories] = useState<string[]>([]);
-  const [distanceRange, setDistanceRange] = useState(2);
-  const [tempDistanceRange, setTempDistanceRange] = useState(2);
+  const [distanceRange, setDistanceRange] = useState(1);
+  const [tempDistanceRange, setTempDistanceRange] = useState(1);
   const [searchKeyword, setSearchKeyword] = useState(searchParams.get('keyword') || '');
   const [sortBy, setSortBy] = useState('latest');
   const [isFilterChanged, setIsFilterChanged] = useState(false);
@@ -340,9 +340,9 @@ const ProductList: React.FC = () => {
   // 필터 초기화 핸들러
   const handleResetFilters = async () => {
     try {
-      setTempDistanceRange(2);
+      setTempDistanceRange(1);
       setTempCategories([]);
-      setDistanceRange(2);
+      setDistanceRange(1);
       setSelectedCategories([]);
       setIsFilterChanged(false);
       setLoadingMore(true);
@@ -511,7 +511,7 @@ const ProductList: React.FC = () => {
                     min={0}
                     max={3}
                     value={tempDistanceRange}
-                    defaultValue={2}
+                    defaultValue={1}
                     onChange={handleDistanceChange}
                     step={1}
                     marks={[

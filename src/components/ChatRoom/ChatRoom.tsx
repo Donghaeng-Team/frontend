@@ -40,6 +40,7 @@ interface ChatRoomProps {
   onConfirm?: () => void;
   onApply?: () => void;
   onCancel?: () => void;  // 구매 취소
+  onComplete?: () => void;  // 판매 종료
   onSendMessage: (message: string) => void;
   className?: string;
 }
@@ -56,6 +57,7 @@ const ChatRoom: FC<ChatRoomProps> = ({
   onConfirm,
   onApply,
   onCancel,
+  onComplete,
   onSendMessage,
   className = ''
 }) => {
@@ -158,6 +160,12 @@ const ChatRoom: FC<ChatRoomProps> = ({
               {recruitmentStatus.status === 'closing' || recruitmentStatus.status === 'closed'
                 ? '🔒 모집 확정'
                 : '✅ 모집 확정'}
+            </button>
+            <button
+              className="chat-room-action-btn complete"
+              onClick={onComplete}
+            >
+              🏁 판매 종료
             </button>
           </>
         ) : (

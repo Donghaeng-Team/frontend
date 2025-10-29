@@ -21,6 +21,8 @@ interface ChatState {
 
   initializeWebSocket: (onStatusChange?: (status: ConnectionStatus) => void) => void;
   disconnectWebSocket: () => void;
+  subscribeToUserNotifications: (userId: number, onNotification: (notification: any) => void) => void;
+  unsubscribeFromUserNotifications: () => void;
   fetchChatRooms: () => Promise<void>;
   fetchChatRoom: (roomId: number) => Promise<void>;
   fetchParticipants: (marketId: number) => Promise<void>;
@@ -33,6 +35,7 @@ interface ChatState {
   cancelBuyer: (roomId: number) => Promise<void>;
   closeRecruitment: (roomId: number) => Promise<void>;
   extendDeadline: (roomId: number, hours: number) => Promise<void>;
+  completePurchase: (roomId: number) => Promise<void>;
   clearError: () => void;
   reset: () => void;
 }
@@ -62,12 +65,26 @@ export const useChatStore = create<ChatState>((set, get) => ({
     set({ wsClient: null, wsStatus: 'disconnected' });
   },
 
+  subscribeToUserNotifications: (userId, onNotification) => {
+    const { wsClient } = get();
+    wsClient?.subscribeToUserNotifications(userId, onNotification);
+  },
+
+  unsubscribeFromUserNotifications: () => {
+    const { wsClient } = get();
+    wsClient?.unsubscribeFromUserNotifications();
+  },
+
   fetchChatRooms: async () => {
     try {
       set({ chatRoomsLoading: true, error: null });
       const response = await chatService.getChatRoomList();
       if (response.success && response.data) {
-        set({ chatRooms: response.data.chatRooms, chatRoomsLoading: false });
+        // CANCELLED 상태인 채팅방 필터링
+        const activeChatRooms = response.data.chatRooms.filter(
+          room => room.status !== 'CANCELLED'
+        );
+        set({ chatRooms: activeChatRooms, chatRoomsLoading: false });
       }
     } catch (error: any) {
       set({ error: '채팅방 목록을 불러오는데 실패했습니다.', chatRoomsLoading: false });
@@ -313,6 +330,19 @@ export const useChatStore = create<ChatState>((set, get) => ({
       }
     } catch (error: any) {
       set({ error: '시간 연장에 실패했습니다.' });
+      throw error;
+    }
+  },
+
+  completePurchase: async (roomId) => {
+    try {
+      const response = await chatService.completePurchase(roomId);
+      if (response.success) {
+        // 채팅방 정보 새로고침
+        await get().fetchChatRoom(roomId);
+      }
+    } catch (error: any) {
+      set({ error: '판매 종료에 실패했습니다.' });
       throw error;
     }
   },

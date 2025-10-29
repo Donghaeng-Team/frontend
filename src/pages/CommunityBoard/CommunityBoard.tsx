@@ -122,7 +122,7 @@ const CommunityBoard: React.FC<CommunityBoardProps> = ({
                 apiPost.tag === 'question' ? '질문 답변' : '기타',
       title: apiPost.title,
       content: apiPost.previewContent,
-      author: '익명',  // API에 작성자 정보가 없으므로
+      author: apiPost.userDto?.name || '익명',
       timeAgo: getTimeAgo(apiPost.createdAt),
       location: apiPost.region,
       viewCount: apiPost.viewCount,

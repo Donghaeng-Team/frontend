@@ -6,6 +6,7 @@ import type { ChatMessage } from '../../components/ChatRoom/ChatRoom';
 import { useChatStore } from '../../stores/chatStore';
 import { useAuthStore } from '../../stores/authStore';
 import type { ChatRoomStatus } from '../../types/chat';
+import { chatService } from '../../api/services/chat';
 import './ChatRoomPage.css';
 
 interface ChatRoomPageProps {
@@ -28,6 +29,8 @@ const ChatRoomPage = ({
   const {
     initializeWebSocket,
     disconnectWebSocket,
+    subscribeToUserNotifications,
+    unsubscribeFromUserNotifications,
     wsStatus,
     currentRoom,
     messages,
@@ -53,6 +56,27 @@ const ChatRoomPage = ({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // 빈 배열: 마운트/언마운트 시에만 실행
+
+  // 사용자 알림 구독 (강퇴 알림 처리)
+  useEffect(() => {
+    if (user?.userId && wsStatus === 'connected') {
+      subscribeToUserNotifications(user.userId, (notification) => {
+        if (import.meta.env.DEV) {
+          console.log('[ChatRoomPage] Received notification:', notification);
+        }
+
+        // 강퇴 알림 처리
+        if (notification.type === 'KICKED' || notification.type === 'KICK') {
+          alert('채팅방에서 강퇴되었습니다.');
+          navigate('/products');
+        }
+      });
+
+      return () => {
+        unsubscribeFromUserNotifications();
+      };
+    }
+  }, [user?.userId, wsStatus, subscribeToUserNotifications, unsubscribeFromUserNotifications, navigate]);
 
   // 채팅방 정보 로드 (중복 방지)
   useEffect(() => {
@@ -335,6 +359,31 @@ const ChatRoomPage = ({
     }
   };
 
+  const handleComplete = async () => {
+    if (roomId && currentRoom && user?.userId) {
+      if (!currentRoom.creator) {
+        alert('판매자만 판매 종료를 할 수 있습니다.');
+        return;
+      }
+      if (window.confirm('판매를 종료하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+        try {
+          const numericRoomId = parseInt(roomId, 10);
+          
+          // 모집 취소 API 호출
+          await chatService.cancelRecruitment(numericRoomId);
+          
+          alert('판매가 종료되었습니다.');
+          
+          // 공동구매 목록으로 이동
+          navigate('/products');
+        } catch (error) {
+          console.error('판매 종료 실패:', error);
+          alert('판매 종료에 실패했습니다.');
+        }
+      }
+    }
+  };
+
   const handleSendMessage = (message: string) => {
     if (roomId && user && user.userId) {
       const numericRoomId = parseInt(roomId, 10);
@@ -356,6 +405,7 @@ const ChatRoomPage = ({
         onConfirm={handleConfirm}
         onApply={handleApply}
         onCancel={handleCancel}
+        onComplete={handleComplete}
         onSendMessage={handleSendMessage}
       />
       {showBottomNav && <BottomNav />}
