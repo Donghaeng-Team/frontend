@@ -545,7 +545,7 @@ const PurchaseHistory: React.FC = () => {
         </div>
 
         <div className="purchase-history-content">
-          <div className="filter-section">
+          {/* <div className="filter-section">
             <div className="filter-row">
               <select className="filter-select">
                 <option value="">전체 기간</option>
@@ -562,14 +562,8 @@ const PurchaseHistory: React.FC = () => {
                 <option value="baby">육아용품</option>
                 <option value="electronics">전자제품</option>
               </select>
-              
-              {/* <input
-                type="text"
-                className="filter-search"
-                placeholder="상품명 검색..."
-              /> */}
             </div>
-          </div>
+          </div> */}
 
           <Tab
             items={tabItems}
