@@ -21,6 +21,8 @@ interface ChatState {
 
   initializeWebSocket: (onStatusChange?: (status: ConnectionStatus) => void) => void;
   disconnectWebSocket: () => void;
+  subscribeToUserNotifications: (userId: number, onNotification: (notification: any) => void) => void;
+  unsubscribeFromUserNotifications: () => void;
   fetchChatRooms: () => Promise<void>;
   fetchChatRoom: (roomId: number) => Promise<void>;
   fetchParticipants: (marketId: number) => Promise<void>;
@@ -61,6 +63,16 @@ export const useChatStore = create<ChatState>((set, get) => ({
     const { wsClient } = get();
     wsClient?.disconnect();
     set({ wsClient: null, wsStatus: 'disconnected' });
+  },
+
+  subscribeToUserNotifications: (userId, onNotification) => {
+    const { wsClient } = get();
+    wsClient?.subscribeToUserNotifications(userId, onNotification);
+  },
+
+  unsubscribeFromUserNotifications: () => {
+    const { wsClient } = get();
+    wsClient?.unsubscribeFromUserNotifications();
   },
 
   fetchChatRooms: async () => {
