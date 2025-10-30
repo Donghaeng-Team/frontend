@@ -2,6 +2,40 @@ import { defineConfig, devices } from '@playwright/test';
 import { join } from 'path';
 import { homedir } from 'os';
 
+const downloadsDir = join(homedir(), 'Downloads', 'playwright-test-results');
+
+export default defineConfig({
+  testDir: './tests',
+  outputDir: downloadsDir,
+  fullyParallel: true,
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 1 : 0,
+  workers: process.env.CI ? 1 : undefined,
+  reporter: 'html',
+  use: {
+    baseURL: 'http://localhost:3000',
+    trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+  },
+  projects: [
+    {
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+  ],
+  webServer: {
+    command: 'npm run dev',
+    url: 'http://localhost:3000',
+    reuseExistingServer: !process.env.CI,
+    env: {
+      VITE_API_BASE_URL: process.env.VITE_API_BASE_URL || 'http://localhost:8080',
+    },
+  },
+});
+import { defineConfig, devices } from '@playwright/test';
+import { join } from 'path';
+import { homedir } from 'os';
+
 /**
  * 다운로드 폴더 경로 설정
  * OS별 다운로드 폴더: Windows, Mac, Linux 모두 지원
@@ -80,5 +114,9 @@ export default defineConfig({
     command: 'npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
+    env: {
+      // MSA 백엔드 게이트웨이(8080)로 API 호출
+      VITE_API_BASE_URL: process.env.VITE_API_BASE_URL || 'http://localhost:8080',
+    },
   },
 });

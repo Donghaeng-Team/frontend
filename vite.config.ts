@@ -24,6 +24,7 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           secure: false,
           ws: true, // WebSocket 프록시 활성화
+          timeout: 30000,
           configure: (proxy, _options) => {
             proxy.on('error', (err, _req, _res) => {
               console.log('[WebSocket Proxy] error', err);
@@ -41,7 +42,7 @@ export default defineConfig(({ mode }) => {
           target: env.VITE_API_BASE_URL || 'http://localhost:8080',
           changeOrigin: true,
           secure: false,
-          timeout: 10000, // 10초 타임아웃
+          timeout: 30000, // 30초 타임아웃 (백엔드 MSA 지연 대비)
           configure: (proxy, _options) => {
             proxy.on('error', (err, _req, _res) => {
               console.log('[API Proxy] error', err);
@@ -59,7 +60,7 @@ export default defineConfig(({ mode }) => {
           target: env.VITE_API_BASE_URL || 'http://localhost:8080',
           changeOrigin: true,
           secure: false,
-          timeout: 10000,
+          timeout: 30000,
         }
       }
     }

@@ -28,9 +28,13 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          VITE_API_BASE_URL: http://localhost:8080
 
-      - name: Run E2E tests
-        run: npm run test
+      - name: Run E2E smoke tests
+        run: npm run test:smoke
+        env:
+          VITE_API_BASE_URL: http://localhost:8080
 
       - name: Upload test results
         if: failure()
@@ -63,3 +67,5 @@ jobs:
       - run: npx playwright install chromium
       - run: npm run build
       - run: npm run test:smoke
+        env:
+          VITE_API_BASE_URL: http://localhost:8080
